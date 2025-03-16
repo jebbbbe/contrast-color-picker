@@ -5,6 +5,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 // globals
 let world, scene, camera, renderer, container, controls;
+let sceneCamera, vitualCamera
 let M, aspect;
 let materials = []
 let meshes = []
@@ -30,19 +31,18 @@ function init() {
     renderer.setSize(aspect.x, aspect.y);
     renderer.setPixelRatio(M.pixelRatio);
 
-
-    const sceneCamera = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0, 1000 );
+    sceneCamera = new THREE.OrthographicCamera( - 1, 1, 1, - 1, 0, 1000 );
     sceneCamera.position.set(0, 10, 0);
     sceneCamera.lookAt(0, 0, 0);
 
     //scene
     scene = new THREE.Scene();
     scene.background = new THREE.Color(M.backgroundColor);
-    camera = new THREE.OrthographicCamera(aspect.cam.l, aspect.cam.r, aspect.cam.t, aspect.cam.b, aspect.cam.n, aspect.cam.f);
-    camera.aspect = aspect.aspect;
-    let vitualCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.001, 1000);
+    // camera = new THREE.OrthographicCamera(aspect.cam.l, aspect.cam.r, aspect.cam.t, aspect.cam.b, aspect.cam.n, aspect.cam.f);
+    // camera.aspect = aspect.aspect;
+    vitualCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.001, 1000);
     vitualCamera.position.set(0, 10, 0);
-    // initOrbit(vitualCamera, renderer)
+    initOrbit(sceneCamera, renderer)
 
 
 
@@ -56,12 +56,11 @@ function init() {
     };
     window.world = world;
 
-    scene.add(new THREE.GridHelper());
     addMesh()
 
    
     // addGui()
-    aspect.addResizeListener(renderer,camera,render)
+    aspect.addResizeListener(renderer,sceneCamera,render)
 }
 
 function animate() {
@@ -71,7 +70,7 @@ function animate() {
 
 function render() {
     // controls.update()
-    renderer.render(scene, camera);
+    renderer.render(scene, sceneCamera);
 }
 
 
@@ -147,23 +146,38 @@ function addMesh(){
         start_scale: { value: M.var.scale },
     };
     */
-    /*
-    const material = new THREE.ShaderMaterial( {
+    // const material = materials[0] = new THREE.MeshBasicMaterial({color:0xff000f})
+    const material = materials[0] = new THREE.ShaderMaterial( {
 
-        uniforms: uniforms,
-        vertexShader: shaderLibrary.cave.vert,
-        fragmentShader: shaderLibrary.cave.frag,
+        uniforms: {},//uniforms,
+        vertexShader: /*glsl*/`
+        varying vec2 vUv;
+        void main()	{
+            vUv = uv;
+            gl_Position = vec4( position, 1.0 );
+        }
+        `,
+        fragmentShader: /*glsl*/`
+        varying vec2 vUv;
+        void main() {
+            //vec2 st = gl_FragCoord.xy/u_resolution.xy;
+            //st.x *= u_resolution.x/u_resolution.y;
+            vec2 st = vUv;
+            vec3 color = vec3(0.,0.5,1.0);
+            color.xy = st.xy;
+            color.z = 0.;
+            gl_FragColor = vec4(color,1.0);
+        }
+        `,
         onBeforeCompile: shader => {
-                    //shader.vertexShader = `${shader.vertexShader}`;
-                    //console.log(shader)
-                    //console.log(shader.vertexShader)
-                    //console.log(shader.fragmentShader)
-                }
+            //shader.vertexShader = `${shader.vertexShader}`;
+            //console.log(shader)
+            //console.log(shader.vertexShader)
+            //console.log(shader.fragmentShader)
+        }
        
     } );
-     */
-
-    const material = materials[0] = new THREE.MeshBasicMaterial({color:0xff00ff})
+     
     let mesh = meshes[0] = new THREE.Mesh( geometry, material );
     mesh.rotateX(-Math.PI/2)
     scene.add( mesh );

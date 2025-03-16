@@ -42,14 +42,14 @@ function init() {
     // camera.aspect = aspect.aspect;
     vitualCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.001, 1000);
     vitualCamera.position.set(0, 10, 0);
-    initOrbit(sceneCamera, renderer)
+    initOrbit(vitualCamera, renderer)
 
 
 
     //world
     world = {
         scene: scene,
-        camera: [sceneCamera, camera],
+        camera: [sceneCamera, vitualCamera],
         renderer: renderer,
         meshes:meshes,
         materials:materials,
@@ -116,9 +116,10 @@ function rInt(min = 0, max = 1) {
 function addMesh(){
     const size = 2//1
     const geometry = new THREE.PlaneBufferGeometry( size,  size);
-    /*
-    uniforms = {
+    const uniforms = {
         // time: { value: 0.0 },
+        cameraMatrix:{value:vitualCamera.matrix},
+        /*
         seed:{value:M.var.shaderSeeds},
         noiseType:{value:M.var.noiseType},
 
@@ -144,21 +145,33 @@ function addMesh(){
         cameraMatrix:{value:M.var.cameraMatrix},
         animate:{value:useAnim},
         start_scale: { value: M.var.scale },
+        */
     };
-    */
     // const material = materials[0] = new THREE.MeshBasicMaterial({color:0xff000f})
     const material = materials[0] = new THREE.ShaderMaterial( {
 
-        uniforms: {},//uniforms,
+        uniforms: uniforms,
         vertexShader: /*glsl*/`
         varying vec2 vUv;
+        uniform mat4 cameraMatrix;
         void main()	{
-            vUv = uv;
-            gl_Position = vec4( position, 1.0 );
+            // UV coordinates
+            // vUv = uv;
+            vUv = (cameraMatrix * vec4(uv,0.,1.0)).xy;
+
+            //gl_Position
+            // gl_Position = vec4( position, 1.0 );
+
+            // gl_Position = vec4(position.xy, 0.0, 1.0); // doesnt work
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            gl_Position = projectionMatrix * mvPosition;
+            // gl_Position = vec4( position, 1.0 );
         }
         `,
         fragmentShader: /*glsl*/`
         varying vec2 vUv;
+        uniform mat4 cameraMatrix;
+
         void main() {
             //vec2 st = gl_FragCoord.xy/u_resolution.xy;
             //st.x *= u_resolution.x/u_resolution.y;

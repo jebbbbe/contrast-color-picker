@@ -69,7 +69,7 @@ function animate() {
 }
 
 function render() {
-    // controls.update()
+    controls.update()
     renderer.render(scene, sceneCamera);
 }
 
@@ -163,9 +163,13 @@ function addMesh(){
             //vec2 st = gl_FragCoord.xy/u_resolution.xy;
             //st.x *= u_resolution.x/u_resolution.y;
             vec2 st = vUv;
-            vec3 color = vec3(0.,0.5,1.0);
-            color.xy = st.xy;
-            color.z = 0.;
+            vec3 color = vec3(st,0.0);
+            if( 
+                0.25< st.x && st.x < 0.75 &&
+                0.25< st.y && st.y < 0.75
+            ){
+                color.z = 1.0;
+            }
             gl_FragColor = vec4(color,1.0);
         }
         `,

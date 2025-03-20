@@ -95,7 +95,7 @@ void main() {
     // Define the volume as a cube from -0.5 to 0.5.
     vec2 bounds = intersectBox(rayOrigin, rayDir, vec3(0.0), vec3(1.0));
     if (bounds.x > bounds.y) {
-        gl_FragColor = vec4(0.021, 0.470, 0.299, 1.0);
+        gl_FragColor = backgroundColor;
         return;
     }
     
@@ -136,7 +136,7 @@ void main() {
         if (accumulatedAlpha >= 0.95) break;
     }
     if(accumulatedAlpha == 0.){
-        gl_FragColor = vec4(0.021, 0.470, 0.299, 1.0); 
+        gl_FragColor = backgroundColor; 
     }else{
         gl_FragColor = vec4(accumulatedColor, accumulatedAlpha);  
         // gl_FragColor = vec4( vec3(1.-stepsTaken/float(MAX_STEPS)), 1.0);
@@ -147,6 +147,7 @@ export class sdfRenderMaterial extends ThreeTools.CustomShaderMaterial {
     constructor(parameters = {}, share) {
         const customProperties = {
             vUv: { qualifier: "varying", type: "vec2" },
+            backgroundColor: { qualifier: "uniform", type: "vec4", value: new THREE.Vector4(0.021, 0.470, 0.299, 1.0) },
             u_camPos: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
             u_camDir: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
             u_fov: { qualifier: "uniform", type: "float", value: 10 },

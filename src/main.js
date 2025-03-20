@@ -51,7 +51,7 @@ vec3 applyProtanopia(vec3 color) {
 }
 
 const int MAX_STEPS = 128*8;
-const float MAX_DEPTH = 5.;
+const float MAX_DEPTH = 500000.;
 
 float densityByContrast(vec3 color) {
     // Compute relative luminance using sRGB coefficients.
@@ -122,8 +122,8 @@ void main() {
         
         // Use a high constant density if red is above threshold; zero otherwise.
         // float density = (sampleColor.r > 0.586) ? 0.0 :MAX_DEPTH; 
-        // float density = (distance(transformedColor, vec3(0.626,0.740,0.540)) < 0.466) ? 0.0 :MAX_DEPTH;
-        float density = MAX_DEPTH;      
+        float density = (distance(transformedColor, vec3(0.626,0.740,0.540)) < 0.466) ? 0.0 :MAX_DEPTH;
+        // float density = MAX_DEPTH;      
 		// float density = ( 
 		// transformedColor.x > 0.376
 		// ) ? 0.0 :MAX_DEPTH;
@@ -182,7 +182,7 @@ function init() {
     container.appendChild(renderer.domElement);
     aspect = new ThreeTools.AspectLayout("dynamic", container);
     renderer.setSize(aspect.x, aspect.y);
-    renderer.setPixelRatio(M.pixelRatio);
+    renderer.setPixelRatio(2);
 
     sceneCamera = new THREE.OrthographicCamera(- 1, 1, 1, - 1, 0, 1000);
     sceneCamera.position.set(0, 10, 0);
@@ -263,9 +263,9 @@ function initOrbit(camera, renderer) {
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
     controls.dampingFactor = 0.15; //0.05
-    controls.screenSpacePanning = false;
-    controls.enablePan = false;
-    controls.panning = false;
+    // controls.screenSpacePanning = false;
+    // controls.enablePan = false;
+    // controls.panning = false;
     controls.minDistance = 1; //zoom min scaling
     controls.maxDistance = 2000; //zoom max scaling
     // camera.position.set(0, 90, 0);

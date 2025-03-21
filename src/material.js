@@ -1,6 +1,32 @@
 import * as THREE from "three";
 import * as ThreeTools from "threetools";
 
+
+export class sdfRenderMaterial extends ThreeTools.CustomShaderMaterial {
+    constructor(parameters = {}, share) {
+        const customProperties = {
+            vUv: { qualifier: "varying", type: "vec2" },
+            backgroundColor: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3(0.021, 0.470, 0.299) },
+            backgroundOpacity: { qualifier: "uniform", type: "float", value: 1.0 },
+            u_camPos: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
+            u_camDir: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
+            u_fov: { qualifier: "uniform", type: "float", value: 10 },
+            u_aspect: { qualifier: "uniform", type: "float", value: 1 },
+            drawingTarget: { qualifier: "uniform", type: "int", value: 0 },
+            spherePos: { qualifier: "uniform", type: "vec4", value: new THREE.Vector4(0.626, 0.740, 0.540, 0.466) },
+        }
+        super(parameters, customProperties)
+        this.onBeforeCompile = (shader) => {
+            this.linkUnifromsToShader(shader)
+            shader.vertexShader = this.headers.vertex + vert
+            shader.fragmentShader = this.headers.fragment + frag
+            this.userData.shader = shader;
+        }
+    }
+}
+
+
+
 const vert = /* glsl */ `
 void main()	{
     vUv = uv;
@@ -140,32 +166,20 @@ void main() {
         
         if (accumulatedAlpha >= 0.95) break;
     }
-    if(accumulatedAlpha == 0.){
-        gl_FragColor = vec4(backgroundColor, backgroundOpacity);
-    }else{
-        gl_FragColor = vec4(accumulatedColor, accumulatedAlpha);  
-        // gl_FragColor = vec4( vec3(1.-stepsTaken/float(MAX_STEPS)), 1.0);
+    vec4 outputColor;
+
+    if( drawingTarget == 0 ){
+        outputColor = vec4 ( accumulatedColor, accumulatedAlpha);
+
+    }else if ( drawingTarget == 1 ){
+        outputColor = vec4(vec3(1.-stepsTaken/float(MAX_STEPS)), accumulatedAlpha);
     }
+
+    if(accumulatedAlpha == 0.){
+        outputColor = vec4(backgroundColor, backgroundOpacity);
+    }
+    
+    gl_FragColor = outputColor;
+
 }
 `
-export class sdfRenderMaterial extends ThreeTools.CustomShaderMaterial {
-    constructor(parameters = {}, share) {
-        const customProperties = {
-            vUv: { qualifier: "varying", type: "vec2" },
-            backgroundColor: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3(0.021, 0.470, 0.299) },
-            backgroundOpacity: { qualifier: "uniform", type: "float", value: 1.0 },
-            u_camPos: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
-            u_camDir: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
-            u_fov: { qualifier: "uniform", type: "float", value: 10 },
-            u_aspect: { qualifier: "uniform", type: "float", value: 1 },
-            spherePos:  { qualifier: "uniform", type: "vec4", value: new THREE.Vector4(0.626,0.740,0.540,  0.466) },
-        }
-        super(parameters, customProperties)
-        this.onBeforeCompile = (shader) => {
-            this.linkUnifromsToShader(shader)
-            shader.vertexShader = this.headers.vertex + vert
-            shader.fragmentShader = this.headers.fragment + frag
-            this.userData.shader = shader;
-        }
-    }
-}

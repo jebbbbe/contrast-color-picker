@@ -3,6 +3,8 @@ import * as ThreeTools from "threetools";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { sdfRenderMaterial } from "./material"
 import { addGui } from "./libraries/ui.js"
+import { outputTargets, densityFunctions } from "./libraries/constants.js"
+
 
 // globals
 let world, scene, camera, renderer, container, controls;
@@ -14,17 +16,17 @@ let meshes = []
 
 
 M = {
-    var:{
-        backgroundColor:0x05784C,
-        backgroundOpacity:1.0,
+    var: {
+        backgroundColor: 0x05784C,
+        backgroundOpacity: 1.0,
 
         camPosition: undefined,
         camDir: new THREE.Vector3(),
         camFov: 10,
         camAspect: 10,
 
-        spherePos:new THREE.Vector4(0.626,0.740,0.540,  0.466),
-        drawingTarget:0,
+        spherePos: new THREE.Vector4(0.5, 0.5, 0.5, 0.6),
+        drawingTarget: outputTargets.color,
     },
 };
 
@@ -72,7 +74,7 @@ function init() {
         materials: materials,
     };
     window.world = world;
-    window.THREE= THREE;
+    window.THREE = THREE;
 
     const geometry = new THREE.PlaneBufferGeometry(2, 2);
 
@@ -83,19 +85,19 @@ function init() {
         u_camDir: M.var.camDir,
         u_fov: M.var.camFov,
         u_aspect: M.var.camAspect,
-        spherePos:M.var.spherePos,
+        spherePos: M.var.spherePos,
     })
 
     let mesh = meshes[0] = new THREE.Mesh(geometry, sdfMaterial);
     mesh.rotateX(-Math.PI / 2)
     scene.add(mesh);
 
-    addGui({M, scene, sdfMaterial})
+    addGui({ M, scene, sdfMaterial })
     aspect.addResizeListener(renderer, sceneCamera, resize)
     animate();
 }
 
-function resize(){
+function resize() {
     sdfMaterial.customUniforms.u_fov.value = vitualCamera.fov * Math.PI / 180.0;
     sdfMaterial.customUniforms.u_aspect.value = aspect.aspect;
     render()

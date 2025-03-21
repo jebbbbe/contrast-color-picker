@@ -4,6 +4,9 @@ import * as ThreeTools from "threetools";
 const vert = /* glsl */ `
 void main()	{
     vUv = uv;
+    vUv.x -= 0.5;
+    vUv.x *= u_aspect;
+    vUv.x += 0.5;
     gl_Position = vec4( position, 1.0 );
 }
 `
@@ -72,6 +75,7 @@ void main() {
     // vec2 st = gl_FragCoord.xy / u_resolution.xy;
     // st.x *= u_resolution.x / u_resolution.y;
     vec2 st = vUv;
+
     vec2 uv = st;
     float stepsTaken = 0.;
     mat3 e = inverse(protanopiaMatrix);
@@ -93,7 +97,7 @@ void main() {
     vec3 rayOrigin = u_camPos;
     
     // Define the volume as a cube from -0.5 to 0.5.
-    vec2 bounds = intersectBox(rayOrigin, rayDir, vec3(0.0), vec3(1.0));
+    vec2 bounds = intersectBox(rayOrigin, rayDir, vec3(-0.5), vec3(0.5));
     if (bounds.x > bounds.y) {
         gl_FragColor = backgroundColor;
         return;
@@ -112,7 +116,7 @@ void main() {
         float t = tStart + float(i) * dt;
         vec3 pos = rayOrigin + t * rayDir;
         // Remap position from [-0.5,0.5] to [0,1] to get an RGB value.
-        vec3 sampleColor = pos + vec3(0.0);
+        vec3 sampleColor = pos + vec3(0.5);
         // vec3 transformedColor = applyProtanopia(sampleColor);
         vec3 transformedColor = sampleColor;
 
@@ -151,12 +155,13 @@ export class sdfRenderMaterial extends ThreeTools.CustomShaderMaterial {
             u_camPos: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
             u_camDir: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
             u_fov: { qualifier: "uniform", type: "float", value: 10 },
+            u_aspect: { qualifier: "uniform", type: "float", value: 1 },
         }
         super(parameters, customProperties)
         this.onBeforeCompile = (shader) => {
             this.linkUnifromsToShader(shader)
-            console.log(shader.vertexShader)
-            console.log(shader.fragmentShader)
+            // console.log(shader.vertexShader)
+            // console.log(shader.fragmentShader)
             shader.vertexShader = this.headers.vertex + vert
             shader.fragmentShader = this.headers.fragment + frag
             this.userData.shader = shader;

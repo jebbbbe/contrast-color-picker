@@ -108,6 +108,7 @@ function render() {
     // Convert the camera's field of view from degrees to radians.
     sdfMaterial.customUniforms.u_fov.value = camera.fov * Math.PI / 180.0;
 
+    sdfMaterial.customUniforms.u_aspect.value = aspect.aspect;
 
     controls.update()
     renderer.render(scene, sceneCamera);
@@ -137,7 +138,7 @@ function initOrbit(camera, renderer) {
     // controls.panning = false;
     controls.minDistance = 1; //zoom min scaling
     controls.maxDistance = 2000; //zoom max scaling
-    // camera.position.set(0, 90, 0);
+    camera.position.set(1.5, 1.5, 1.5);
     // camera.zoom = 0.06;
     controls.update();
     // controls.addEventListener("change", () => { // for no aniumation loop()

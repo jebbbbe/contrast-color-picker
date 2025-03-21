@@ -1,8 +1,8 @@
 import * as THREE from "three";
 import * as ThreeTools from "threetools";
-import { GUI } from 'dat.gui';
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { sdfRenderMaterial } from "./material"
+import { addGui } from "./libraries/ui.js"
 
 // globals
 let world, scene, camera, renderer, container, controls;
@@ -12,13 +12,20 @@ let sdfMaterial;
 let materials = []
 let meshes = []
 
+
 M = {
-    backgroundColor: 0xc9807b,
-    cubeColor: 0x3555e6,
-    virtualPosition: undefined,
-    virtualTarget: undefined,
-    virtualDir: undefined,
-    virtualFov: 10,
+    var:{
+        backgroundColor:0x05784C,
+        backgroundOpacity:1.0,
+
+        camPosition: undefined,
+        camDir: new THREE.Vector3(),
+        camFov: 10,
+        camAspect: 10,
+
+        spherePos:new THREE.Vector4(0.626,0.740,0.540,  0.466),
+        drawingTarget:0,
+    },
 };
 
 init();
@@ -41,21 +48,20 @@ function init() {
 
     //scene
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(M.backgroundColor);
+    scene.background = new THREE.Color(M.var.backgroundColor);
     // camera = new THREE.OrthographicCamera(aspect.cam.l, aspect.cam.r, aspect.cam.t, aspect.cam.b, aspect.cam.n, aspect.cam.f);
     // camera.aspect = aspect.aspect;
     vitualCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.001, 1000);
     vitualCamera.position.set(0, 10, 0);
     initOrbit(vitualCamera, renderer)
 
-    M.virtualDir = vitualCamera.fov
 
-    M.virtualPosition = vitualCamera.position
-    M.virtualTarget = controls.target
-    M.virtualDir = new THREE.Vector3().subVectors(M.virtualTarget, M.virtualPosition).normalize();
-    M.virtualFov = vitualCamera.fov
+    M.var.camPosition = vitualCamera.position
+    vitualCamera.getWorldDirection(M.var.camDir)
+    M.var.camFov = vitualCamera.fov * Math.PI / 180.0;
+    M.var.camAspect = aspect.aspect
 
-
+    console.log(M)
 
     //world
     world = {
@@ -66,30 +72,33 @@ function init() {
         materials: materials,
     };
     window.world = world;
+    window.THREE= THREE;
 
     const geometry = new THREE.PlaneBufferGeometry(2, 2);
-    console.log(new THREE.Color(M.backgroundColor))
-    const c = new THREE.Color(M.backgroundColor)
-    const bk = new THREE.Vector4(
-        c.r,
-        c.g,
-        c.b,
-        1.0
-    )
+
     sdfMaterial = materials[0] = new sdfRenderMaterial({
-        // backgroundColor: { value: bk }
-        // u_camPos: { value: M.virtualPosition },
-        // u_camDir: { value: M.virtualDir },
-        // u_fov: { value: M.virtualFov },
+        backgroundColor: new THREE.Color(M.var.backgroundColor),
+        backgroundOpacity: M.var.backgroundOpacity,
+        u_camPos: M.var.camPosition,
+        u_camDir: M.var.camDir,
+        u_fov: M.var.camFov,
+        u_aspect: M.var.camAspect,
+        spherePos:M.var.spherePos,
     })
+
     let mesh = meshes[0] = new THREE.Mesh(geometry, sdfMaterial);
     mesh.rotateX(-Math.PI / 2)
     scene.add(mesh);
 
-
-    // addGui()
-    aspect.addResizeListener(renderer, sceneCamera, render)
+    addGui({M, scene, sdfMaterial})
+    aspect.addResizeListener(renderer, sceneCamera, resize)
     animate();
+}
+
+function resize(){
+    sdfMaterial.customUniforms.u_fov.value = vitualCamera.fov * Math.PI / 180.0;
+    sdfMaterial.customUniforms.u_aspect.value = aspect.aspect;
+    render()
 }
 
 function animate() {
@@ -98,35 +107,15 @@ function animate() {
 }
 
 function render() {
-    const camera = vitualCamera
-    // Update camera position.
-    sdfMaterial.customUniforms.u_camPos.value.copy(camera.position);
-
-    // Update camera direction using getWorldDirection().
-    camera.getWorldDirection(sdfMaterial.customUniforms.u_camDir.value);
-
-    // Convert the camera's field of view from degrees to radians.
-    sdfMaterial.customUniforms.u_fov.value = camera.fov * Math.PI / 180.0;
-
-    sdfMaterial.customUniforms.u_aspect.value = aspect.aspect;
-
+    // sdfMaterial.customUniforms.u_camPos.value.copy(vitualCamera.position);
+    vitualCamera.getWorldDirection(sdfMaterial.customUniforms.u_camDir.value);
+    // sdfMaterial.customUniforms.u_fov.value = vitualCamera.fov * Math.PI / 180.0;
+    // sdfMaterial.customUniforms.u_aspect.value = aspect.aspect;
     controls.update()
     renderer.render(scene, sceneCamera);
 }
 
 
-function addGui() {
-    let gui = new GUI({ width: 300 });
-    gui.addColor(M, "backgroundColor").name("Background Color").listen().onChange(updateBackground);
-    gui.addColor(M, "cubeColor").name("cube Color").listen().onChange(updateCube);
-
-    function updateBackground() {
-        scene.background = new THREE.Color(M.backgroundColor);
-    }
-    function updateCube() {
-        materials[0].color = new THREE.Color(M.cubeColor);
-    }
-}
 
 function initOrbit(camera, renderer) {
     // ORBIT controls

@@ -99,7 +99,7 @@ void main() {
     // Define the volume as a cube from -0.5 to 0.5.
     vec2 bounds = intersectBox(rayOrigin, rayDir, vec3(-0.5), vec3(0.5));
     if (bounds.x > bounds.y) {
-        gl_FragColor = backgroundColor;
+        gl_FragColor = vec4(backgroundColor, backgroundOpacity);
         return;
     }
     
@@ -123,7 +123,8 @@ void main() {
         
         // Use a high constant density if red is above threshold; zero otherwise.
         // float density = (sampleColor.r > 0.586) ? 0.0 :MAX_DEPTH; 
-        float density = (distance(transformedColor, vec3(0.626,0.740,0.540)) < 0.466) ? 0.0 :MAX_DEPTH;
+        // float density = (distance(transformedColor, vec3(0.626,0.740,0.540)) < 0.466) ? 0.0 :MAX_DEPTH;
+        float density = (distance(transformedColor, spherePos.xyz) < spherePos.w) ? 0.0 :MAX_DEPTH;
         // float density = MAX_DEPTH;      
 		// float density = ( 
 		// transformedColor.x > 0.376
@@ -140,7 +141,7 @@ void main() {
         if (accumulatedAlpha >= 0.95) break;
     }
     if(accumulatedAlpha == 0.){
-        gl_FragColor = backgroundColor; 
+        gl_FragColor = vec4(backgroundColor, backgroundOpacity);
     }else{
         gl_FragColor = vec4(accumulatedColor, accumulatedAlpha);  
         // gl_FragColor = vec4( vec3(1.-stepsTaken/float(MAX_STEPS)), 1.0);
@@ -151,17 +152,17 @@ export class sdfRenderMaterial extends ThreeTools.CustomShaderMaterial {
     constructor(parameters = {}, share) {
         const customProperties = {
             vUv: { qualifier: "varying", type: "vec2" },
-            backgroundColor: { qualifier: "uniform", type: "vec4", value: new THREE.Vector4(0.021, 0.470, 0.299, 1.0) },
+            backgroundColor: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3(0.021, 0.470, 0.299) },
+            backgroundOpacity: { qualifier: "uniform", type: "float", value: 1.0 },
             u_camPos: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
             u_camDir: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
             u_fov: { qualifier: "uniform", type: "float", value: 10 },
             u_aspect: { qualifier: "uniform", type: "float", value: 1 },
+            spherePos:  { qualifier: "uniform", type: "vec4", value: new THREE.Vector4(0.626,0.740,0.540,  0.466) },
         }
         super(parameters, customProperties)
         this.onBeforeCompile = (shader) => {
             this.linkUnifromsToShader(shader)
-            // console.log(shader.vertexShader)
-            // console.log(shader.fragmentShader)
             shader.vertexShader = this.headers.vertex + vert
             shader.fragmentShader = this.headers.fragment + frag
             this.userData.shader = shader;

@@ -3,12 +3,12 @@ import * as ThreeTools from "threetools";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { sdfRenderMaterial } from "./material"
 import { addGui } from "./libraries/ui.js"
-import { outputTargets, densityFunctions } from "./libraries/constants.js"
+import { outputTargets, densityFunctions, transformModes } from "./libraries/constants.js"
 
 
 // globals
 let world, scene, camera, renderer, container, controls;
-let sceneCamera, vitualCamera
+let sceneCamera, virtualCamera
 let M, aspect;
 let sdfMaterial;
 let materials = []
@@ -27,6 +27,13 @@ M = {
 
         spherePos: new THREE.Vector4(0.5, 0.5, 0.5, 0.6),
         drawingTarget: outputTargets.color,
+        densityFunction: densityFunctions.none,
+        contrastRatio: 4.5,
+        transformMode: transformModes.none,
+
+        maxRayStep:128,
+        maxRayDepth:500000,
+        turnTable:false
     },
 };
 
@@ -53,14 +60,14 @@ function init() {
     scene.background = new THREE.Color(M.var.backgroundColor);
     // camera = new THREE.OrthographicCamera(aspect.cam.l, aspect.cam.r, aspect.cam.t, aspect.cam.b, aspect.cam.n, aspect.cam.f);
     // camera.aspect = aspect.aspect;
-    vitualCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.001, 1000);
-    vitualCamera.position.set(0, 10, 0);
-    initOrbit(vitualCamera, renderer)
+    virtualCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.001, 1000);
+    virtualCamera.position.set(0, 10, 0);
+    initOrbit(virtualCamera, renderer)
 
 
-    M.var.camPosition = vitualCamera.position
-    vitualCamera.getWorldDirection(M.var.camDir)
-    M.var.camFov = vitualCamera.fov * Math.PI / 180.0;
+    M.var.camPosition = virtualCamera.position
+    virtualCamera.getWorldDirection(M.var.camDir)
+    M.var.camFov = virtualCamera.fov * Math.PI / 180.0;
     M.var.camAspect = aspect.aspect
 
     console.log(M)
@@ -68,7 +75,7 @@ function init() {
     //world
     world = {
         scene: scene,
-        camera: [sceneCamera, vitualCamera],
+        camera: [sceneCamera, virtualCamera],
         renderer: renderer,
         meshes: meshes,
         materials: materials,
@@ -86,6 +93,9 @@ function init() {
         u_fov: M.var.camFov,
         u_aspect: M.var.camAspect,
         spherePos: M.var.spherePos,
+        contrastRatio: M.var.contrastRatio,
+        MAX_STEPS:128*8,
+        MAX_DEPTH:500000,
     })
 
     let mesh = meshes[0] = new THREE.Mesh(geometry, sdfMaterial);
@@ -98,7 +108,7 @@ function init() {
 }
 
 function resize() {
-    sdfMaterial.customUniforms.u_fov.value = vitualCamera.fov * Math.PI / 180.0;
+    sdfMaterial.customUniforms.u_fov.value = virtualCamera.fov * Math.PI / 180.0;
     sdfMaterial.customUniforms.u_aspect.value = aspect.aspect;
     render()
 }
@@ -109,9 +119,18 @@ function animate() {
 }
 
 function render() {
-    // sdfMaterial.customUniforms.u_camPos.value.copy(vitualCamera.position);
-    vitualCamera.getWorldDirection(sdfMaterial.customUniforms.u_camDir.value);
-    // sdfMaterial.customUniforms.u_fov.value = vitualCamera.fov * Math.PI / 180.0;
+    if(M.var.turnTable){
+        const p = virtualCamera.position
+        const r = new THREE.Vector2(p.x,p.z).distanceTo(new THREE.Vector2(0,0))   
+        const t = Math.atan2(p.z, p.x);
+        const d = 0.01;
+        virtualCamera.position.x = r*Math.cos(t+d);
+        virtualCamera.position.z = r*Math.sin(t+d);
+        controls.update();
+    }
+    // sdfMaterial.customUniforms.u_camPos.value.copy(virtualCamera.position);
+    virtualCamera.getWorldDirection(sdfMaterial.customUniforms.u_camDir.value);
+    // sdfMaterial.customUniforms.u_fov.value = virtualCamera.fov * Math.PI / 180.0;
     // sdfMaterial.customUniforms.u_aspect.value = aspect.aspect;
     controls.update()
     renderer.render(scene, sceneCamera);

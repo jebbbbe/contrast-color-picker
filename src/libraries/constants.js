@@ -5,8 +5,18 @@ export const outputTargets = {
 
 export const densityFunctions = {
     none: 0,
-    sphere: 1,
-    contrast: 2,
-    transformedMatrix: 3,
-    transformedMatrixContrast: 4,
+    section:1,
+    sphere: 2,
+    contrast: 3,
+    transformedMatrix: 4,
+    transformedMatrixContrast: 5,
+}
+
+export const transformModes = {
+    none: 0,
+    protanopia: 1,
+    deuteranopia: 2,
+    tritanopia: 3,
+    monochromacy: 4,
+    custom:100,
 }

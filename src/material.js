@@ -12,8 +12,14 @@ export class sdfRenderMaterial extends ThreeTools.CustomShaderMaterial {
             u_camDir: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
             u_fov: { qualifier: "uniform", type: "float", value: 10 },
             u_aspect: { qualifier: "uniform", type: "float", value: 1 },
+            MAX_STEPS: { qualifier: "uniform", type: "int", value: 128 },
+            MAX_DEPTH: { qualifier: "uniform", type: "float", value: 500000 },
             drawingTarget: { qualifier: "uniform", type: "int", value: 0 },
             spherePos: { qualifier: "uniform", type: "vec4", value: new THREE.Vector4(0.626, 0.740, 0.540, 0.466) },
+            densityFunction: { qualifier: "uniform", type: "int", value: 0 },
+            contrastRatio: { qualifier: "uniform", type: "float", value: 4.5 },
+            transformMode: { qualifier: "uniform", type: "int", value: 0 },
+     
         }
         super(parameters, customProperties)
         this.onBeforeCompile = (shader) => {
@@ -46,7 +52,7 @@ const frag = /* glsl */ /*glsl*/`
 // uniform float u_time;
 
 // vec3 u_camPos = vec3(vec2(0.560,0.470)*2.888, 2.984);    // Camera position.
-// vec3 u_camDir = vec3(vec2(-0.350,-0.250), -0.808);        // Camera direction at the center (for uv = 0.5,0.5).
+// vec3 u_camDir = vec3(vec2(-0.350,-0.250), -0.808);        // Camera direction at the center (for st = 0.5,0.5).
 // float u_fov = 0.712;/
 //   u_camPos = vec3(0.0, 0.0, 4.0)
 //   u_camDir = vec3(0.0, 0.0, -1.0)
@@ -78,8 +84,8 @@ vec3 applyProtanopia(vec3 color) {
     );
 }
 
-const int MAX_STEPS = 128*8;
-const float MAX_DEPTH = 500000.;
+// const int MAX_STEPS = 128*8;
+// const float MAX_DEPTH = 500000.;
 
 float densityByContrast(vec3 color) {
     // Compute relative luminance using sRGB coefficients.
@@ -91,23 +97,41 @@ float densityByContrast(vec3 color) {
     float L1 = max(luminance, luminanceOpp);
     float L2 = min(luminance, luminanceOpp);
     // Compute contrast ratio as (L1 + 0.05) / (L2 + 0.05).
-    float contrastRatio = (L1 + 0.05) / (L2 + 0.05);
+    float contrastRatioCalc = (L1 + 0.05) / (L2 + 0.05);
     // If the contrast ratio is less than 4.5, set density to zero; otherwise, use a high density.
-    return (contrastRatio < 4.068) ? 0.0 : MAX_DEPTH;
+    return (contrastRatioCalc < contrastRatio) ? 0.0 : MAX_DEPTH;
+}
+
+vec3 calculateTransform( vec3 sampleColor){
+    vec3 transformedColor;
+    if( transformMode == 0 ){
+        transformedColor = sampleColor;
+    }else if ( transformMode == 1 ){
+        transformedColor = applyProtanopia(sampleColor);
+    }
+    return transformedColor;
+}
+
+float calculateDensity( vec3 sampleColor, vec3 transformedColor){
+    float density;
+    if( densityFunction == 0 ){ // none
+        density = MAX_DEPTH;      
+    }else if ( densityFunction == 1 ){ // section
+        density = (transformedColor.r > spherePos.x) ? 0.0 :MAX_DEPTH; 
+    }else if ( densityFunction == 2 ){ // sphere
+        density = (distance(transformedColor, spherePos.xyz) < spherePos.w) ? 0.0 :MAX_DEPTH;
+    }else if ( densityFunction == 3 ){ // contrast
+        density = densityByContrast(transformedColor);
+    }
+    return density;
 }
 
 void main() {
-    // Normalized pixel coordinates.
-    // vec2 st = gl_FragCoord.xy / u_resolution.xy;
-    // st.x *= u_resolution.x / u_resolution.y;
     vec2 st = vUv;
-
-    vec2 uv = st;
     float stepsTaken = 0.;
     mat3 e = inverse(protanopiaMatrix);
     // Compute the offset from the center.
-    vec2 offset = uv - vec2(0.5);
-    
+    vec2 offset = st - vec2(0.5);
     // Construct a camera basis from the camera's central direction.
     // Use a default world up (assumed non-parallel to u_camDir).
     vec3 up    = vec3(0.0, 1.0, 0.0);
@@ -115,7 +139,7 @@ void main() {
     vec3 camUp = cross(right, u_camDir);
     
     // Calculate the ray direction.
-    // The center pixel (uv = 0.5,0.5) gets u_camDir.
+    // The center pixel (st = 0.5,0.5) gets u_camDir.
     // Other pixels offset from center are adjusted by the right and up vectors scaled by u_fov.
     vec3 rayDir = normalize(u_camDir + (offset.x * right + offset.y * camUp) * u_fov);
     
@@ -143,19 +167,10 @@ void main() {
         vec3 pos = rayOrigin + t * rayDir;
         // Remap position from [-0.5,0.5] to [0,1] to get an RGB value.
         vec3 sampleColor = pos + vec3(0.5);
-        // vec3 transformedColor = applyProtanopia(sampleColor);
-        vec3 transformedColor = sampleColor;
+        vec3 transformedColor = calculateTransform(sampleColor);
 
-        
-        // Use a high constant density if red is above threshold; zero otherwise.
-        // float density = (sampleColor.r > 0.586) ? 0.0 :MAX_DEPTH; 
-        // float density = (distance(transformedColor, vec3(0.626,0.740,0.540)) < 0.466) ? 0.0 :MAX_DEPTH;
-        float density = (distance(transformedColor, spherePos.xyz) < spherePos.w) ? 0.0 :MAX_DEPTH;
-        // float density = MAX_DEPTH;      
-		// float density = ( 
-		// transformedColor.x > 0.376
-		// ) ? 0.0 :MAX_DEPTH;
-			// float density = densityByContrast(transformedColor);
+        float density = calculateDensity(sampleColor, transformedColor);
+     
         
         // Calculate opacity contribution for this step.
         float alphaStep = 1.0 - exp(-density * dt);

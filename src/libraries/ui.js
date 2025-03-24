@@ -16,8 +16,8 @@ export function addGui({ M, scene, sdfMaterial }) {
     sim.add(M.var, "maxRayStep",1,128).listen().onChange(() => {
         sdfMaterial.customUniforms.MAX_STEPS.value = M.var.maxRayStep;
     })
-    sim.add(M.var, "maxRayDepth",1,10000000).listen().onChange(() => {
-        sdfMaterial.customUniforms.MAX_DEPTH.value = M.var.maxRayDepth;
+    sim.add(M.var, "maxRayDepth",1,8).listen().name("exp maxRayDepth").onChange(() => {
+        sdfMaterial.customUniforms.MAX_DEPTH.value = 10**M.var.maxRayDepth;
     })
     sim.add(M.var, "drawingTarget", outputTargets).listen().onChange(() => {
         sdfMaterial.customUniforms.drawingTarget.value = M.var.drawingTarget;

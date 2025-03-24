@@ -8,6 +8,7 @@ export class sdfRenderMaterial extends ThreeTools.CustomShaderMaterial {
             vUv: { qualifier: "varying", type: "vec2" },
             backgroundColor: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3(0.021, 0.470, 0.299) },
             backgroundOpacity: { qualifier: "uniform", type: "float", value: 1.0 },
+            mixBackground: { qualifier: "uniform", type: "bool", value: true },
             u_camPos: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
             u_camDir: { qualifier: "uniform", type: "vec3", value: new THREE.Vector3() },
             u_fov: { qualifier: "uniform", type: "float", value: 10 },
@@ -129,7 +130,7 @@ float calculateDensity( vec3 sampleColor, vec3 transformedColor){
 void main() {
     vec2 st = vUv;
     float stepsTaken = 0.;
-    mat3 e = inverse(protanopiaMatrix);
+    vec4 outputColor;
     // Compute the offset from the center.
     vec2 offset = st - vec2(0.5);
     // Construct a camera basis from the camera's central direction.
@@ -181,20 +182,25 @@ void main() {
         
         if (accumulatedAlpha >= 0.95) break;
     }
-    vec4 outputColor;
 
+    
     if( drawingTarget == 0 ){
         outputColor = vec4 ( accumulatedColor, accumulatedAlpha);
-
     }else if ( drawingTarget == 1 ){
         outputColor = vec4(vec3(1.-stepsTaken/float(MAX_STEPS)), accumulatedAlpha);
     }
 
-    if(accumulatedAlpha == 0.){
-        outputColor = vec4(backgroundColor, backgroundOpacity);
-    }
-    
-    gl_FragColor = outputColor;
 
+    // mix bk color
+    if(mixBackground){ // premultipled alpha issue?
+        outputColor.rgb = mix( backgroundColor, outputColor.rgb , outputColor.a);
+        outputColor.a = backgroundOpacity;
+
+    }
+    // if(accumulatedAlpha == 0.){
+        // outputColor = vec4(backgroundColor, backgroundOpacity);
+    // }
+    gl_FragColor = outputColor;
+     
 }
 `

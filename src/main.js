@@ -27,13 +27,13 @@ M = {
 
         spherePos: new THREE.Vector4(0.5, 0.5, 0.5, 0.6),
         drawingTarget: outputTargets.color,
-        densityFunction: densityFunctions.none,
+        densityFunction: densityFunctions.contrast,
         contrastRatio: 4.5,
         transformMode: transformModes.none,
 
         maxRayStep:128,
         maxRayDepth:500000,
-        turnTable:false
+        turnTable:false,
     },
 };
 
@@ -88,14 +88,18 @@ function init() {
     sdfMaterial = materials[0] = new sdfRenderMaterial({
         backgroundColor: new THREE.Color(M.var.backgroundColor),
         backgroundOpacity: M.var.backgroundOpacity,
+        mixBackground:true,
         u_camPos: M.var.camPosition,
         u_camDir: M.var.camDir,
         u_fov: M.var.camFov,
         u_aspect: M.var.camAspect,
-        spherePos: M.var.spherePos,
-        contrastRatio: M.var.contrastRatio,
         MAX_STEPS:128*8,
         MAX_DEPTH:500000,
+        drawingTarget:M.var.drawingTarget,
+        spherePos: M.var.spherePos,
+        densityFunction: M.var.densityFunction,
+        contrastRatio: M.var.contrastRatio,
+        transformMode: M.var.transformMode,
     })
 
     let mesh = meshes[0] = new THREE.Mesh(geometry, sdfMaterial);

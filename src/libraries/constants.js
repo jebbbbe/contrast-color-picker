@@ -1,6 +1,8 @@
 export const outputTargets = {
     color: 0,
     raySteps: 1,
+    normal: 2,
+    light: 0,
 }
 
 export const densityFunctions = {

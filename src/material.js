@@ -20,6 +20,7 @@ export class sdfRenderMaterial extends ThreeTools.CustomShaderMaterial {
             densityFunction: { qualifier: "uniform", type: "int", value: 0 },
             contrastRatio: { qualifier: "uniform", type: "float", value: 4.5 },
             transformMode: { qualifier: "uniform", type: "int", value: 0 },
+            customTransformMatrix: { qualifier: "uniform", type: "mat3", value: new THREE.Matrix3() },
      
         }
         super(parameters, customProperties)
@@ -71,10 +72,51 @@ vec2 intersectBox(vec3 ro, vec3 rd, vec3 boxMin, vec3 boxMax) {
     return vec2(tNear, tFar);
 }
 
+
+
+mat3 invertMatrix(mat3 m) { // if there is no inverse()
+    // Because GLSL matrices are stored in column-major order,
+    // we extract the elements accordingly:
+    float a = m[0][0], d = m[0][1], g = m[0][2];
+    float b = m[1][0], e = m[1][1], h = m[1][2];
+    float c = m[2][0], f = m[2][1], i = m[2][2];
+
+    // Compute the determinant of m.
+    float det = a * (e * i - f * h) -
+                b * (d * i - f * g) +
+                c * (d * h - e * g);
+
+    // Compute the inverse using the adjugate matrix and the determinant.
+    return mat3(
+        (e * i - f * h) / det,  (c * h - b * i) / det,  (b * f - c * e) / det,
+        (f * g - d * i) / det,  (a * i - c * g) / det,  (c * d - a * f) / det,
+        (d * h - e * g) / det,  (b * g - a * h) / det,  (a * e - b * d) / det
+    );
+}
+
+
+const float a = 0.728;
+const float b = 0.592;
+const float c = 0.200;
 const mat3 protanopiaMatrix = mat3(
-    0.567, 0.558, 0.0,
-    0.433, 0.442, 0.0,
-    0.0,   0.242, 0.758
+        0.567, 0.558, 0.0,
+        0.433, 0.442, 0.242,
+        0.0,   0.0,   0.758
+
+        // a   ,  1.-b,    0.0,
+        // 1.-a,     b,   1.-c,
+        // 0.0 ,   0.0,      c
+
+        // 0.625,0.7, 0.0,
+        // 0.375,0.3, 0.3,
+        // 0.000,0.0, 0.7
+    	
+        // 0.950,0.433,0.0,
+        // 0.05,0.567,0.475,
+        // 0.0,0.567,0.525
+    
+
+    
 );
 
 vec3 applyProtanopia(vec3 color) {
@@ -110,7 +152,61 @@ vec3 calculateTransform( vec3 sampleColor){
     }else if ( transformMode == 1 ){
         transformedColor = applyProtanopia(sampleColor);
     }
+    else if ( transformMode == 100 ){
+        transformedColor = sampleColor * customTransformMatrix;
+    }
     return transformedColor;
+}
+
+float protanopiaDensity(vec3 pos){
+	float outd = 0.0;
+	// if(pos.x <= (pos.x * 0.567 + 1.0 * 0.433) ){
+	// outd = MAX_DEPTH;
+	// }
+	// if(pos.y <= (1.0 * 0.567 + pos.y  * 0.433) ){
+	// outd = MAX_DEPTH;
+	// }
+	// // if(pos.z >= 0.567 ){
+	// // 	outd = MAX_DEPTH;
+	// // }
+	// return outd;
+
+
+	    // Recover the original color from the deformed color.
+	// mat3 inverseProtanopiaMatrix = invertMatrix(protanopiaMatrix);
+	mat3 inverseProtanopiaMatrix = inverse(protanopiaMatrix);
+    vec3 inversePos = inverseProtanopiaMatrix * pos;
+    // Check if each component is within the 0-1 range.
+    if( 
+        (inversePos.r >= 0.0 && inversePos.r <= 1.0) 
+        &&
+        (inversePos.g >= 0.0 && inversePos.g <= 1.0) 
+        &&
+        (inversePos.b >= 0.0 && inversePos.b <= 1.0)
+    ){
+        outd = MAX_DEPTH;
+    }
+    return outd;
+
+}
+
+float customMat3Density(vec3 pos){
+    float outd = 0.0;
+	mat3 inverseCustomMatrix = inverse(customTransformMatrix);
+    vec3 inversePos = inverseCustomMatrix * pos;
+    // Check if each component is within the 0-1 range.
+    if( 
+
+        (inversePos.r >= 0.0 && inversePos.r <= 1.0) 
+        &&
+        (inversePos.g >= 0.0 && inversePos.g <= 1.0) 
+        &&
+        (inversePos.b >= 0.0 && inversePos.b <= 1.0)
+    ){
+        outd = MAX_DEPTH;
+    }
+    return outd;
+
 }
 
 float calculateDensity( vec3 sampleColor, vec3 transformedColor){
@@ -122,6 +218,18 @@ float calculateDensity( vec3 sampleColor, vec3 transformedColor){
     }else if ( densityFunction == 2 ){ // sphere
         density = (distance(transformedColor, spherePos.xyz) < spherePos.w) ? 0.0 :MAX_DEPTH;
     }else if ( densityFunction == 3 ){ // contrast
+        density = densityByContrast(transformedColor);
+    }else if ( densityFunction == 4 ){ // Transformed Matrix
+        // density = protanopiaDensity(sampleColor);
+        density = protanopiaDensity(transformedColor);
+    }else if ( densityFunction == 5 ){ // Transformed Matrix
+        density = customMat3Density(transformedColor);
+    }else if ( densityFunction == 6 ){ // TtransformedMatrixContrast
+        // vec3 scaleDir = normalize( vec3(0.5,0.5,0.5) );
+        vec3 scaleDir = spherePos.xyz ;
+        transformedColor -= vec3(0.5);
+        transformedColor *= scaleDir * (1./spherePos.w);
+        transformedColor += vec3(0.5);
         density = densityByContrast(transformedColor);
     }
     return density;

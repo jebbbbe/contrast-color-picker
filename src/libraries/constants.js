@@ -11,7 +11,8 @@ export const densityFunctions = {
     sphere: 2,
     contrast: 3,
     transformedMatrix: 4,
-    transformedMatrixContrast: 5,
+    customTransformedMatrix: 5,
+    transformedMatrixContrast: 6,
 }
 
 export const transformModes = {

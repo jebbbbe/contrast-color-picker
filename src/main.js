@@ -13,7 +13,7 @@ let M, aspect;
 let sdfMaterial;
 let materials = []
 let meshes = []
-
+let animationController = new ThreeTools.AnimationController()
 
 M = {
     var: {
@@ -27,13 +27,14 @@ M = {
 
         spherePos: new THREE.Vector4(0.5, 0.5, 0.5, 0.6),
         drawingTarget: outputTargets.color,
-        densityFunction: densityFunctions.contrast,
+        densityFunction: densityFunctions.transformedMatrixContrast,
         contrastRatio: 4.5,
         transformMode: transformModes.none,
 
         maxRayStep:128,
         maxRayDepth:500000,
         turnTable:false,
+        customTransformMatrix:new THREE.Matrix3(),
     },
 };
 
@@ -62,7 +63,7 @@ function init() {
     // camera.aspect = aspect.aspect;
     virtualCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.001, 1000);
     virtualCamera.position.set(0, 10, 0);
-    initOrbit(virtualCamera, renderer)
+    controls = initOrbit(virtualCamera, renderer)
 
 
     M.var.camPosition = virtualCamera.position
@@ -79,6 +80,7 @@ function init() {
         renderer: renderer,
         meshes: meshes,
         materials: materials,
+        controls:controls,
     };
     window.world = world;
     window.THREE = THREE;
@@ -100,6 +102,7 @@ function init() {
         densityFunction: M.var.densityFunction,
         contrastRatio: M.var.contrastRatio,
         transformMode: M.var.transformMode,
+        customTransformMatrix: M.var.customTransformMatrix
     })
 
     let mesh = meshes[0] = new THREE.Mesh(geometry, sdfMaterial);
@@ -108,7 +111,11 @@ function init() {
 
     addGui({ M, scene, sdfMaterial })
     aspect.addResizeListener(renderer, sceneCamera, resize)
+    animationController.setRenderer(render)
     animate();
+    // animationController.renderFrame()
+    // renderer.domElement.addEventListener("touchstart", (e)=>{animationController.play(); console.log("start")})
+    // renderer.domElement.addEventListener("touchend", (e)=>{animationController.pause(); console.log("end")})
 }
 
 function resize() {
@@ -118,8 +125,7 @@ function resize() {
 }
 
 function animate() {
-    requestAnimationFrame(animate);
-    render();
+    animationController.play()
 }
 
 function render() {
@@ -144,7 +150,7 @@ function render() {
 
 function initOrbit(camera, renderer) {
     // ORBIT controls
-    controls = new OrbitControls(camera, renderer.domElement);
+    const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; // an animation loop is required when either damping or auto-rotation are enabled
     controls.dampingFactor = 0.15; //0.05
     // controls.screenSpacePanning = false;
@@ -158,6 +164,7 @@ function initOrbit(camera, renderer) {
     // controls.addEventListener("change", () => { // for no aniumation loop()
     // renderer.render(scene, camera);
     // });
+    return controls
 }
 
 function rand(min = 0, max = 1) {

@@ -247,6 +247,12 @@ float calculateDensity( vec3 sampleColor, vec3 transformedColor){
         // transformedColor -= vec3(0.5);
         // transformedColor *= scaleDir * (1./r);
         // transformedColor += vec3(0.5);
+
+        // transformedColor = pushPointFromPlane(transformedColor, vec3(0.5), scaleDir, r);
+
+
+        scaleDir = vec3 (0.284,0.954,0.096);
+        r = 0.466;
         transformedColor = pushPointFromPlane(transformedColor, vec3(0.5), scaleDir, r);
         density = densityByContrast(transformedColor);
     }

@@ -72,6 +72,22 @@ vec2 intersectBox(vec3 ro, vec3 rd, vec3 boxMin, vec3 boxMax) {
     return vec2(tNear, tFar);
 }
 
+vec3 pushPointFromPlane(vec3 p, vec3 planePoint, vec3 planeNormal, float a ){
+    // Ensure the normal is normalized
+    vec3 N = normalize(planeNormal);
+    // Signed distance from point to plane
+    float d = dot(p - planePoint, N);
+    // Clamp distance to [0, a]
+    float clampedDist = clamp(d, 0.0, a);
+    // Movement factor: 1 at 0 distance, 0 at distance a
+    float factor = 1.0 - (clampedDist / a);
+    // Push point away from plane along the normal
+    // return p + N * factor * (a - clampedDist);  // or just factor * a
+    return p + N * sign(d) * factor * a;
+
+}
+
+
 
 
 mat3 invertMatrix(mat3 m) { // if there is no inverse()
@@ -227,9 +243,11 @@ float calculateDensity( vec3 sampleColor, vec3 transformedColor){
     }else if ( densityFunction == 6 ){ // TtransformedMatrixContrast
         // vec3 scaleDir = normalize( vec3(0.5,0.5,0.5) );
         vec3 scaleDir = spherePos.xyz ;
-        transformedColor -= vec3(0.5);
-        transformedColor *= scaleDir * (1./spherePos.w);
-        transformedColor += vec3(0.5);
+        float r = spherePos.w;
+        // transformedColor -= vec3(0.5);
+        // transformedColor *= scaleDir * (1./r);
+        // transformedColor += vec3(0.5);
+        transformedColor = pushPointFromPlane(transformedColor, vec3(0.5), scaleDir, r);
         density = densityByContrast(transformedColor);
     }
     return density;

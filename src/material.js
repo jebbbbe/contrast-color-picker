@@ -21,7 +21,7 @@ export class sdfRenderMaterial extends ThreeTools.CustomShaderMaterial {
             contrastRatio: { qualifier: "uniform", type: "float", value: 4.5 },
             transformMode: { qualifier: "uniform", type: "int", value: 0 },
             customTransformMatrix: { qualifier: "uniform", type: "mat3", value: new THREE.Matrix3() },
-     
+
         }
         super(parameters, customProperties)
         this.onBeforeCompile = (shader) => {
@@ -212,7 +212,6 @@ float customMat3Density(vec3 pos){
     vec3 inversePos = inverseCustomMatrix * pos;
     // Check if each component is within the 0-1 range.
     if( 
-
         (inversePos.r >= 0.0 && inversePos.r <= 1.0) 
         &&
         (inversePos.g >= 0.0 && inversePos.g <= 1.0) 
@@ -223,6 +222,10 @@ float customMat3Density(vec3 pos){
     }
     return outd;
 
+}
+
+float map(float value, float min1, float max1, float min2, float max2) {
+  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
 
 float calculateDensity( vec3 sampleColor, vec3 transformedColor){
@@ -253,7 +256,24 @@ float calculateDensity( vec3 sampleColor, vec3 transformedColor){
 
         scaleDir = vec3 (0.284,0.954,0.096);
         r = 0.466;
-        transformedColor = pushPointFromPlane(transformedColor, vec3(0.5), scaleDir, r);
+        // transformedColor = pushPointFromPlane(transformedColor, vec3(0.5), scaleDir, r);
+        vec3 planeNormal = vec3(0.284,0.954,0.096);
+        vec3 planeOrigin = vec3(0.5);
+        float maxDistance = 0.466;
+        float minDist = spherePos.w;//0.167;
+        vec3 point = transformedColor;// sampleColor
+        vec3 diff = point - planeOrigin;
+        float sdf = dot(diff, normalize(planeNormal));
+        float s = sign(sdf);
+        sdf = abs(sdf);
+        if (sdf < maxDistance) {
+            // Point is within the influence zone
+            float d = clamp(sdf,0.,maxDistance);
+            d -= maxDistance;
+            d = map(d,maxDistance,0., 0.,minDist);
+            d *= s;
+            transformedColor += d * planeNormal;
+        }
         density = densityByContrast(transformedColor);
     }
     return density;

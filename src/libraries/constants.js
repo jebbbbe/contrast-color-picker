@@ -13,6 +13,7 @@ export const densityFunctions = {
     transformedMatrix: 4,
     customTransformedMatrix: 5,
     transformedMatrixContrast: 6,
+    selectedColor: 7,
 }
 
 export const transformModes = {

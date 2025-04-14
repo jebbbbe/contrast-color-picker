@@ -25,7 +25,7 @@ M = {
         camFov: 10,
         camAspect: 10,
 
-        spherePos: new THREE.Vector4(0.5, 0.5, 0.5, 0.6),
+        spherePos: new THREE.Vector4(0.5, 0.5, 0.5, 0.0),
         drawingTarget: outputTargets.color,
         densityFunction: densityFunctions.transformedMatrixContrast,
         contrastRatio: 4.5,
@@ -35,6 +35,8 @@ M = {
         maxRayDepth:500000,
         turnTable:false,
         customTransformMatrix:new THREE.Matrix3(),
+
+        selectedColor:0xffffff,
     },
 };
 
@@ -64,7 +66,6 @@ function init() {
     virtualCamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.001, 1000);
     virtualCamera.position.set(0, 10, 0);
     controls = initOrbit(virtualCamera, renderer)
-
 
     M.var.camPosition = virtualCamera.position
     virtualCamera.getWorldDirection(M.var.camDir)
@@ -102,7 +103,8 @@ function init() {
         densityFunction: M.var.densityFunction,
         contrastRatio: M.var.contrastRatio,
         transformMode: M.var.transformMode,
-        customTransformMatrix: M.var.customTransformMatrix
+        customTransformMatrix: M.var.customTransformMatrix,
+        selectedColor:new THREE.Color( M.var.selectedColor ),
     })
 
     let mesh = meshes[0] = new THREE.Mesh(geometry, sdfMaterial);

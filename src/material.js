@@ -21,6 +21,7 @@ export class sdfRenderMaterial extends ThreeTools.CustomShaderMaterial {
             contrastRatio: { qualifier: "uniform", type: "float", value: 4.5 },
             transformMode: { qualifier: "uniform", type: "int", value: 0 },
             customTransformMatrix: { qualifier: "uniform", type: "mat3", value: new THREE.Matrix3() },
+            selectedColor: { qualifier: "uniform", type: "vec3", value: new THREE.Color(0xff00f0) },
 
         }
         super(parameters, customProperties)
@@ -146,12 +147,25 @@ vec3 applyProtanopia(vec3 color) {
 // const int MAX_STEPS = 128*8;
 // const float MAX_DEPTH = 500000.;
 
-float densityByContrast(vec3 color) {
+float densityByOppositeContrast(vec3 color) {
     // Compute relative luminance using sRGB coefficients.
     float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));
     // Compute the opposite color (inversion).
     vec3 oppositeColor = vec3(1.0) - color;
     float luminanceOpp = dot(oppositeColor, vec3(0.2126, 0.7152, 0.0722));
+    // Determine the higher and lower luminance.
+    float L1 = max(luminance, luminanceOpp);
+    float L2 = min(luminance, luminanceOpp);
+    // Compute contrast ratio as (L1 + 0.05) / (L2 + 0.05).
+    float contrastRatioCalc = (L1 + 0.05) / (L2 + 0.05);
+    // If the contrast ratio is less than 4.5, set density to zero; otherwise, use a high density.
+    return (contrastRatioCalc < contrastRatio) ? 0.0 : MAX_DEPTH;
+}
+
+float densityByColorContrast(vec3 selColor, vec3 color) {
+    float luminance = dot(selColor, vec3(0.2126, 0.7152, 0.0722));
+    // vec3 oppositeColor = color;
+    float luminanceOpp = dot(color, vec3(0.2126, 0.7152, 0.0722));
     // Determine the higher and lower luminance.
     float L1 = max(luminance, luminanceOpp);
     float L2 = min(luminance, luminanceOpp);
@@ -237,7 +251,7 @@ float calculateDensity( vec3 sampleColor, vec3 transformedColor){
     }else if ( densityFunction == 2 ){ // sphere
         density = (distance(transformedColor, spherePos.xyz) < spherePos.w) ? 0.0 :MAX_DEPTH;
     }else if ( densityFunction == 3 ){ // contrast
-        density = densityByContrast(transformedColor);
+        density = densityByOppositeContrast(transformedColor);
     }else if ( densityFunction == 4 ){ // Transformed Matrix
         // density = protanopiaDensity(sampleColor);
         density = protanopiaDensity(transformedColor);
@@ -274,7 +288,9 @@ float calculateDensity( vec3 sampleColor, vec3 transformedColor){
             d *= s;
             transformedColor += d * planeNormal;
         }
-        density = densityByContrast(transformedColor);
+        density = densityByOppositeContrast(transformedColor);
+    }else if ( densityFunction == 7 ){
+        density = densityByColorContrast( selectedColor,transformedColor );
     }
     return density;
 }

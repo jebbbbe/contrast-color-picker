@@ -37,15 +37,15 @@ export function addGui({ M, scene, sdfMaterial }) {
     gui.add(M.var, "turnTable").name("Spin")
 
 
-    
-    
-
+    gui.addColor(M.var, "selectedColor").name("selected Color").listen().onChange(() => {
+        sdfMaterial.customUniforms.selectedColor.value.set( M.var.selectedColor )
+    })
 
     const sphere = gui.addFolder("Sphere")
     sphere.add(M.var.spherePos, "x", 0, 1).listen()
     sphere.add(M.var.spherePos, "y", 0, 1).listen()
     sphere.add(M.var.spherePos, "z", 0, 1).listen()
-    sphere.add(M.var.spherePos, "w", 0, 1).listen()
+    sphere.add(M.var.spherePos, "w", 0, 1, 0.001).listen()
 
     const mat3 = gui.addFolder("mat3")
 

@@ -33,7 +33,7 @@ M = {
 
         maxRayStep:128,
         maxRayDepth:500000,
-        turnTable:false,
+        turnTable:true,
         customTransformMatrix:new THREE.Matrix3(),
 
         selectedColor:0xffffff,

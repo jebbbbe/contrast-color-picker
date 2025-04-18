@@ -83,5 +83,8 @@ export function addGui({ M, scene, sdfMaterial }) {
         stub["7"] = 0
         stub["8"] = 1
     }
+
+    sim.close()
+    sphere.close()
     mat3.close()
 }

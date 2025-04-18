@@ -62,6 +62,8 @@ export function addGui({ M, scene, sdfMaterial }) {
         "8":M.var.customTransformMatrix.elements[8],
     }
     mat3.add({fn:restMat3}, "fn").name("reset")
+    mat3.add({fn:randomizeMat3Summation}, "fn").name("bounded randomize")
+    mat3.add({fn:randomizeMat3}, "fn").name("randomize")
     mat3.add(stub, "0",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[0] = stub["0"]}).listen()
     mat3.add(stub, "1",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[1] = stub["1"]}).listen()
     mat3.add(stub, "2",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[2] = stub["2"]}).listen()
@@ -82,6 +84,68 @@ export function addGui({ M, scene, sdfMaterial }) {
         stub["6"] = 0
         stub["7"] = 0
         stub["8"] = 1
+    }
+    function randomizeMat3Summation(mat = M.var.customTransformMatrix){
+        let e0 = Math.random();
+        let e1 = Math.random();
+        let e2 = Math.random();
+        let e3 = Math.random();
+        let e4 = Math.random();
+        let e5 = Math.random();
+        let e6 = Math.random();
+        let e7 = Math.random();
+        let e8 = Math.random();
+        const s1 = e0 + e1 + e2;
+        const s2 = e3 + e4 + e5;
+        const s3 = e6 + e7 + e8;
+        e0 = e0/s1      
+        e1 = e1/s1      
+        e2 = e2/s1      
+        e3 = e3/s2     
+        e4 = e4/s2     
+        e5 = e5/s2 
+        e6 = e6/s3      
+        e7 = e7/s3      
+        e8 = e8/s3
+        mat.set(
+            e0, e1, e2,
+            e3, e4, e5,
+            e6, e7, e8,
+        );
+        stub["0"] = e0
+        stub["1"] = e1
+        stub["2"] = e2
+        stub["3"] = e3
+        stub["4"] = e4
+        stub["5"] = e5
+        stub["6"] = e6
+        stub["7"] = e7
+        stub["8"] = e8
+    }
+    function randomizeMat3(mat = M.var.customTransformMatrix){
+        let e0 = Math.random();
+        let e1 = Math.random();
+        let e2 = Math.random();
+        let e3 = Math.random();
+        let e4 = Math.random();
+        let e5 = Math.random();
+        let e6 = Math.random();
+        let e7 = Math.random();
+        let e8 = Math.random();
+        mat.set(
+            e0, e1, e2,
+            e3, e4, e5,
+            e6, e7, e8,
+        );
+        stub["0"] = e0
+        stub["1"] = e1
+        stub["2"] = e2
+        stub["3"] = e3
+        stub["4"] = e4
+        stub["5"] = e5
+        stub["6"] = e6
+        stub["7"] = e7
+        stub["8"] = e8
     }
 
     sim.close()

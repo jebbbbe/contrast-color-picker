@@ -1,5 +1,6 @@
 import * as THREE from "three";
-import { GUI } from 'dat.gui';
+// import { GUI } from 'dat.gui';
+import { GUI } from 'lil-gui';
 import { outputTargets, densityFunctions, transformModes } from "./constants.js"
 
 
@@ -82,5 +83,5 @@ export function addGui({ M, scene, sdfMaterial }) {
         stub["7"] = 0
         stub["8"] = 1
     }
-
+    mat3.close()
 }

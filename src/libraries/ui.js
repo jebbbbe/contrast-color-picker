@@ -62,6 +62,10 @@ export function addGui({ M, scene, sdfMaterial }) {
         "8":M.var.customTransformMatrix.elements[8],
     }
     mat3.add({fn:restMat3}, "fn").name("reset")
+    mat3.add({fn:setProtanopiaMatrix}, "fn").name("Protanopia")
+    mat3.add({fn:setDeuteranopiaMatrix}, "fn").name("Deuteranopia")
+    mat3.add({fn:setTritanopiaMatrix}, "fn").name("Tritanopia")
+    mat3.add({fn:setMonochromacyMatrix}, "fn").name("Monochromacy")
     mat3.add({fn:randomizeMat3Summation}, "fn").name("bounded randomize")
     mat3.add({fn:randomizeMat3}, "fn").name("randomize")
     mat3.add(stub, "0",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[0] = stub["0"]}).listen()
@@ -73,18 +77,23 @@ export function addGui({ M, scene, sdfMaterial }) {
     mat3.add(stub, "6",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[6] = stub["6"]}).listen()
     mat3.add(stub, "7",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[7] = stub["7"]}).listen()
     mat3.add(stub, "8",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[8] = stub["8"]}).listen()
+    
+    function setStub(mat = M.var.customTransformMatrix){
+        stub["0"] = mat.elements[0]
+        stub["1"] = mat.elements[1]
+        stub["2"] = mat.elements[2]
+        stub["3"] = mat.elements[3]
+        stub["4"] = mat.elements[4]
+        stub["5"] = mat.elements[5]
+        stub["6"] = mat.elements[6]
+        stub["7"] = mat.elements[7]
+        stub["8"] = mat.elements[8]
+    }
     function restMat3(mat = M.var.customTransformMatrix){ 
         mat.identity();
-        stub["0"] = 1
-        stub["1"] = 0
-        stub["2"] = 0
-        stub["3"] = 0
-        stub["4"] = 1
-        stub["5"] = 0
-        stub["6"] = 0
-        stub["7"] = 0
-        stub["8"] = 1
+        setStub()
     }
+    
     function randomizeMat3Summation(mat = M.var.customTransformMatrix){
         let e0 = Math.random();
         let e1 = Math.random();
@@ -112,15 +121,7 @@ export function addGui({ M, scene, sdfMaterial }) {
             e3, e4, e5,
             e6, e7, e8,
         );
-        stub["0"] = e0
-        stub["1"] = e1
-        stub["2"] = e2
-        stub["3"] = e3
-        stub["4"] = e4
-        stub["5"] = e5
-        stub["6"] = e6
-        stub["7"] = e7
-        stub["8"] = e8
+        setStub()
     }
     function randomizeMat3(mat = M.var.customTransformMatrix){
         let e0 = Math.random();
@@ -137,15 +138,44 @@ export function addGui({ M, scene, sdfMaterial }) {
             e3, e4, e5,
             e6, e7, e8,
         );
-        stub["0"] = e0
-        stub["1"] = e1
-        stub["2"] = e2
-        stub["3"] = e3
-        stub["4"] = e4
-        stub["5"] = e5
-        stub["6"] = e6
-        stub["7"] = e7
-        stub["8"] = e8
+        setStub()
+    }
+
+    function setProtanopiaMatrix(mat = M.var.customTransformMatrix){
+        mat.set(
+            0.567, 0.558, 0.0,
+            0.433, 0.442, 0.242,
+            0.0,   0.0,   0.758
+        )
+        mat.transpose()
+        setStub()
+    }
+    function setDeuteranopiaMatrix(mat = M.var.customTransformMatrix){
+        mat.set(
+            0.625, 0.7, 0.0,
+            0.375, 0.3, 0.3,
+            0.0,   0.0, 0.7
+        )
+        mat.transpose()
+        setStub()
+    }
+    function setTritanopiaMatrix(mat = M.var.customTransformMatrix){
+        mat.set(
+            0.95,  0.433,  0.0 ,
+            0.05, 0.567, 0.475 ,
+            0.0,   0.0, 0.525
+        )
+        mat.transpose()
+        setStub()
+    }
+    function setMonochromacyMatrix(mat = M.var.customTransformMatrix){
+        mat.set(
+            0.299, 0.299 ,0.299,
+            0.587, 0.587 ,0.587,
+            0.114, 0.114 ,0.114
+        )
+        mat.transpose()
+        setStub()
     }
 
     sim.close()

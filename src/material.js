@@ -229,7 +229,12 @@ float protanopiaDensity(vec3 pos){
 
 	    // Recover the original color from the deformed color.
 	// mat3 inverseProtanopiaMatrix = invertMatrix(protanopiaMatrix);
-	mat3 inverseProtanopiaMatrix = inverse(protanopiaMatrix);
+
+	// mat3 inverseProtanopiaMatrix = inverse(protanopiaMatrix);
+	// mat3 inverseProtanopiaMatrix = inverse(deuteranopiaMatrix);
+	// mat3 inverseProtanopiaMatrix = inverse(tritanopiaMatrix);
+	// mat3 inverseProtanopiaMatrix = inverse(monochromacyMatrix);
+	mat3 inverseProtanopiaMatrix = inverse(customTransformMatrix);
     vec3 inversePos = inverseProtanopiaMatrix * pos;
     // Check if each component is within the 0-1 range.
     if( 

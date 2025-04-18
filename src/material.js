@@ -182,7 +182,14 @@ float densityByColorContrast(vec3 selColor, vec3 color) {
     float L1 = max(luminance, luminanceOpp);
     float L2 = min(luminance, luminanceOpp);
     // Compute contrast ratio as (L1 + 0.05) / (L2 + 0.05).
-    float contrastRatioCalc = (L1 + 0.05) / (L2 + 0.05);
+
+    float contrastRatioCalc;
+    if(L1 >= L2){
+        contrastRatioCalc = (L1 + 0.05) / (L2 + 0.05);
+    }else{
+        contrastRatioCalc = (L2 + 0.05) / (L1 + 0.05);
+    }
+    
     // If the contrast ratio is less than 4.5, set density to zero; otherwise, use a high density.
     return (contrastRatioCalc < contrastRatio) ? 0.0 : MAX_DEPTH;
 }

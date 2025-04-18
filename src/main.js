@@ -27,7 +27,7 @@ M = {
 
         spherePos: new THREE.Vector4(0.5, 0.5, 0.5, 0.0),
         drawingTarget: outputTargets.color,
-        densityFunction: densityFunctions.transformedMatrixContrast,
+        densityFunction: densityFunctions.none,
         contrastRatio: 4.5,
         transformMode: transformModes.none,
 
@@ -135,7 +135,7 @@ function render() {
         const p = virtualCamera.position
         const r = new THREE.Vector2(p.x,p.z).distanceTo(new THREE.Vector2(0,0))   
         const t = Math.atan2(p.z, p.x);
-        const d = 0.01;
+        const d = 0.005;
         virtualCamera.position.x = r*Math.cos(t+d);
         virtualCamera.position.z = r*Math.sin(t+d);
         controls.update();

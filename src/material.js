@@ -112,9 +112,9 @@ mat3 invertMatrix(mat3 m) { // if there is no inverse()
 }
 
 
-const float a = 0.728;
-const float b = 0.592;
-const float c = 0.200;
+// const float a = 0.728;
+// const float b = 0.592;
+// const float c = 0.200;
 const mat3 protanopiaMatrix = mat3(
         0.567, 0.558, 0.0,
         0.433, 0.442, 0.242,
@@ -131,9 +131,21 @@ const mat3 protanopiaMatrix = mat3(
         // 0.950,0.433,0.0,
         // 0.05,0.567,0.475,
         // 0.0,0.567,0.525
-    
-
-    
+);
+const mat3 deuteranopiaMatrix = mat3(
+    0.625, 0.7, 0.0,
+    0.375, 0.3, 0.3,
+    0.0,   0.0, 0.7
+);
+const mat3 tritanopiaMatrix = mat3(
+    0.95,  0.433,  0.0 ,
+    0.05, 0.567, 0.475 ,
+    0.0,   0.0, 0.525
+);
+const mat3 monochromacyMatrix = mat3(
+    0.299, 0.299 ,0.299,
+    0.587, 0.587 ,0.587,
+    0.114, 0.114 ,0.114
 );
 
 vec3 applyProtanopia(vec3 color) {
@@ -180,10 +192,16 @@ vec3 calculateTransform( vec3 sampleColor){
     if( transformMode == 0 ){
         transformedColor = sampleColor;
     }else if ( transformMode == 1 ){
-        transformedColor = applyProtanopia(sampleColor);
-    }
-    else if ( transformMode == 100 ){
-        transformedColor = sampleColor * customTransformMatrix;
+        // transformedColor = applyProtanopia(sampleColor);
+        transformedColor = protanopiaMatrix * sampleColor;
+    }else if ( transformMode == 2 ){
+        transformedColor = deuteranopiaMatrix * sampleColor;
+    }else if ( transformMode == 3 ){
+        transformedColor = tritanopiaMatrix * sampleColor;
+    }else if ( transformMode == 4 ){
+        transformedColor = monochromacyMatrix * sampleColor;
+    }else if ( transformMode == 100 ){
+        transformedColor = customTransformMatrix * sampleColor;
     }
     return transformedColor;
 }

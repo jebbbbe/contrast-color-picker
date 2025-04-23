@@ -174,7 +174,7 @@ export function addGui({ M, scene, sdfMaterial }) {
             0.587, 0.587 ,0.587,
             0.114, 0.114 ,0.114
         )
-        mat.transpose()
+        // mat.transpose()
         setStub()
     }
 

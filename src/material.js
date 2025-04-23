@@ -370,24 +370,43 @@ float calculateDensity( vec3 sampleColor, vec3 transformedColor){
     float density;
     if( densityFunction == 0 ){ // none
         density = MAX_DEPTH;      
+
     }else if ( densityFunction == 1 ){ // section
         density = (transformedColor.r > spherePos.x) ? 0.0 :MAX_DEPTH; 
+
     }else if ( densityFunction == 2 ){ // sphere
         density = (distance(transformedColor, spherePos.xyz) < spherePos.w) ? 0.0 :MAX_DEPTH;
+
     }else if ( densityFunction == 3 ){ // contrast
         density = densityByOppositeContrast(transformedColor);
+
     }else if ( densityFunction == 4 ){ // Transformed Matrix
         // density = protanopiaDensity(sampleColor);
         density = protanopiaDensity(transformedColor);
+
     }else if ( densityFunction == 5 ){ // Transformed Matrix
         density = customMat3Density(transformedColor);
-    }else if ( densityFunction == 6 ){ // TtransformedMatrixContrast
+
+    }else if ( densityFunction == 6 ){ // TransformedMatrixContrast
         transformedColor = densitySdfSolution(transformedColor);
         density = densityByOppositeContrast(transformedColor);
+
     }else if ( densityFunction == 7 ){
         density = densityByColorContrast( selectedColor,transformedColor );
+
     }else if ( densityFunction == 8 ){
-        density = densityByColorContrast( selectedColor,transformedColor );
+        // density = customMat3Density(transformedColor);
+        // if(density == 0.){
+        //     return density;
+        // }
+        // density = densityByOppositeContrast(transformedColor);
+        vec3 src = transformedColor;
+        transformedColor = densitySdfSolution(transformedColor);
+        density = densityByOppositeContrast(transformedColor);
+        if(density == 0.){
+            return density;
+        }
+        density = customMat3Density(src);
     }
 
     return density;

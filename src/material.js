@@ -156,14 +156,76 @@ vec3 applyProtanopia(vec3 color) {
     );
 }
 
+float map(float value, float min1, float max1, float min2, float max2) {
+  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+}
+
 // const int MAX_STEPS = 128*8;
 // const float MAX_DEPTH = 500000.;
+
+vec3 rgb2hsl(vec3 color) {
+    float r = color.r, g = color.g, b = color.b;
+    float maxc = max(max(r, g), b);
+    float minc = min(min(r, g), b);
+    float h, s, l = (maxc + minc) * 0.5;
+
+    if (maxc == minc) {
+        h = s = 0.0; // achromatic
+    } else {
+        float d = maxc - minc;
+        s = l > 0.5 ? d / (2.0 - maxc - minc) : d / (maxc + minc);
+        if (maxc == r) {
+            h = (g - b) / d + (g < b ? 6.0 : 0.0);
+        } else if (maxc == g) {
+            h = (b - r) / d + 2.0;
+        } else {
+            h = (r - g) / d + 4.0;
+        }
+        h /= 6.0;
+    }
+    return vec3(h, s, l);
+}
+
+
+float hue2rgb(float p, float q, float t) {
+    if (t < 0.0) t += 1.0;
+    if (t > 1.0) t -= 1.0;
+    if (t < 1.0/6.0) return p + (q - p) * 6.0 * t;
+    if (t < 1.0/2.0) return q;
+    if (t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0;
+    return p;
+}
+
+vec3 hsl2rgb(vec3 hsl) {
+    float h = hsl.x, s = hsl.y, l = hsl.z;
+    float r, g, b;
+
+    if (s == 0.0) {
+        r = g = b = l; // achromatic
+    } else {
+        float q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
+        float p = 2.0 * l - q;
+        r = hue2rgb(p, q, h + 1.0/3.0);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1.0/3.0);
+    }
+    return vec3(r, g, b);
+}
+
+vec3 getOppositeHSLColor(vec3 rgb) {
+    vec3 hsl = rgb2hsl(rgb);
+    hsl.x = mod(hsl.x + 0.5, 1.0);       // Rotate hue 180°
+    hsl.z = 1.0 - hsl.z;                 // Optional: invert luminance
+    return hsl2rgb(hsl);
+}
 
 float densityByOppositeContrast(vec3 color) {
     // Compute relative luminance using sRGB coefficients.
     float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));
     // Compute the opposite color (inversion).
-    vec3 oppositeColor = vec3(1.0) - color;
+    // vec3 oppositeColor = vec3(1.0) - color;
+    vec3 oppositeColor = getOppositeHSLColor(color);
+
     float luminanceOpp = dot(oppositeColor, vec3(0.2126, 0.7152, 0.0722));
     // Determine the higher and lower luminance.
     float L1 = max(luminance, luminanceOpp);
@@ -268,9 +330,41 @@ float customMat3Density(vec3 pos){
 
 }
 
-float map(float value, float min1, float max1, float min2, float max2) {
-  return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+vec3 densitySdfSolution(vec3 transformedColor){
+    // vec3 scaleDir = normalize( vec3(0.5,0.5,0.5) );
+    vec3 scaleDir = spherePos.xyz ;
+    float r = spherePos.w;
+    // transformedColor -= vec3(0.5);
+    // transformedColor *= scaleDir * (1./r);
+    // transformedColor += vec3(0.5);
+
+    // transformedColor = pushPointFromPlane(transformedColor, vec3(0.5), scaleDir, r);
+
+
+    scaleDir = vec3 (0.284,0.954,0.096);
+    r = 0.466;
+    // transformedColor = pushPointFromPlane(transformedColor, vec3(0.5), scaleDir, r);
+    vec3 planeNormal = vec3(0.284,0.954,0.096);
+    vec3 planeOrigin = vec3(0.5);
+    float maxDistance = 0.466;
+    float minDist = spherePos.w;//0.167;
+    vec3 point = transformedColor;// sampleColor
+    vec3 diff = point - planeOrigin;
+    float sdf = dot(diff, normalize(planeNormal));
+    float s = sign(sdf);
+    sdf = abs(sdf);
+    if (sdf < maxDistance) {
+        // Point is within the influence zone
+        float d = clamp(sdf,0.,maxDistance);
+        d -= maxDistance;
+        d = map(d,maxDistance,0., 0.,minDist);
+        d *= s;
+        transformedColor += d * planeNormal;
+    }
+    return transformedColor;
 }
+
+
 
 float calculateDensity( vec3 sampleColor, vec3 transformedColor){
     float density;
@@ -288,40 +382,14 @@ float calculateDensity( vec3 sampleColor, vec3 transformedColor){
     }else if ( densityFunction == 5 ){ // Transformed Matrix
         density = customMat3Density(transformedColor);
     }else if ( densityFunction == 6 ){ // TtransformedMatrixContrast
-        // vec3 scaleDir = normalize( vec3(0.5,0.5,0.5) );
-        vec3 scaleDir = spherePos.xyz ;
-        float r = spherePos.w;
-        // transformedColor -= vec3(0.5);
-        // transformedColor *= scaleDir * (1./r);
-        // transformedColor += vec3(0.5);
-
-        // transformedColor = pushPointFromPlane(transformedColor, vec3(0.5), scaleDir, r);
-
-
-        scaleDir = vec3 (0.284,0.954,0.096);
-        r = 0.466;
-        // transformedColor = pushPointFromPlane(transformedColor, vec3(0.5), scaleDir, r);
-        vec3 planeNormal = vec3(0.284,0.954,0.096);
-        vec3 planeOrigin = vec3(0.5);
-        float maxDistance = 0.466;
-        float minDist = spherePos.w;//0.167;
-        vec3 point = transformedColor;// sampleColor
-        vec3 diff = point - planeOrigin;
-        float sdf = dot(diff, normalize(planeNormal));
-        float s = sign(sdf);
-        sdf = abs(sdf);
-        if (sdf < maxDistance) {
-            // Point is within the influence zone
-            float d = clamp(sdf,0.,maxDistance);
-            d -= maxDistance;
-            d = map(d,maxDistance,0., 0.,minDist);
-            d *= s;
-            transformedColor += d * planeNormal;
-        }
+        transformedColor = densitySdfSolution(transformedColor);
         density = densityByOppositeContrast(transformedColor);
     }else if ( densityFunction == 7 ){
         density = densityByColorContrast( selectedColor,transformedColor );
+    }else if ( densityFunction == 8 ){
+        density = densityByColorContrast( selectedColor,transformedColor );
     }
+
     return density;
 }
 

@@ -37,6 +37,9 @@ M = {
         customTransformMatrix:new THREE.Matrix3(),
 
         selectedColor:0xffffff,
+        sdfMaxDist:0.466,
+        sdfMinDist:2.35,
+        visualizeSolution:false,
     },
 };
 
@@ -105,6 +108,9 @@ function init() {
         transformMode: M.var.transformMode,
         customTransformMatrix: M.var.customTransformMatrix,
         selectedColor:new THREE.Color( M.var.selectedColor ),
+        sdfMaxDist:M.var.sdfMaxDist,
+        sdfMinDist:M.var.sdfMinDist,
+        visualizeSolution:M.var.visualizeSolution,
     })
 
     let mesh = meshes[0] = new THREE.Mesh(geometry, sdfMaterial);

@@ -23,6 +23,11 @@ export class sdfRenderMaterial extends ThreeTools.CustomShaderMaterial {
             customTransformMatrix: { qualifier: "uniform", type: "mat3", value: new THREE.Matrix3() },
             selectedColor: { qualifier: "uniform", type: "vec3", value: new THREE.Color(0xff00f0) },
 
+            sdfMaxDist: { qualifier: "uniform", type: "float", value:  0.466 },
+            sdfMinDist: { qualifier: "uniform", type: "float", value: 2.35 },
+            visualizeSolution: { qualifier: "uniform", type: "bool", value: false },
+
+
         }
         super(parameters, customProperties)
         this.onBeforeCompile = (shader) => {
@@ -331,23 +336,10 @@ float customMat3Density(vec3 pos){
 }
 
 vec3 densitySdfSolution(vec3 transformedColor){
-    // vec3 scaleDir = normalize( vec3(0.5,0.5,0.5) );
-    vec3 scaleDir = spherePos.xyz ;
-    float r = spherePos.w;
-    // transformedColor -= vec3(0.5);
-    // transformedColor *= scaleDir * (1./r);
-    // transformedColor += vec3(0.5);
-
-    // transformedColor = pushPointFromPlane(transformedColor, vec3(0.5), scaleDir, r);
-
-
-    scaleDir = vec3 (0.284,0.954,0.096);
-    r = 0.466;
-    // transformedColor = pushPointFromPlane(transformedColor, vec3(0.5), scaleDir, r);
     vec3 planeNormal = vec3(0.284,0.954,0.096);
     vec3 planeOrigin = vec3(0.5);
-    float maxDistance = 0.466;
-    float minDist = spherePos.w;//0.167;
+    float maxDistance = sdfMaxDist;// 0.466;
+    float minDist = sdfMinDist;//spherePos.w;//2.45;
     vec3 point = transformedColor;// sampleColor
     vec3 diff = point - planeOrigin;
     float sdf = dot(diff, normalize(planeNormal));
@@ -457,7 +449,12 @@ void main() {
 
         float density = calculateDensity(sampleColor, transformedColor);
      
-        
+        if(visualizeSolution){
+            transformedColor = densitySdfSolution(transformedColor);
+            transformedColor = getOppositeHSLColor(transformedColor);
+        }
+
+
         // Calculate opacity contribution for this step.
         float alphaStep = 1.0 - exp(-density * dt);
         
@@ -468,7 +465,6 @@ void main() {
         if (accumulatedAlpha >= 0.95) break;
     }
 
-    
     if( drawingTarget == 0 ){
         outputColor = vec4 ( accumulatedColor, accumulatedAlpha);
     }else if ( drawingTarget == 1 ){

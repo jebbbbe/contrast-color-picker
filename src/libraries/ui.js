@@ -181,4 +181,22 @@ export function addGui({ M, scene, sdfMaterial }) {
     sim.close()
     sphere.close()
     mat3.close()
+
+    gui.add({fn:sdfMaxDistreset}, "fn").name("reset")
+    gui.add(M.var, "sdfMaxDist", 0,2).listen().onChange(() => {
+        sdfMaterial.customUniforms.sdfMaxDist.value = M.var.sdfMaxDist;
+    })
+    gui.add(M.var, "sdfMinDist", 0,5).listen().onChange(() => {
+        sdfMaterial.customUniforms.sdfMinDist.value = M.var.sdfMinDist;
+    })
+    gui.add(M.var, "visualizeSolution").listen().onChange(() => {
+        sdfMaterial.customUniforms.visualizeSolution.value = M.var.visualizeSolution;
+    })
+
+    function sdfMaxDistreset(){
+        M.var.sdfMaxDist = 0.466
+        M.var.sdfMinDist = 2.35
+        sdfMaterial.customUniforms.sdfMaxDist.value = M.var.sdfMaxDist;
+        sdfMaterial.customUniforms.sdfMinDist.value = M.var.sdfMinDist;
+    }
 }

@@ -10,11 +10,11 @@ export const densityFunctions = {
     section:1,
     sphere: 2,
     contrast: 3,
-    transformedMatrix: 4,
-    customTransformedMatrix: 5,
-    transformedMatrixContrast: 6,
-    selectedColor: 7,
-    matrixWithContrast: 8,
+    "Transformed matrix": 4,
+    "Custom Transformed Matrix": 5,
+    "Transformed Matrix Contrast": 6,
+    "Selected Color": 7,
+    "Matrix With Contrast": 8,
 }
 
 export const transformModes = {
@@ -28,6 +28,6 @@ export const transformModes = {
 
 export const solutions = {
     none:0,
-    nonsdfLerpFail:1,
-    sdfBoundary:2,
+    "sdf Lerp Fail":1,
+    "sdf Boundary":2,
 }

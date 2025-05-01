@@ -3,7 +3,7 @@ import * as ThreeTools from "threetools";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { sdfRenderMaterial } from "./material"
 import { addGui } from "./libraries/ui.js"
-import { outputTargets, densityFunctions, transformModes } from "./libraries/constants.js"
+import { outputTargets, densityFunctions, transformModes, solutions } from "./libraries/constants.js"
 
 
 // globals
@@ -39,7 +39,8 @@ M = {
         selectedColor:0xffffff,
         sdfMaxDist:0.466,
         sdfMinDist:2.35,
-        visualizeSolution:false,
+        visualizeSolution:solutions.none,
+
     },
 };
 

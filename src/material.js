@@ -25,7 +25,7 @@ export class sdfRenderMaterial extends ThreeTools.CustomShaderMaterial {
 
             sdfMaxDist: { qualifier: "uniform", type: "float", value:  0.466 },
             sdfMinDist: { qualifier: "uniform", type: "float", value: 2.35 },
-            visualizeSolution: { qualifier: "uniform", type: "bool", value: false },
+            visualizeSolution: { qualifier: "uniform", type: "int", value: 0 },
 
 
         }
@@ -93,29 +93,34 @@ vec3 pushPointFromPlane(vec3 p, vec3 planePoint, vec3 planeNormal, float a ){
 
 }
 
-
-
-
-mat3 invertMatrix(mat3 m) { // if there is no inverse()
-    // Because GLSL matrices are stored in column-major order,
-    // we extract the elements accordingly:
-    float a = m[0][0], d = m[0][1], g = m[0][2];
-    float b = m[1][0], e = m[1][1], h = m[1][2];
-    float c = m[2][0], f = m[2][1], i = m[2][2];
-
-    // Compute the determinant of m.
-    float det = a * (e * i - f * h) -
-                b * (d * i - f * g) +
-                c * (d * h - e * g);
-
-    // Compute the inverse using the adjugate matrix and the determinant.
-    return mat3(
-        (e * i - f * h) / det,  (c * h - b * i) / det,  (b * f - c * e) / det,
-        (f * g - d * i) / det,  (a * i - c * g) / det,  (c * d - a * f) / det,
-        (d * h - e * g) / det,  (b * g - a * h) / det,  (a * e - b * d) / det
-    );
+// Test if point is less than a plane
+bool isPointBelowPlane(vec3 testPoint, vec3 planePoint, vec3 planeNormal) {
+    vec3 vecToPoint = testPoint - planePoint;
+    float distance = dot(vecToPoint, planeNormal);
+    return distance < 0.0;
 }
 
+// Signed distance to a plane (point-normal form)
+float sdPlane(vec3 p, vec3 planePoint, vec3 planeNormal) {//https://iquilezles.org/articles/distfunctions/
+    return dot(p - planePoint, normalize(planeNormal));
+}
+
+// Signed distance to an axis-aligned box (centered at boxCenter, with half-extents boxHalfSize)
+float sdBox(vec3 p, vec3 boxCenter, vec3 boxHalfSize) {
+    vec3 d = abs(p - boxCenter) - boxHalfSize;
+    return length(max(d, 0.0)) + min(max(d.x, max(d.y, d.z)), 0.0);
+}
+
+// SDF of a plane clipped by a cube (intersection of plane and box)
+float sdPlaneBoundedByCube(vec3 p, vec3 planePoint, vec3 planeNormal, vec3 boxCenter, vec3 boxHalfSize) {
+    float dPlane = sdPlane(p, planePoint, planeNormal);
+    float dBox = sdBox(p, boxCenter, boxHalfSize);
+    return max(dPlane, dBox);  // Intersection
+}
+
+vec3 movePoint(vec3 p, vec3 n, float d) {
+    return p + normalize(n) * d;
+}
 
 // const float a = 0.728;
 // const float b = 0.592;
@@ -282,25 +287,7 @@ vec3 calculateTransform( vec3 sampleColor){
 
 float protanopiaDensity(vec3 pos){
 	float outd = 0.0;
-	// if(pos.x <= (pos.x * 0.567 + 1.0 * 0.433) ){
-	// outd = MAX_DEPTH;
-	// }
-	// if(pos.y <= (1.0 * 0.567 + pos.y  * 0.433) ){
-	// outd = MAX_DEPTH;
-	// }
-	// // if(pos.z >= 0.567 ){
-	// // 	outd = MAX_DEPTH;
-	// // }
-	// return outd;
 
-
-	    // Recover the original color from the deformed color.
-	// mat3 inverseProtanopiaMatrix = invertMatrix(protanopiaMatrix);
-
-	// mat3 inverseProtanopiaMatrix = inverse(protanopiaMatrix);
-	// mat3 inverseProtanopiaMatrix = inverse(deuteranopiaMatrix);
-	// mat3 inverseProtanopiaMatrix = inverse(tritanopiaMatrix);
-	// mat3 inverseProtanopiaMatrix = inverse(monochromacyMatrix);
 	mat3 inverseProtanopiaMatrix = inverse(customTransformMatrix);
     vec3 inversePos = inverseProtanopiaMatrix * pos;
     // Check if each component is within the 0-1 range.
@@ -354,6 +341,50 @@ vec3 densitySdfSolution(vec3 transformedColor){
         transformedColor += d * planeNormal;
     }
     return transformedColor;
+}
+
+vec3 sdfBoundarySolution(vec3 transformedColor){
+    // this one doesnt interpolate, only shows nearest colors
+    // plane paramaters cacuilated in rhino with color sampling, 
+    vec3 p = transformedColor;
+    vec3 boxCenter         = vec3(0.5);
+    vec3 boxHalfSize       = vec3(0.5); 
+    vec3 blackPlaneOrigin  = vec3(0.5433477, 0.1086155, 0.4332448) ;
+    vec3 centerPlaneOrigin = vec3(0.5);
+    vec3 whitePlaneOrigin  = vec3(0.4556161, 0.8910283, 0.5665111);
+    vec3 sharedPlaneNormal = normalize( vec3(0.2833108, 0.9542531, 0.0955819) ); // from Rhino
+
+
+    float offsetDistance = 1./255.;
+    blackPlaneOrigin = movePoint(blackPlaneOrigin, sharedPlaneNormal, -offsetDistance);
+    whitePlaneOrigin = movePoint(whitePlaneOrigin, sharedPlaneNormal,  offsetDistance);
+
+
+    if( isPointBelowPlane(p, blackPlaneOrigin, sharedPlaneNormal) == true ){ // black plane
+        // return vec3(0.);
+        return p;
+    }
+    else if( isPointBelowPlane(p, whitePlaneOrigin, sharedPlaneNormal) == false ){ // white plane   // WRONG
+        // return vec3(1.);
+        return p;
+
+    } else if ( isPointBelowPlane(p, centerPlaneOrigin, sharedPlaneNormal) == true ){ // between black and middle
+        // return vec3(1.,0.,0.);
+        // return p;
+        float d = sdPlaneBoundedByCube(p, blackPlaneOrigin, sharedPlaneNormal, boxCenter, boxHalfSize);
+        // return vec3(d);
+        return movePoint(p, sharedPlaneNormal, -d);
+
+    } else if ( isPointBelowPlane(p, centerPlaneOrigin, sharedPlaneNormal) == false ){ // between middle and white
+        // return vec3(0.5);
+        // return p;
+        float d = sdPlaneBoundedByCube(p, whitePlaneOrigin, -sharedPlaneNormal, boxCenter, boxHalfSize);
+        // return vec3(d);
+        return movePoint(p, sharedPlaneNormal, d);
+
+    }
+
+    return p;
 }
 
 
@@ -447,12 +478,19 @@ void main() {
         vec3 sampleColor = pos + vec3(0.5);
         vec3 transformedColor = calculateTransform(sampleColor);
 
+        
+        if(visualizeSolution == 2){
+            transformedColor = sdfBoundarySolution(transformedColor);
+        }
+
         float density = calculateDensity(sampleColor, transformedColor);
-     
-        if(visualizeSolution){
+
+
+        if(visualizeSolution == 1){
             transformedColor = densitySdfSolution(transformedColor);
             transformedColor = getOppositeHSLColor(transformedColor);
-        }
+        } 
+
 
 
         // Calculate opacity contribution for this step.

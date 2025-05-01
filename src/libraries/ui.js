@@ -1,7 +1,7 @@
 import * as THREE from "three";
 // import { GUI } from 'dat.gui';
 import { GUI } from 'lil-gui';
-import { outputTargets, densityFunctions, transformModes } from "./constants.js"
+import { outputTargets, densityFunctions, transformModes, solutions } from "./constants.js"
 
 
 export function addGui({ M, scene, sdfMaterial }) {
@@ -189,7 +189,7 @@ export function addGui({ M, scene, sdfMaterial }) {
     gui.add(M.var, "sdfMinDist", 0,5).listen().onChange(() => {
         sdfMaterial.customUniforms.sdfMinDist.value = M.var.sdfMinDist;
     })
-    gui.add(M.var, "visualizeSolution").listen().onChange(() => {
+    gui.add(M.var, "visualizeSolution", solutions).listen().onChange(() => {
         sdfMaterial.customUniforms.visualizeSolution.value = M.var.visualizeSolution;
     })
 

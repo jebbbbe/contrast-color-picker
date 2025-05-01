@@ -25,3 +25,9 @@ export const transformModes = {
     monochromacy: 4,
     custom:100,
 }
+
+export const solutions = {
+    none:0,
+    nonsdfLerpFail:1,
+    sdfBoundary:2,
+}

@@ -17,7 +17,7 @@ let animationController = new ThreeTools.AnimationController()
 
 M = {
     var: {
-        backgroundColor: 0x05784C,
+        backgroundColor: 0xd3e3dd,
         backgroundOpacity: 1.0,
 
         camPosition: undefined,
@@ -28,12 +28,12 @@ M = {
         spherePos: new THREE.Vector4(0.5, 0.5, 0.5, 0.0),
         drawingTarget: outputTargets.color,
         densityFunction: densityFunctions.none,
-        contrastRatio: 4.5,
+        contrastRatio: 3.0,//4.5,
         transformMode: transformModes.none,
 
         maxRayStep:128,
         maxRayDepth:500000,
-        turnTable:true,
+        turnTable:false,
         customTransformMatrix:new THREE.Matrix3(),
 
         selectedColor:0xffffff,

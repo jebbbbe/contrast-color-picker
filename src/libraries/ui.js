@@ -6,9 +6,9 @@ import { outputTargets, densityFunctions, transformModes, solutions } from "./co
 
 export function addGui({ M, scene, sdfMaterial }) {
     let gui = new GUI({ width: 300 });
-    gui.add(M.var, "turnTable").name("Spin")
     
-    const sim = gui.addFolder("Simulation")
+    
+    const sim = gui.addFolder("Settings")
     sim.addColor(M.var, "backgroundColor").name("Background Color").listen().onChange(() => {
         sdfMaterial.customUniforms.backgroundColor.value.set(M.var.backgroundColor);
     });
@@ -25,6 +25,7 @@ export function addGui({ M, scene, sdfMaterial }) {
         sdfMaterial.customUniforms.drawingTarget.value = M.var.drawingTarget;
     })
     
+    gui.add(M.var, "turnTable").name("Spin")
 
     gui.add(M.var, "densityFunction", densityFunctions).listen().onChange(() => {
         sdfMaterial.customUniforms.densityFunction.value = M.var.densityFunction;

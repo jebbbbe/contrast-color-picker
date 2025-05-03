@@ -6,7 +6,8 @@ import { outputTargets, densityFunctions, transformModes, solutions } from "./co
 
 export function addGui({ M, scene, sdfMaterial }) {
     let gui = new GUI({ width: 300 });
-
+    gui.add(M.var, "turnTable").name("Spin")
+    
     const sim = gui.addFolder("Simulation")
     sim.addColor(M.var, "backgroundColor").name("Background Color").listen().onChange(() => {
         sdfMaterial.customUniforms.backgroundColor.value.set(M.var.backgroundColor);
@@ -28,14 +29,18 @@ export function addGui({ M, scene, sdfMaterial }) {
     gui.add(M.var, "densityFunction", densityFunctions).listen().onChange(() => {
         sdfMaterial.customUniforms.densityFunction.value = M.var.densityFunction;
     })
-    gui.add(M.var, "contrastRatio",0,21,0.001).listen().onChange(() => {
-        sdfMaterial.customUniforms.contrastRatio.value = M.var.contrastRatio;
-    })
     gui.add(M.var, "transformMode",transformModes).listen().onChange(() => {
         sdfMaterial.customUniforms.transformMode.value = M.var.transformMode;
     })
+    gui.add(M.var, "visualizeSolution", solutions).listen().onChange(() => {
+        sdfMaterial.customUniforms.visualizeSolution.value = M.var.visualizeSolution;
+    })
+
+
+    gui.add(M.var, "contrastRatio",0,21,0.001).listen().onChange(() => {
+        sdfMaterial.customUniforms.contrastRatio.value = M.var.contrastRatio;
+    })
     
-    gui.add(M.var, "turnTable").name("Spin")
 
 
     gui.addColor(M.var, "selectedColor").name("selected Color").listen().onChange(() => {
@@ -50,9 +55,7 @@ export function addGui({ M, scene, sdfMaterial }) {
     // gui.add(M.var, "sdfMinDist", 0,5).listen().onChange(() => {
     //     sdfMaterial.customUniforms.sdfMinDist.value = M.var.sdfMinDist;
     // })
-    gui.add(M.var, "visualizeSolution", solutions).listen().onChange(() => {
-        sdfMaterial.customUniforms.visualizeSolution.value = M.var.visualizeSolution;
-    })
+
 
     const sphere = gui.addFolder("Sphere")
     sphere.add(M.var.spherePos, "x", 0, 1).listen()
@@ -60,7 +63,7 @@ export function addGui({ M, scene, sdfMaterial }) {
     sphere.add(M.var.spherePos, "z", 0, 1).listen()
     sphere.add(M.var.spherePos, "w", 0, 1, 0.001).listen()
 
-    const mat3 = gui.addFolder("mat3")
+    const mat3 = gui.addFolder("Vision Options")
 
     let stub = {
         "0":M.var.customTransformMatrix.elements[0],
@@ -73,7 +76,7 @@ export function addGui({ M, scene, sdfMaterial }) {
         "7":M.var.customTransformMatrix.elements[7],
         "8":M.var.customTransformMatrix.elements[8],
     }
-    mat3.add({fn:restMat3}, "fn").name("reset")
+    mat3.add({fn:restMat3}, "fn").name("Default")
     mat3.add({fn:setProtanopiaMatrix}, "fn").name("Protanopia")
     mat3.add({fn:setDeuteranopiaMatrix}, "fn").name("Deuteranopia")
     mat3.add({fn:setTritanopiaMatrix}, "fn").name("Tritanopia")

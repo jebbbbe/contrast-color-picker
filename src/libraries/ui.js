@@ -42,6 +42,18 @@ export function addGui({ M, scene, sdfMaterial }) {
         sdfMaterial.customUniforms.selectedColor.value.set( M.var.selectedColor )
     })
 
+    // didnt work in glsl, hiding UI options, can investigare later, tweening two cube cliped planes seems annoying
+    // gui.add({fn:sdfMaxDistreset}, "fn").name("reset")
+    // gui.add(M.var, "sdfMaxDist", 0,2).listen().onChange(() => {
+    //     sdfMaterial.customUniforms.sdfMaxDist.value = M.var.sdfMaxDist;
+    // })
+    // gui.add(M.var, "sdfMinDist", 0,5).listen().onChange(() => {
+    //     sdfMaterial.customUniforms.sdfMinDist.value = M.var.sdfMinDist;
+    // })
+    gui.add(M.var, "visualizeSolution", solutions).listen().onChange(() => {
+        sdfMaterial.customUniforms.visualizeSolution.value = M.var.visualizeSolution;
+    })
+
     const sphere = gui.addFolder("Sphere")
     sphere.add(M.var.spherePos, "x", 0, 1).listen()
     sphere.add(M.var.spherePos, "y", 0, 1).listen()
@@ -66,8 +78,8 @@ export function addGui({ M, scene, sdfMaterial }) {
     mat3.add({fn:setDeuteranopiaMatrix}, "fn").name("Deuteranopia")
     mat3.add({fn:setTritanopiaMatrix}, "fn").name("Tritanopia")
     mat3.add({fn:setMonochromacyMatrix}, "fn").name("Monochromacy")
-    mat3.add({fn:randomizeMat3Summation}, "fn").name("bounded randomize")
-    mat3.add({fn:randomizeMat3}, "fn").name("randomize")
+    mat3.add({fn:randomizeMat3Summation}, "fn").name("Random") // constrains sums found in columns of other mat3
+    // mat3.add({fn:randomizeMat3}, "fn").name("randomize")
     mat3.add(stub, "0",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[0] = stub["0"]}).listen()
     mat3.add(stub, "1",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[1] = stub["1"]}).listen()
     mat3.add(stub, "2",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[2] = stub["2"]}).listen()
@@ -179,19 +191,8 @@ export function addGui({ M, scene, sdfMaterial }) {
     }
 
     sim.close()
-    sphere.close()
+    sphere.hide()
     mat3.open()
-
-    gui.add({fn:sdfMaxDistreset}, "fn").name("reset")
-    gui.add(M.var, "sdfMaxDist", 0,2).listen().onChange(() => {
-        sdfMaterial.customUniforms.sdfMaxDist.value = M.var.sdfMaxDist;
-    })
-    gui.add(M.var, "sdfMinDist", 0,5).listen().onChange(() => {
-        sdfMaterial.customUniforms.sdfMinDist.value = M.var.sdfMinDist;
-    })
-    gui.add(M.var, "visualizeSolution", solutions).listen().onChange(() => {
-        sdfMaterial.customUniforms.visualizeSolution.value = M.var.visualizeSolution;
-    })
 
     function sdfMaxDistreset(){
         M.var.sdfMaxDist = 0.466

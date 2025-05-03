@@ -1,14 +1,12 @@
 export const outputTargets = {
     color: 0,
     raySteps: 1,
-    normal: 2,
-    light: 0,
 }
 
 export const densityFunctions = {
     none: 0,
-    section:1,
-    sphere: 2,
+    // section:1, // only here to test shapes
+    // sphere: 2,
     contrast: 3,
     "Transformed matrix": 4,
     "Custom Transformed Matrix": 5,
@@ -28,6 +26,6 @@ export const transformModes = {
 
 export const solutions = {
     none:0,
-    "sdf Lerp Fail":1,
+    // "sdf Lerp Fail":1,
     "sdf Boundary":2,
 }

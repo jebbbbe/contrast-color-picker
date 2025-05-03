@@ -83,15 +83,16 @@ export function addGui({ M, scene, sdfMaterial }) {
     mat3.add({fn:setMonochromacyMatrix}, "fn").name("Monochromacy")
     mat3.add({fn:randomizeMat3Summation}, "fn").name("Random") // constrains sums found in columns of other mat3
     // mat3.add({fn:randomizeMat3}, "fn").name("randomize")
-    mat3.add(stub, "0",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[0] = stub["0"]}).listen()
-    mat3.add(stub, "1",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[1] = stub["1"]}).listen()
-    mat3.add(stub, "2",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[2] = stub["2"]}).listen()
-    mat3.add(stub, "3",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[3] = stub["3"]}).listen()
-    mat3.add(stub, "4",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[4] = stub["4"]}).listen()
-    mat3.add(stub, "5",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[5] = stub["5"]}).listen()
-    mat3.add(stub, "6",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[6] = stub["6"]}).listen()
-    mat3.add(stub, "7",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[7] = stub["7"]}).listen()
-    mat3.add(stub, "8",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[8] = stub["8"]}).listen()
+    const matVals = mat3.addFolder("Values")
+    matVals.add(stub, "0",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[0] = stub["0"]}).listen()
+    matVals.add(stub, "1",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[1] = stub["1"]}).listen()
+    matVals.add(stub, "2",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[2] = stub["2"]}).listen()
+    matVals.add(stub, "3",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[3] = stub["3"]}).listen()
+    matVals.add(stub, "4",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[4] = stub["4"]}).listen()
+    matVals.add(stub, "5",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[5] = stub["5"]}).listen()
+    matVals.add(stub, "6",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[6] = stub["6"]}).listen()
+    matVals.add(stub, "7",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[7] = stub["7"]}).listen()
+    matVals.add(stub, "8",0,1,0.001).listen().onChange(() => { M.var.customTransformMatrix.elements[8] = stub["8"]}).listen()
     
     function setStub(mat = M.var.customTransformMatrix){
         stub["0"] = mat.elements[0]
@@ -196,6 +197,7 @@ export function addGui({ M, scene, sdfMaterial }) {
     sim.close()
     sphere.hide()
     mat3.open()
+    matVals.close()
 
     function sdfMaxDistreset(){
         M.var.sdfMaxDist = 0.466

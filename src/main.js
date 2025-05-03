@@ -27,9 +27,9 @@ M = {
 
         spherePos: new THREE.Vector4(0.5, 0.5, 0.5, 0.0),
         drawingTarget: outputTargets.color,
-        densityFunction: densityFunctions.none,
+        densityFunction: densityFunctions.contrast,
         contrastRatio: 3.0,//4.5,
-        transformMode: transformModes.none,
+        transformMode: transformModes.custom,
 
         maxRayStep:128,
         maxRayDepth:500000,
@@ -39,7 +39,7 @@ M = {
         selectedColor:0xffffff,
         sdfMaxDist:0.466,
         sdfMinDist:2.35,
-        visualizeSolution:solutions.none,
+        visualizeSolution:solutions["sdf Boundary"],
 
     },
 };

@@ -174,13 +174,13 @@ export function addGui({ M, scene, sdfMaterial }) {
             0.587, 0.587 ,0.587,
             0.114, 0.114 ,0.114
         )
-        // mat.transpose()
+        mat.transpose()
         setStub()
     }
 
     sim.close()
     sphere.close()
-    mat3.close()
+    mat3.open()
 
     gui.add({fn:sdfMaxDistreset}, "fn").name("reset")
     gui.add(M.var, "sdfMaxDist", 0,2).listen().onChange(() => {

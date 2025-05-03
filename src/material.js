@@ -122,6 +122,28 @@ vec3 movePoint(vec3 p, vec3 n, float d) {
     return p + normalize(n) * d;
 }
 
+// Apply affine transformation to a plane defined by origin and normal
+void transformPlane(in mat3 shearMatrix, inout vec3 origin, inout vec3 normal) {
+    // Transform the origin point (just apply the matrix)
+    origin = shearMatrix * origin;
+    // Transform the normal using the inverse transpose
+    normal = normalize( transpose(inverse(shearMatrix)) * normal);
+}
+
+vec3 transformPlaneOrigin( mat3 shearMatrix, vec3 origin){
+    // Transform the origin point (just apply the matrix)
+    return shearMatrix * origin;
+}
+vec3 transformPlaneNormal( mat3 shearMatrix, vec3 normal){
+    // Transform the normal using the inverse transpose
+    return normalize( transpose(inverse(shearMatrix)) * normal);
+}
+
+
+
+
+
+
 // const float a = 0.728;
 // const float b = 0.592;
 // const float c = 0.200;
@@ -233,8 +255,19 @@ float densityByOppositeContrast(vec3 color) {
     // Compute relative luminance using sRGB coefficients.
     float luminance = dot(color, vec3(0.2126, 0.7152, 0.0722));
     // Compute the opposite color (inversion).
-    // vec3 oppositeColor = vec3(1.0) - color;
-    vec3 oppositeColor = getOppositeHSLColor(color);
+
+    
+
+    //are these equivilant?
+    vec3 oppositeColor = vec3(1.0) - color;
+    // vec3 oppositeColor = getOppositeHSLColor(color);
+
+    mat3 mat3ToUse = customTransformMatrix;
+    // mat3ToUse = inverse(mat3ToUse);
+    mat3ToUse = transpose(mat3ToUse);
+    oppositeColor = mat3ToUse * oppositeColor;
+
+
 
     float luminanceOpp = dot(oppositeColor, vec3(0.2126, 0.7152, 0.0722));
     // Determine the higher and lower luminance.
@@ -354,6 +387,22 @@ vec3 sdfBoundarySolution(vec3 transformedColor){
     vec3 whitePlaneOrigin  = vec3(0.4556161, 0.8910283, 0.5665111);
     vec3 sharedPlaneNormal = normalize( vec3(0.2833108, 0.9542531, 0.0955819) ); // from Rhino
 
+    // customTransformMatrix
+    // wrap in IF later
+    // transformPlane(customTransformMatrix, blackPlaneOrigin ,sharedPlaneNormal );
+    // transformPlane(customTransformMatrix, centerPlaneOrigin ,vec3(0.) ); // stub normal
+    // transformPlane(customTransformMatrix, whitePlaneOrigin ,vec3(0.) ); // stub normal
+
+
+    mat3 mat3ToUse = customTransformMatrix ;
+    mat3ToUse = inverse(mat3ToUse);
+    // mat3ToUse = transpose(mat3ToUse);
+    // mat3ToUse = inverse(mat3ToUse);
+    blackPlaneOrigin = transformPlaneOrigin(mat3ToUse, blackPlaneOrigin);
+    centerPlaneOrigin = transformPlaneOrigin(mat3ToUse, centerPlaneOrigin);
+    whitePlaneOrigin = transformPlaneOrigin(mat3ToUse, whitePlaneOrigin);
+    sharedPlaneNormal = transformPlaneNormal(mat3ToUse, sharedPlaneNormal);
+
 
     float offsetDistance = 1./255.;
     blackPlaneOrigin = movePoint(blackPlaneOrigin, sharedPlaneNormal, -offsetDistance);
@@ -361,25 +410,17 @@ vec3 sdfBoundarySolution(vec3 transformedColor){
 
 
     if( isPointBelowPlane(p, blackPlaneOrigin, sharedPlaneNormal) == true ){ // black plane
-        // return vec3(0.);
         return p;
     }
     else if( isPointBelowPlane(p, whitePlaneOrigin, sharedPlaneNormal) == false ){ // white plane   // WRONG
-        // return vec3(1.);
         return p;
 
     } else if ( isPointBelowPlane(p, centerPlaneOrigin, sharedPlaneNormal) == true ){ // between black and middle
-        // return vec3(1.,0.,0.);
-        // return p;
         float d = sdPlaneBoundedByCube(p, blackPlaneOrigin, sharedPlaneNormal, boxCenter, boxHalfSize);
-        // return vec3(d);
         return movePoint(p, sharedPlaneNormal, -d);
 
     } else if ( isPointBelowPlane(p, centerPlaneOrigin, sharedPlaneNormal) == false ){ // between middle and white
-        // return vec3(0.5);
-        // return p;
         float d = sdPlaneBoundedByCube(p, whitePlaneOrigin, -sharedPlaneNormal, boxCenter, boxHalfSize);
-        // return vec3(d);
         return movePoint(p, sharedPlaneNormal, d);
 
     }
@@ -490,6 +531,14 @@ void main() {
             transformedColor = densitySdfSolution(transformedColor);
             transformedColor = getOppositeHSLColor(transformedColor);
         } 
+
+        if(true){
+            vec3 r3Point = sdfBoundarySolution(sampleColor); // point projected by  transformed sdf boundary in r3
+            vec3 r3Opposite = vec3(1.0) - r3Point;
+            r3Point = customTransformMatrix * r3Point;
+            r3Opposite = customTransformMatrix * r3Opposite;
+            density = densityByColorContrast(r3Point, r3Opposite);
+        }
 
 
 

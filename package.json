@@ -6,8 +6,7 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build --emptyOutDir",
-        "preview": "vite preview",
-        "postinstall": "npm link threetools"
+        "preview": "vite preview"
     },
     "devDependencies": {
         "vite": "^6.0.0"
@@ -15,6 +14,6 @@
     "dependencies": {
         "lil-gui": "^0.20.0",
         "three": "^0.124.0",
-        "threetools": "github:jebbbbe/ThreeTools"
+        "threetools": "github:jebbbbe/ThreeTools#76cdb3c5eb383ad4741e2fec8d4fe35c2140b527"
     }
 }

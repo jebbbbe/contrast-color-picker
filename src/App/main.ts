@@ -1,9 +1,9 @@
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import { ClipPlaneController, defaultClipPlaneZ } from "./objects/clipPlane"
+import * as SDF from "./objects/SdfMaterial"
 import { AspectLayout } from "./utils/AspectLayout.js"
 import { SceneGui } from "./gui"
-import { SdfMaterial } from "./objects/SdfMaterial"
 
 export class ThreeSceneApp {
     private readonly renderer: THREE.WebGLRenderer
@@ -51,17 +51,25 @@ export class ThreeSceneApp {
         )
         cube.position.x = 3
 
-        const sdfCube = new THREE.Mesh(
+        const sdfGroup = new THREE.Group()
+        const sdfMesh = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1),
-            new SdfMaterial({
+            new SDF.SdfMaterial({
                 lightPosition: directionalLight.position,
+                color: 0xffffff,
+                targetOutput: SDF.SdfTargetOutputLit,
+                shape: SDF.SdfShapeCutHollowSphere,
             })
         )
-
-        const wireframe = new THREE.LineSegments(
-            new THREE.EdgesGeometry(sdfCube.geometry),
+        const sdfWireframe = new THREE.LineSegments(
+            new THREE.EdgesGeometry(sdfMesh.geometry),
             new THREE.LineBasicMaterial({ color: 0x9ca3af })
         )
+        sdfGroup.add(sdfMesh, sdfWireframe)
+        sdfGroup.scale.set(1, 1, 0)
+        sdfGroup.rotation.set(0, 0, 0)
+        sdfGroup.position.set(0, 0, 0)
+
         const grid = new THREE.GridHelper(10, 10, 0x64748b, 0xcbd5e1)
 
         const clipPlane = new ClipPlaneController(renderer)
@@ -72,13 +80,12 @@ export class ThreeSceneApp {
             directionalLight,
             grid,
             cube,
-            sdfCube,
-            wireframe,
+            sdfGroup,
             clipPlane.outline
         )
 
         // ui
-        const gui = new SceneGui(sdfCube.material, clipPlane)
+        const gui = new SceneGui(sdfMesh.material, clipPlane)
 
         // props
         this.aspectLayout = aspectLayout

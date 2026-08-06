@@ -1,30 +1,30 @@
 import GUI from "lil-gui"
 
 import type { ClipPlaneController } from "./objects/clipPlane"
-import type { SdfMaterial } from "./objects/SdfMaterial"
+import * as SDF from "./objects/SdfMaterial"
 
 const targetOutputTitles = {
-    Color: 0,
-    Lit: 1,
-    Normal: 2,
-    Steps: 3,
+    Color: SDF.SdfTargetOutputColor,
+    Lit: SDF.SdfTargetOutputLit,
+    Normal: SDF.SdfTargetOutputNormal,
+    Steps: SDF.SdfTargetOutputSteps,
 } as const
 
 const shapeTitles = {
-    "Sphere": 0,
-    "Box": 1,
-    "Round Box": 2,
-    "Cone": 3,
-    "Solid Angle": 4,
-    "Cut Hollow Sphere": 5,
-    "Octahedron": 6,
-    "Triangle": 7,
+    "Sphere": SDF.SdfShapeSphere,
+    "Box": SDF.SdfShapeBox,
+    "Round Box": SDF.SdfShapeRoundBox,
+    "Cone": SDF.SdfShapeCone,
+    "Solid Angle": SDF.SdfShapeSolidAngle,
+    "Cut Hollow Sphere": SDF.SdfShapeCutHollowSphere,
+    "Octahedron": SDF.SdfShapeOctahedron,
+    "Triangle": SDF.SdfShapeTriangle,
 } as const
 
 export class SceneGui {
     readonly gui: GUI
 
-    constructor(sdfMaterial: SdfMaterial, clipPlane: ClipPlaneController) {
+    constructor(sdfMaterial: SDF.SdfMaterial, clipPlane: ClipPlaneController) {
         this.gui = new GUI({ title: "Scene" })
 
         this.gui

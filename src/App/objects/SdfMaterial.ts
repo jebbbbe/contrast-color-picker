@@ -14,9 +14,23 @@ import sdfMaterialVert from "./glsl/SdfMaterial.vert.glsl?raw"
 
 import type { ColorRepresentation, ShaderMaterialParameters } from "three"
 
+export const SdfShapeSphere = 0
+export const SdfShapeBox = 1
+export const SdfShapeRoundBox = 2
+export const SdfShapeCone = 3
+export const SdfShapeSolidAngle = 4
+export const SdfShapeCutHollowSphere = 5
+export const SdfShapeOctahedron = 6
+export const SdfShapeTriangle = 7
+
+export const SdfTargetOutputColor = 0
+export const SdfTargetOutputLit = 1
+export const SdfTargetOutputNormal = 2
+export const SdfTargetOutputSteps = 3
+
 export type SdfMaterialParameters = ShaderMaterialParameters & {
     lightPosition?: Vector3
-    surfaceColor?: ColorRepresentation
+    color?: ColorRepresentation
     size?: number
     shape?: number
     targetOutput?: number
@@ -25,10 +39,10 @@ export type SdfMaterialParameters = ShaderMaterialParameters & {
 
 ;(UniformsLib as any).sdf = {
     lightPosition: { value: new Vector3(4, 6, 8) },
-    surfaceColor: { value: new Color("#ef4444") },
+    color: { value: new Color("#ffffff") },
     size: { value: 1.0 },
-    shape: { value: 0 },
-    targetOutput: { value: 0 },
+    shape: { value: SdfShapeSphere },
+    targetOutput: { value: SdfTargetOutputColor },
     clipToBounds: { value: 0 },
 }
 
@@ -64,12 +78,12 @@ export class SdfMaterial extends ShaderMaterial {
         this.uniforms.lightPosition.value = value
     }
 
-    get surfaceColor(): Color {
-        return this.uniforms.surfaceColor.value
+    get color(): Color {
+        return this.uniforms.color.value
     }
 
-    set surfaceColor(value: ColorRepresentation) {
-        this.uniforms.surfaceColor.value = value
+    set color(value: ColorRepresentation) {
+        this.uniforms.color.value = value
     }
 
     get size(): number {

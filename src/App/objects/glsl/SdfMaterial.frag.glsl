@@ -1,5 +1,5 @@
 uniform vec3 lightPosition;
-uniform vec3 surfaceColor;
+uniform vec3 color;
 uniform float size;
 uniform mat4 projectionMatrix;
 uniform uint shape;
@@ -278,19 +278,20 @@ void main() {
     }
 
     vec3 normal = estimateNormal(p);
+    vec3 viewNormal = normalize(mat3(viewMatrix) * normal);
     vec3 lightDirection = normalize(lightPosition - p);
     vec3 viewDirection = normalize(cameraPosition - p);
     vec3 halfDirection = normalize(lightDirection + viewDirection);
 
     float diffuse = max(dot(normal, lightDirection), 0.0);
     float specular = pow(max(dot(normal, halfDirection), 0.0), 32.0);
-    vec3 litColor = surfaceColor * (0.2 + 0.8 * diffuse) + vec3(1.0) * specular * 0.2;
-    vec3 outputColor = surfaceColor;
+    vec3 litColor = color * (0.2 + 0.8 * diffuse) + vec3(1.0) * specular * 0.2;
+    vec3 outputColor = color;
 
     if (targetOutput == TARGET_OUTPUT_LIT) {
         outputColor = litColor;
     } else if (targetOutput == TARGET_OUTPUT_NORMAL) {
-        outputColor = normal * 0.5 + 0.5;
+        outputColor = viewNormal * 0.5 + 0.5;
     } else if (targetOutput == TARGET_OUTPUT_STEPS) {
         float normalizedSteps = float(stepCount) / float(MAX_RAY_STEPS);
         outputColor = vec3(normalizedSteps);

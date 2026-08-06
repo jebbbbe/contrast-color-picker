@@ -10,7 +10,6 @@ function App() {
         }
 
         const app = new ThreeSceneApp(threeSceneMountRef.current)
-
         return () => {
             app.dispose()
         }

@@ -1,6 +1,7 @@
 uniform vec3 lightPosition;
 uniform vec3 color;
 uniform float size;
+uniform mat4 modelMatrix;
 uniform mat4 projectionMatrix;
 uniform uint shape;
 uniform uint targetOutput;
@@ -10,9 +11,7 @@ uniform uint clipToBounds;
 uniform vec4 clippingPlanes[ NUM_CLIPPING_PLANES ];
 #endif
 
-varying vec3 worldPosition;
-varying vec3 boxCenter;
-varying vec3 boxHalfSize;
+varying vec3 localPosition;
 
 out highp vec4 outColor;
 
@@ -29,6 +28,7 @@ const uint TARGET_OUTPUT_COLOR = 0u;
 const uint TARGET_OUTPUT_LIT = 1u;
 const uint TARGET_OUTPUT_NORMAL = 2u;
 const uint TARGET_OUTPUT_STEPS = 3u;
+const uint TARGET_OUTPUT_WORLD_POSITION = 4u;
 const int MAX_RAY_STEPS = 96;
 
 float dot2(vec3 v) {
@@ -117,12 +117,12 @@ float udTriangle(vec3 p, vec3 a, vec3 b, vec3 c) {
 }
 
 float bboxSdf(vec3 p) {
-    return sdBox(p - boxCenter, boxHalfSize);
+    return sdBox(p, vec3(0.5));
 }
 
 float shapeSdf(vec3 p) {
-    float shapeScale = max(0.001, size) * min(boxHalfSize.x, min(boxHalfSize.y, boxHalfSize.z));
-    vec3 q = (p - boxCenter) / shapeScale;
+    float shapeScale = max(0.001, size) * 0.5;
+    vec3 q = p / shapeScale;
 
     if (shape == SHAPE_BOX) {
         return sdBox(q, vec3(1.0)) * shapeScale;
@@ -233,13 +233,14 @@ bool clippedByPlanes(vec3 worldPoint) {
 #endif
 
 void main() {
-    vec3 rayOrigin = cameraPosition;
-    vec3 rayDirection = normalize(worldPosition - rayOrigin);
+    mat4 inverseModelMatrix = inverse(modelMatrix);
+    vec3 rayOrigin = (inverseModelMatrix * vec4(cameraPosition, 1.0)).xyz;
+    vec3 rayDirection = normalize(localPosition - rayOrigin);
     vec2 bounds = intersectBox(
         rayOrigin,
         rayDirection,
-        boxCenter - boxHalfSize,
-        boxCenter + boxHalfSize
+        vec3(-0.5),
+        vec3(0.5)
     );
 
     if (bounds.x > bounds.y) {
@@ -273,14 +274,17 @@ void main() {
         discard;
     }
 
-    if (clippedByPlanes(p)) {
+    vec3 worldPoint = (modelMatrix * vec4(p, 1.0)).xyz;
+
+    if (clippedByPlanes(worldPoint)) {
         discard;
     }
 
     vec3 normal = estimateNormal(p);
-    vec3 viewNormal = normalize(mat3(viewMatrix) * normal);
-    vec3 lightDirection = normalize(lightPosition - p);
-    vec3 viewDirection = normalize(cameraPosition - p);
+    mat3 viewNormalMatrix = transpose(inverse(mat3(viewMatrix * modelMatrix)));
+    vec3 viewNormal = normalize(viewNormalMatrix * normal);
+    vec3 lightDirection = normalize(lightPosition - worldPoint);
+    vec3 viewDirection = normalize(cameraPosition - worldPoint);
     vec3 halfDirection = normalize(lightDirection + viewDirection);
 
     float diffuse = max(dot(normal, lightDirection), 0.0);
@@ -295,9 +299,11 @@ void main() {
     } else if (targetOutput == TARGET_OUTPUT_STEPS) {
         float normalizedSteps = float(stepCount) / float(MAX_RAY_STEPS);
         outputColor = vec3(normalizedSteps);
+    } else if (targetOutput == TARGET_OUTPUT_WORLD_POSITION) {
+        outputColor = worldPoint;
     }
 
-    vec4 clipPosition = projectionMatrix * viewMatrix * vec4(p, 1.0);
+    vec4 clipPosition = projectionMatrix * viewMatrix * vec4(worldPoint, 1.0);
     gl_FragDepth = clamp(clipPosition.z / clipPosition.w * 0.5 + 0.5, 0.0, 1.0);
 
     outColor = vec4(outputColor, 1.0);

@@ -27,6 +27,7 @@ export const SdfTargetOutputColor = 0
 export const SdfTargetOutputLit = 1
 export const SdfTargetOutputNormal = 2
 export const SdfTargetOutputSteps = 3
+export const SdfTargetOutputWorldPosition = 4
 
 export type SdfMaterialParameters = ShaderMaterialParameters & {
     lightPosition?: Vector3
@@ -34,9 +35,8 @@ export type SdfMaterialParameters = ShaderMaterialParameters & {
     size?: number
     shape?: number
     targetOutput?: number
-    clipToBounds?: number | boolean
+    clipToBounds?: boolean
 }
-
 ;(UniformsLib as any).sdf = {
     lightPosition: { value: new Vector3(4, 6, 8) },
     color: { value: new Color("#ffffff") },
@@ -45,7 +45,6 @@ export type SdfMaterialParameters = ShaderMaterialParameters & {
     targetOutput: { value: SdfTargetOutputColor },
     clipToBounds: { value: 0 },
 }
-
 ;(ShaderLib as any).sdf = {
     uniforms: UniformsUtils.merge([
         UniformsLib.common,

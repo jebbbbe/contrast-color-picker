@@ -1,18 +1,17 @@
 import { fileURLToPath } from "node:url"
-import { defineConfig, type HmrContext, type PluginOption } from "vite"
+import { defineConfig } from "vite"
 import react from "@vitejs/plugin-react"
 
-function fullReloadOnChange(): PluginOption {
+function fullReloadOnChange() {
     return {
         name: "full-reload-on-change",
-        handleHotUpdate({ server }: HmrContext) {
+        handleHotUpdate({ server }) {
             server.ws.send({ type: "full-reload" })
             return []
         },
     }
 }
 
-// https://vite.dev/config/
 export default defineConfig({
     plugins: [react(), fullReloadOnChange()],
     resolve: {

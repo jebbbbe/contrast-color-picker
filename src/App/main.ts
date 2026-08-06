@@ -41,6 +41,10 @@ export class ThreeSceneApp {
         this.camera.lookAt(this.controls.target)
         this.controls.update()
 
+        this.ambientLight = new THREE.AmbientLight(0xffffff, 1.2)
+        this.directionalLight = new THREE.DirectionalLight(0xffffff, 2)
+        this.directionalLight.position.set(4, 6, 8)
+
         this.cube = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1),
             new THREE.MeshStandardMaterial({ color: "#8b5cf6" })
@@ -49,14 +53,12 @@ export class ThreeSceneApp {
 
         this.sdfCube = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1),
-            new SdfMaterial()
+            new SdfMaterial({
+                lightPosition: this.directionalLight.position,
+            })
         )
 
         this.grid = new THREE.GridHelper(10, 10, 0x64748b, 0xcbd5e1)
-
-        this.ambientLight = new THREE.AmbientLight(0xffffff, 1.2)
-        this.directionalLight = new THREE.DirectionalLight(0xffffff, 2)
-        this.directionalLight.position.set(4, 6, 8)
 
         this.scene.add(
             this.ambientLight,

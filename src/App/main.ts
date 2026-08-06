@@ -66,7 +66,7 @@ export class ThreeSceneApp {
             new THREE.LineBasicMaterial({ color: 0x9ca3af })
         )
         sdfGroup.add(sdfMesh, sdfWireframe)
-        sdfGroup.scale.set(1, 1, 0)
+        sdfGroup.scale.set(1, 1, 1)
         sdfGroup.rotation.set(0, 0, 0)
         sdfGroup.position.set(0, 0, 0)
 

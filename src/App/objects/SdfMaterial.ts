@@ -17,7 +17,8 @@ import type { ColorRepresentation, ShaderMaterialParameters } from "three"
 export type SdfMaterialParameters = ShaderMaterialParameters & {
     lightPosition?: Vector3
     surfaceColor?: ColorRepresentation
-    sphereRadius?: number
+    size?: number
+    shape?: number
     targetOutput?: number
     clipToBounds?: number | boolean
 }
@@ -25,7 +26,8 @@ export type SdfMaterialParameters = ShaderMaterialParameters & {
 ;(UniformsLib as any).sdf = {
     lightPosition: { value: new Vector3(4, 6, 8) },
     surfaceColor: { value: new Color("#ef4444") },
-    sphereRadius: { value: 0.35 },
+    size: { value: 1.0 },
+    shape: { value: 0 },
     targetOutput: { value: 0 },
     clipToBounds: { value: 0 },
 }
@@ -70,12 +72,20 @@ export class SdfMaterial extends ShaderMaterial {
         this.uniforms.surfaceColor.value = value
     }
 
-    get sphereRadius(): number {
-        return this.uniforms.sphereRadius.value
+    get size(): number {
+        return this.uniforms.size.value
     }
 
-    set sphereRadius(value: number) {
-        this.uniforms.sphereRadius.value = value
+    set size(value: number) {
+        this.uniforms.size.value = Math.max(0.01, value)
+    }
+
+    get shape(): number {
+        return this.uniforms.shape.value
+    }
+
+    set shape(value: number) {
+        this.uniforms.shape.value = Math.max(0, Math.floor(value))
     }
 
     get targetOutput(): number {

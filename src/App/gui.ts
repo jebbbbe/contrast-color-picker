@@ -10,6 +10,17 @@ const targetOutputTitles = {
     Steps: 3,
 } as const
 
+const shapeTitles = {
+    "Sphere": 0,
+    "Box": 1,
+    "Round Box": 2,
+    "Cone": 3,
+    "Solid Angle": 4,
+    "Cut Hollow Sphere": 5,
+    "Octahedron": 6,
+    "Triangle": 7,
+} as const
+
 export class SceneGui {
     readonly gui: GUI
 
@@ -17,9 +28,10 @@ export class SceneGui {
         this.gui = new GUI({ title: "Scene" })
 
         this.gui
-            .add(sdfMaterial, "sphereRadius", 0.00, 1.0, 0.01)
-            .name("Sphere Radius")
+            .add(sdfMaterial, "size", 0.05, 2.0, 0.01)
+            .name("Size")
 
+        this.gui.add(sdfMaterial, "shape", shapeTitles).name("Shape")
         this.gui.add(sdfMaterial, "targetOutput", targetOutputTitles).name("Target Output")
         this.gui.add(sdfMaterial, "clipToBounds").name("Clip To Bounds")
         this.gui

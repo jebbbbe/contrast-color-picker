@@ -57,7 +57,8 @@ export class ThreeSceneApp {
                 lightPosition: directionalLight.position,
             })
         )
-        const sdfWireframe = new THREE.LineSegments(
+
+        const wireframe = new THREE.LineSegments(
             new THREE.EdgesGeometry(sdfCube.geometry),
             new THREE.LineBasicMaterial({ color: 0x9ca3af })
         )
@@ -72,7 +73,7 @@ export class ThreeSceneApp {
             grid,
             cube,
             sdfCube,
-            sdfWireframe,
+            wireframe,
             clipPlane.outline
         )
 

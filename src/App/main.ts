@@ -1,5 +1,6 @@
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
+import { ClipPlaneController, defaultClipPlaneZ } from "./objects/clipPlane"
 import { AspectLayout } from "./utils/AspectLayout.js"
 import { SceneGui } from "./gui"
 import { SdfMaterial } from "./objects/SdfMaterial"
@@ -62,17 +63,21 @@ export class ThreeSceneApp {
         )
         const grid = new THREE.GridHelper(10, 10, 0x64748b, 0xcbd5e1)
 
+        const clipPlane = new ClipPlaneController(renderer)
+        clipPlane.position = defaultClipPlaneZ
+
         scene.add(
             ambientLight,
             directionalLight,
             grid,
             cube,
             sdfCube,
-            sdfWireframe
+            sdfWireframe,
+            clipPlane.outline
         )
 
         // ui
-        const gui = new SceneGui(sdfCube.material)
+        const gui = new SceneGui(sdfCube.material, clipPlane)
 
         // props
         this.aspectLayout = aspectLayout

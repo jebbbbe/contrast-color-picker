@@ -1,100 +1,103 @@
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import { AspectLayout } from "./utils/AspectLayout.js"
+import { SceneGui } from "./gui"
 import { SdfMaterial } from "./objects/SdfMaterial"
 
 export class ThreeSceneApp {
-    private readonly container: HTMLElement
     private readonly renderer: THREE.WebGLRenderer
     private readonly scene: THREE.Scene
     private readonly camera: THREE.PerspectiveCamera
     private readonly controls: OrbitControls
     private readonly aspectLayout: AspectLayout
-    private readonly grid: THREE.GridHelper
-    private readonly cube: THREE.Mesh<
-        THREE.BoxGeometry,
-        THREE.MeshStandardMaterial
-    >
-    private readonly sdfCube: THREE.Mesh<THREE.BoxGeometry, SdfMaterial>
-    private readonly ambientLight: THREE.AmbientLight
-    private readonly directionalLight: THREE.DirectionalLight
+    private readonly gui: SceneGui
     private animationFrameId = 0
 
     constructor(container: HTMLElement) {
-        this.container = container
-        this.aspectLayout = new AspectLayout("dynamic", this.container)
+        // layout
+        const aspectLayout = new AspectLayout("dynamic", container)
 
-        this.renderer = new THREE.WebGLRenderer({ antialias: true })
-        this.renderer.setPixelRatio(globalThis.devicePixelRatio)
-        this.renderer.setSize(1, 1)
-        this.container.appendChild(this.renderer.domElement)
+        // renderer
+        const renderer = new THREE.WebGLRenderer({ antialias: true })
+        renderer.setPixelRatio(globalThis.devicePixelRatio)
+        renderer.setSize(1, 1)
+        container.appendChild(renderer.domElement)
 
-        this.scene = new THREE.Scene()
-        this.scene.background = new THREE.Color("#dee4ef")
+        // scene
+        const scene = new THREE.Scene()
+        scene.background = new THREE.Color("#dee4ef")
 
-        this.camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
-        this.camera.position.set(3, 3, 5)
+        // camera
+        const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
+        camera.position.set(3, 3, 5)
 
-        this.controls = new OrbitControls(this.camera, this.renderer.domElement)
-        this.controls.enableDamping = true
-        this.controls.target.set(0, 0, 0)
-        this.camera.lookAt(this.controls.target)
-        this.controls.update()
+        // controls
+        const controls = new OrbitControls(camera, renderer.domElement)
+        controls.enableDamping = true
+        controls.target.set(0, 0, 0)
+        camera.lookAt(controls.target)
+        controls.update()
 
-        this.ambientLight = new THREE.AmbientLight(0xffffff, 1.2)
-        this.directionalLight = new THREE.DirectionalLight(0xffffff, 2)
-        this.directionalLight.position.set(4, 6, 8)
+        // lights
+        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2)
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 2)
+        directionalLight.position.set(4, 6, 8)
 
-        this.cube = new THREE.Mesh(
+        // content
+        const cube = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1),
             new THREE.MeshStandardMaterial({ color: "#8b5cf6" })
         )
-        this.cube.position.x = 3
+        cube.position.x = 3
 
-        this.sdfCube = new THREE.Mesh(
+        const sdfCube = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1),
             new SdfMaterial({
-                lightPosition: this.directionalLight.position,
+                lightPosition: directionalLight.position,
             })
         )
+        const sdfWireframe = new THREE.LineSegments(
+            new THREE.EdgesGeometry(sdfCube.geometry),
+            new THREE.LineBasicMaterial({ color: 0x9ca3af })
+        )
+        const grid = new THREE.GridHelper(10, 10, 0x64748b, 0xcbd5e1)
 
-        this.grid = new THREE.GridHelper(10, 10, 0x64748b, 0xcbd5e1)
-
-        this.scene.add(
-            this.ambientLight,
-            this.directionalLight,
-            this.grid,
-            this.cube,
-            this.sdfCube
+        scene.add(
+            ambientLight,
+            directionalLight,
+            grid,
+            cube,
+            sdfCube,
+            sdfWireframe
         )
 
-        this.aspectLayout.addResizeListener(
-            this.renderer,
-            this.camera,
-            this.handleResize
-        )
-        this.animate()
+        // ui
+        const gui = new SceneGui(sdfCube.material)
+
+        // props
+        this.aspectLayout = aspectLayout
+        this.renderer = renderer
+        this.scene = scene
+        this.camera = camera
+        this.controls = controls
+        this.gui = gui
+
+        // listeners
+        aspectLayout.addResizeListener(renderer, camera, this.handleResize)
     }
 
     dispose(): void {
         globalThis.cancelAnimationFrame(this.animationFrameId)
         this.aspectLayout.removeResizeListener()
         this.controls.dispose()
-        this.grid.geometry.dispose()
-        if (Array.isArray(this.grid.material)) {
-            this.grid.material.forEach((material) => material.dispose())
-        } else {
-            this.grid.material.dispose()
-        }
-        this.cube.geometry.dispose()
-        this.cube.material.dispose()
-        this.sdfCube.geometry.dispose()
-        this.sdfCube.material.dispose()
+        this.gui.destroy()
+        this.disposeSceneResources()
         this.renderer.dispose()
         this.renderer.domElement.remove()
+        this.animationFrameId = 0
     }
 
-    private readonly animate = (): void => {
+    readonly animate = (): void => {
         this.controls.update()
         this.renderer.render(this.scene, this.camera)
         this.animationFrameId = globalThis.requestAnimationFrame(this.animate)
@@ -103,6 +106,23 @@ export class ThreeSceneApp {
     private readonly handleResize = (): void => {
         this.renderer.setPixelRatio(globalThis.devicePixelRatio)
         this.controls.update()
+    }
+
+    private disposeSceneResources(): void {
+        this.scene.traverse((object) => {
+            const mesh = object as THREE.Object3D & {
+                geometry?: THREE.BufferGeometry
+                material?: THREE.Material | THREE.Material[]
+            }
+
+            mesh.geometry?.dispose()
+
+            if (Array.isArray(mesh.material)) {
+                mesh.material.forEach((material) => material.dispose())
+            } else {
+                mesh.material?.dispose()
+            }
+        })
     }
 }
 

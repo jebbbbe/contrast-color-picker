@@ -1,6 +1,7 @@
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import { AspectLayout } from "./utils/AspectLayout.js"
+import { SdfMaterial } from "./objects/SdfMaterial"
 
 export class ThreeSceneApp {
     private readonly container: HTMLElement
@@ -14,6 +15,7 @@ export class ThreeSceneApp {
         THREE.BoxGeometry,
         THREE.MeshStandardMaterial
     >
+    private readonly sdfCube: THREE.Mesh<THREE.BoxGeometry, SdfMaterial>
     private readonly ambientLight: THREE.AmbientLight
     private readonly directionalLight: THREE.DirectionalLight
     private animationFrameId = 0
@@ -43,13 +45,26 @@ export class ThreeSceneApp {
             new THREE.BoxGeometry(1, 1, 1),
             new THREE.MeshStandardMaterial({ color: "#8b5cf6" })
         )
+        this.cube.position.x = 3
+
+        this.sdfCube = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new SdfMaterial()
+        )
+
         this.grid = new THREE.GridHelper(10, 10, 0x64748b, 0xcbd5e1)
 
         this.ambientLight = new THREE.AmbientLight(0xffffff, 1.2)
         this.directionalLight = new THREE.DirectionalLight(0xffffff, 2)
         this.directionalLight.position.set(4, 6, 8)
 
-        this.scene.add(this.ambientLight, this.directionalLight, this.grid, this.cube)
+        this.scene.add(
+            this.ambientLight,
+            this.directionalLight,
+            this.grid,
+            this.cube,
+            this.sdfCube
+        )
 
         this.aspectLayout.addResizeListener(
             this.renderer,
@@ -71,6 +86,8 @@ export class ThreeSceneApp {
         }
         this.cube.geometry.dispose()
         this.cube.material.dispose()
+        this.sdfCube.geometry.dispose()
+        this.sdfCube.material.dispose()
         this.renderer.dispose()
         this.renderer.domElement.remove()
     }

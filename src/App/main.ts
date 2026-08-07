@@ -92,7 +92,7 @@ export class ThreeSceneApp {
         )
 
         // ui
-        const gui = new SceneGui(sdfMesh.material, clipPlane)
+        const gui = new SceneGui(sdfMesh.material, colorCube.material, clipPlane)
 
         // props
         this.aspectLayout = aspectLayout

@@ -52,10 +52,31 @@ export class ThreeSceneApp {
         )
         cube.position.x = 3
 
-        const colorCube = new THREE.Mesh(
+        const colorCubeGroup = new THREE.Group()
+        const colorCubeMesh = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1),
             new ColorCube.ColorCubeMaterial()
         )
+        const colorCubeEdges = new THREE.EdgesGeometry(colorCubeMesh.geometry)
+        const edgePositions = colorCubeEdges.getAttribute("position")
+        const edgeColors = edgePositions.array.slice() as Float32Array
+
+        for (let i = 0; i < edgeColors.length; i++) {
+            edgeColors[i] += 0.5
+        }
+
+        colorCubeEdges.setAttribute(
+            "color",
+            new THREE.BufferAttribute(edgeColors, 3)
+        )
+        const colorCubeWireframe = new THREE.LineSegments(
+            colorCubeEdges,
+            new THREE.LineBasicMaterial({ vertexColors: true })
+        )
+        colorCubeGroup.add(colorCubeMesh, colorCubeWireframe)
+        colorCubeGroup.scale.set(1, 1, 1)
+        colorCubeGroup.rotation.set(0, 0, 0)
+        colorCubeGroup.position.set(0, 0, 0)
 
         const sdfGroup = new THREE.Group()
         const sdfMesh = new THREE.Mesh(
@@ -85,14 +106,18 @@ export class ThreeSceneApp {
             ambientLight,
             directionalLight,
             grid,
-            colorCube,
+            colorCubeGroup,
             cube,
             sdfGroup,
             clipPlane.outline
         )
 
         // ui
-        const gui = new SceneGui(sdfMesh.material, colorCube.material, clipPlane)
+        const gui = new SceneGui(
+            sdfMesh.material,
+            colorCubeMesh.material,
+            clipPlane
+        )
 
         // props
         this.aspectLayout = aspectLayout

@@ -3,6 +3,7 @@ uniform mat4 projectionMatrix;
 uniform float contrastRatio;
 uniform uint targetOutput;
 uniform uint transformMode;
+uniform uint transformSpaceMode;
 
 #if NUM_CLIPPING_PLANES > 0
 uniform vec4 clippingPlanes[ NUM_CLIPPING_PLANES ];
@@ -151,6 +152,42 @@ vec3 applyVisionTransform(vec3 sampleColor) {
     }
 }
 
+mat3 getTransformSpaceMatrix() {
+    switch (int(transformSpaceMode)) {
+        case 1:
+            return protanopiaMatrix;
+        case 2:
+            return deuteranopiaMatrix;
+        case 3:
+            return tritanopiaMatrix;
+        case 4:
+            return monochromacyMatrix;
+        default:
+            return mat3(1.0);
+    }
+}
+
+float customMat3Density(vec3 pos) {
+    mat3 transformMatrix = getTransformSpaceMatrix();
+    float det = determinant(transformMatrix);
+
+    if (abs(det) < 0.00001) {
+        return MAX_DENSITY;
+    }
+
+    vec3 inversePos = inverse(transformMatrix) * pos;
+
+    if (
+        inversePos.r >= 0.0 && inversePos.r <= 1.0 &&
+        inversePos.g >= 0.0 && inversePos.g <= 1.0 &&
+        inversePos.b >= 0.0 && inversePos.b <= 1.0
+    ) {
+        return MAX_DENSITY;
+    }
+
+    return 0.0;
+}
+
 vec2 intersectBox(vec3 rayOrigin, vec3 rayDirection, vec3 boxMin, vec3 boxMax) {
     vec3 invDirection = 1.0 / rayDirection;
     vec3 tMin = (boxMin - rayOrigin) * invDirection;
@@ -252,6 +289,8 @@ void main() {
         }
 
         float density = densityByOppositeContrast(sampleColor);
+
+        density = min(density, customMat3Density(sampleColor));
 
         if (density <= 0.0) {
             continue;

@@ -86,6 +86,7 @@ export class ThreeSceneApp {
                 color: 0xffffff,
                 targetOutput: SDF.SdfTargetOutputLit,
                 shape: SDF.SdfShapeCutHollowSphere,
+                // side:THREE.DoubleSide,
             })
         )
         const sdfWireframe = new THREE.LineSegments(

@@ -28,12 +28,14 @@ export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
     contrastRatio?: number
     targetOutput?: number
     transformMode?: number
+    transformSpaceMode?: number
 }
 
 ;(UniformsLib as any).colorCube = {
     contrastRatio: { value: 4.5 },
     targetOutput: { value: ColorCubeTargetOutputColor },
     transformMode: { value: ColorCubeTransformModeDefault },
+    transformSpaceMode: { value: ColorCubeTransformModeDefault },
 }
 
 ;(ShaderLib as any).colorCube = {
@@ -74,6 +76,14 @@ export class ColorCubeMaterial extends ShaderMaterial {
 
     set transformMode(value: number) {
         this.uniforms.transformMode.value = Math.max(0, Math.floor(value))
+    }
+
+    get transformSpaceMode(): number {
+        return this.uniforms.transformSpaceMode.value
+    }
+
+    set transformSpaceMode(value: number) {
+        this.uniforms.transformSpaceMode.value = Math.max(0, Math.floor(value))
     }
 
     get contrastRatio(): number {

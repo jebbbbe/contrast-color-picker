@@ -62,12 +62,38 @@ export class SceneGui {
         colorCubeFolder
             .add(colorCubeMaterial, "targetOutput", colorCubeTargetOutputTitles)
             .name("Target Output")
-        colorCubeFolder
+        const outputSpaceController = colorCubeFolder
             .add(colorCubeMaterial, "transformMode", colorCubeTransformTitles)
             .name("Output Space")
+        const transformSpaceController = colorCubeFolder
+            .add(
+                colorCubeMaterial,
+                "transformSpaceMode",
+                colorCubeTransformTitles
+            )
+            .name("Transform Space")
         colorCubeFolder
             .add(colorCubeMaterial, "contrastRatio", 1.0, 21.0, 0.1)
             .name("Contrast Ratio")
+
+        const syncOutputSpaceState = (value: number): void => {
+            const isDefault = value === ColorCube.ColorCubeTransformModeDefault
+
+            if (isDefault) {
+                outputSpaceController.enable()
+                return
+            }
+
+            colorCubeMaterial.transformMode =
+                ColorCube.ColorCubeTransformModeDefault
+            outputSpaceController.updateDisplay()
+            outputSpaceController.disable()
+        }
+
+        transformSpaceController.onChange((value: number) => {
+            syncOutputSpaceState(value)
+        })
+        syncOutputSpaceState(colorCubeMaterial.transformSpaceMode)
 
         clipPlaneFolder.add(clipPlane, "enabled").name("Enabled")
         clipPlaneFolder

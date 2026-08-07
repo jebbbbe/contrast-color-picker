@@ -5,7 +5,7 @@ uniform mat4 modelMatrix;
 uniform mat4 projectionMatrix;
 uniform uint shape;
 uniform uint targetOutput;
-uniform uint clipToBounds;
+uniform bool clipToBounds;
 
 #if NUM_CLIPPING_PLANES > 0
 uniform vec4 clippingPlanes[ NUM_CLIPPING_PLANES ];
@@ -167,7 +167,7 @@ float shapeSdf(vec3 p) {
 float sceneSdf(vec3 p) {
     float shapeDistance = shapeSdf(p);
 
-    if (clipToBounds == 1u) {
+    if (clipToBounds == true) {
         return max(shapeDistance, bboxSdf(p));
     }
 

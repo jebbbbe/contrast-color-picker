@@ -1,7 +1,8 @@
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import { ClipPlaneController, defaultClipPlaneZ } from "./objects/clipPlane"
-import * as SDF from "./objects/SdfMaterial"
+import * as ColorCube from "./objects/materials/ColorCubeMaterial.js"
+import * as SDF from "./objects/materials/SdfMaterial.js"
 import { AspectLayout } from "./utils/AspectLayout.js"
 import { SceneGui } from "./gui"
 
@@ -51,6 +52,11 @@ export class ThreeSceneApp {
         )
         cube.position.x = 3
 
+        const colorCube = new THREE.Mesh(
+            new THREE.BoxGeometry(1, 1, 1),
+            new ColorCube.ColorCubeMaterial()
+        )
+
         const sdfGroup = new THREE.Group()
         const sdfMesh = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1),
@@ -68,7 +74,7 @@ export class ThreeSceneApp {
         sdfGroup.add(sdfMesh, sdfWireframe)
         sdfGroup.scale.set(1, 1, 1)
         sdfGroup.rotation.set(0, 0, 0)
-        sdfGroup.position.set(0, 0, 0)
+        sdfGroup.position.set(2, 0, 2)
 
         const grid = new THREE.GridHelper(10, 10, 0x64748b, 0xcbd5e1)
 
@@ -79,6 +85,7 @@ export class ThreeSceneApp {
             ambientLight,
             directionalLight,
             grid,
+            colorCube,
             cube,
             sdfGroup,
             clipPlane.outline

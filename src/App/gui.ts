@@ -1,7 +1,7 @@
 import GUI from "lil-gui"
 
 import type { ClipPlaneController } from "./objects/clipPlane"
-import * as SDF from "./objects/SdfMaterial"
+import * as SDF from "./objects/materials/SdfMaterial"
 
 const targetOutputTitles = {
     Color: SDF.SdfTargetOutputColor,

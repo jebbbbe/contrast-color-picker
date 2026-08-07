@@ -27,5 +27,5 @@
         "noFallthroughCasesInSwitch": true
     },
     "include": ["src/**/*.ts", "src/**/*.tsx"],
-    "exclude": ["src/App/objects/**/*", "src/AppEventManager/**/*", "src/components/**/*", "src/types.ts"]
+    "exclude": ["src/components/**/*", "src/types.ts"]
 }

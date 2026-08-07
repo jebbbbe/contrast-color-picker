@@ -9,8 +9,8 @@ import {
     Vector3,
 } from "three"
 
-import sdfMaterialFrag from "./glsl/SdfMaterial.frag.glsl?raw"
-import sdfMaterialVert from "./glsl/SdfMaterial.vert.glsl?raw"
+import frag from "./glsl/SdfMaterial.frag.glsl?raw"
+import vert from "./glsl/SdfMaterial.vert.glsl?raw"
 
 import type { ColorRepresentation, ShaderMaterialParameters } from "three"
 
@@ -51,8 +51,8 @@ export type SdfMaterialParameters = ShaderMaterialParameters & {
         UniformsLib.fog,
         (UniformsLib as any).sdf,
     ]),
-    vertexShader: sdfMaterialVert,
-    fragmentShader: sdfMaterialFrag,
+    vertexShader: vert,
+    fragmentShader: frag,
 }
 
 export class SdfMaterial extends ShaderMaterial {

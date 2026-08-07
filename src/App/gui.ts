@@ -29,6 +29,14 @@ const colorCubeTargetOutputTitles = {
     Steps: ColorCube.ColorCubeTargetOutputSteps,
 } as const
 
+const colorCubeTransformTitles = {
+    Default: ColorCube.ColorCubeTransformModeDefault,
+    Protanopia: ColorCube.ColorCubeTransformModeProtanopia,
+    Deuteranopia: ColorCube.ColorCubeTransformModeDeuteranopia,
+    Tritanopia: ColorCube.ColorCubeTransformModeTritanopia,
+    Monochromacy: ColorCube.ColorCubeTransformModeMonochromacy,
+} as const
+
 export class SceneGui {
     readonly gui: GUI
 
@@ -54,6 +62,9 @@ export class SceneGui {
         colorCubeFolder
             .add(colorCubeMaterial, "targetOutput", colorCubeTargetOutputTitles)
             .name("Target Output")
+        colorCubeFolder
+            .add(colorCubeMaterial, "transformMode", colorCubeTransformTitles)
+            .name("Output Space")
         colorCubeFolder
             .add(colorCubeMaterial, "contrastRatio", 1.0, 21.0, 0.1)
             .name("Contrast Ratio")

@@ -18,14 +18,22 @@ export const ColorCubeTargetOutputNormal = 2
 export const ColorCubeTargetOutputSteps = 3
 export const ColorCubeTargetOutputWorldPosition = 4
 
+export const ColorCubeTransformModeDefault = 0
+export const ColorCubeTransformModeProtanopia = 1
+export const ColorCubeTransformModeDeuteranopia = 2
+export const ColorCubeTransformModeTritanopia = 3
+export const ColorCubeTransformModeMonochromacy = 4
+
 export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
     contrastRatio?: number
     targetOutput?: number
+    transformMode?: number
 }
 
 ;(UniformsLib as any).colorCube = {
     contrastRatio: { value: 4.5 },
     targetOutput: { value: ColorCubeTargetOutputColor },
+    transformMode: { value: ColorCubeTransformModeDefault },
 }
 
 ;(ShaderLib as any).colorCube = {
@@ -58,6 +66,14 @@ export class ColorCubeMaterial extends ShaderMaterial {
 
     set targetOutput(value: number) {
         this.uniforms.targetOutput.value = Math.max(0, Math.floor(value))
+    }
+
+    get transformMode(): number {
+        return this.uniforms.transformMode.value
+    }
+
+    set transformMode(value: number) {
+        this.uniforms.transformMode.value = Math.max(0, Math.floor(value))
     }
 
     get contrastRatio(): number {

@@ -2,6 +2,7 @@ uniform mat4 modelMatrix;
 uniform mat4 projectionMatrix;
 uniform float contrastRatio;
 uniform uint targetOutput;
+uniform uint transformMode;
 
 #if NUM_CLIPPING_PLANES > 0
 uniform vec4 clippingPlanes[ NUM_CLIPPING_PLANES ];
@@ -16,11 +17,39 @@ const uint TARGET_OUTPUT_LIT = 1u;
 const uint TARGET_OUTPUT_NORMAL = 2u;
 const uint TARGET_OUTPUT_STEPS = 3u;
 const uint TARGET_OUTPUT_WORLD_POSITION = 4u;
+
+const uint TRANSFORM_MODE_DEFAULT = 0u;
+const uint TRANSFORM_MODE_PROTANOPIA = 1u;
+const uint TRANSFORM_MODE_DEUTERANOPIA = 2u;
+const uint TRANSFORM_MODE_TRITANOPIA = 3u;
+const uint TRANSFORM_MODE_MONOCHROMACY = 4u;
+
 const int MAX_RAY_STEPS = 96;
 const float MAX_DENSITY = 500000.0;
 
 const vec3 cubeMin = vec3(-0.5);
 const vec3 cubeMax = vec3(0.5);
+
+const mat3 protanopiaMatrix = mat3(
+    0.567, 0.558, 0.0,
+    0.433, 0.442, 0.242,
+    0.0,   0.0,   0.758
+);
+const mat3 deuteranopiaMatrix = mat3(
+    0.625, 0.7, 0.0,
+    0.375, 0.3, 0.3,
+    0.0,   0.0, 0.7
+);
+const mat3 tritanopiaMatrix = mat3(
+    0.95,  0.433, 0.0,
+    0.05,  0.567, 0.475,
+    0.0,   0.0,   0.525
+);
+const mat3 monochromacyMatrix = mat3(
+    0.299, 0.299, 0.299,
+    0.587, 0.587, 0.587,
+    0.114, 0.114, 0.114
+);
 
 float sdBox(vec3 p, vec3 b) {
     vec3 q = abs(p) - b;
@@ -105,6 +134,21 @@ float densityByOppositeContrast(vec3 sampleColor) {
     float l2 = min(luminance, oppositeLuminance);
     float contrastRatioCalc = (l1 + 0.05) / (l2 + 0.05);
     return contrastRatioCalc < contrastRatio ? 0.0 : MAX_DENSITY;
+}
+
+vec3 applyVisionTransform(vec3 sampleColor) {
+    switch (int(transformMode)) {
+        case 1:
+            return protanopiaMatrix * sampleColor;
+        case 2:
+            return deuteranopiaMatrix * sampleColor;
+        case 3:
+            return tritanopiaMatrix * sampleColor;
+        case 4:
+            return monochromacyMatrix * sampleColor;
+        default:
+            return sampleColor;
+    }
 }
 
 vec2 intersectBox(vec3 rayOrigin, vec3 rayDirection, vec3 boxMin, vec3 boxMax) {
@@ -243,6 +287,8 @@ void main() {
         outputColor = vec3(stepsTaken / float(MAX_RAY_STEPS));
     } else if (targetOutput == TARGET_OUTPUT_WORLD_POSITION) {
         outputColor = firstHitWorldPoint;
+    } else {
+        outputColor = applyVisionTransform(outputColor);
     }
 
     vec4 clipPosition = projectionMatrix * viewMatrix * vec4(firstHitWorldPoint, 1.0);

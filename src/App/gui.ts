@@ -54,6 +54,9 @@ export class SceneGui {
         colorCubeFolder
             .add(colorCubeMaterial, "targetOutput", colorCubeTargetOutputTitles)
             .name("Target Output")
+        colorCubeFolder
+            .add(colorCubeMaterial, "contrastRatio", 1.0, 21.0, 0.1)
+            .name("Contrast Ratio")
 
         clipPlaneFolder.add(clipPlane, "enabled").name("Enabled")
         clipPlaneFolder

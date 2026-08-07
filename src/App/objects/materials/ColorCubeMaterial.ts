@@ -1,5 +1,5 @@
 import {
-    FrontSide,
+    DoubleSide,
     GLSL3,
     ShaderLib,
     ShaderMaterial,
@@ -19,10 +19,12 @@ export const ColorCubeTargetOutputSteps = 3
 export const ColorCubeTargetOutputWorldPosition = 4
 
 export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
+    contrastRatio?: number
     targetOutput?: number
 }
 
 ;(UniformsLib as any).colorCube = {
+    contrastRatio: { value: 4.5 },
     targetOutput: { value: ColorCubeTargetOutputColor },
 }
 
@@ -44,7 +46,7 @@ export class ColorCubeMaterial extends ShaderMaterial {
             vertexShader: (ShaderLib as any).colorCube.vertexShader,
             fragmentShader: (ShaderLib as any).colorCube.fragmentShader,
             clipping: true,
-            side: FrontSide,
+            side: DoubleSide,
         })
 
         this.setValues(parameters)
@@ -56,6 +58,14 @@ export class ColorCubeMaterial extends ShaderMaterial {
 
     set targetOutput(value: number) {
         this.uniforms.targetOutput.value = Math.max(0, Math.floor(value))
+    }
+
+    get contrastRatio(): number {
+        return this.uniforms.contrastRatio.value
+    }
+
+    set contrastRatio(value: number) {
+        this.uniforms.contrastRatio.value = Math.max(1, value)
     }
 }
 

@@ -200,10 +200,14 @@ vec2 intersectBox(vec3 rayOrigin, vec3 rayDirection, vec3 boxMin, vec3 boxMax) {
     return vec2(entry, exit);
 }
 
-void main() {
-    mat4 inverseModelMatrix = inverse(modelMatrix);
-    vec3 rayOrigin = (inverseModelMatrix * vec4(cameraPosition, 1.0)).xyz;
-    vec3 rayDirection = normalize(localPosition - rayOrigin);
+vec4 raycastAccumulation(
+    vec3 rayOrigin,
+    vec3 rayDirection,
+    inout vec3 firstHitWorldPoint,
+    inout float stepsTaken
+) {
+    vec4 accumulatedColor = vec4(0.0);
+
     vec2 bounds = intersectBox(
         rayOrigin,
         rayDirection,
@@ -218,11 +222,7 @@ void main() {
     float tStart = max(bounds.x, 0.0);
     float tEnd = bounds.y;
     float dt = (tEnd - tStart) / float(MAX_RAY_STEPS);
-    float stepsTaken = 0.0;
-    vec3 accumulatedColor = vec3(0.0);
-    float accumulatedAlpha = 0.0;
     bool foundDensity = false;
-    vec3 firstHitWorldPoint = vec3(0.0);
 
     for (int i = 0; i < MAX_RAY_STEPS; i++) {
         stepsTaken += 1.0;
@@ -246,28 +246,43 @@ void main() {
         }
 
         float alphaStep = 1.0 - exp(-density * dt);
-        accumulatedColor += (1.0 - accumulatedAlpha) * sampleColor * alphaStep;
-        accumulatedAlpha += (1.0 - accumulatedAlpha) * alphaStep;
+        accumulatedColor.rgb += (1.0 - accumulatedColor.a) * sampleColor * alphaStep;
+        accumulatedColor.a += (1.0 - accumulatedColor.a) * alphaStep;
 
-        if (accumulatedAlpha >= 0.95) {
+        if (accumulatedColor.a >= 0.95) {
             break;
         }
     }
 
-    if (!foundDensity || accumulatedAlpha <= 0.0) {
+    if (!foundDensity || accumulatedColor.a <= 0.0) {
         discard;
     }
 
-    vec3 outputColor = accumulatedColor;
+    return accumulatedColor;
+}
+
+void main() {
+    mat4 inverseModelMatrix = inverse(modelMatrix);
+    vec3 rayOrigin = (inverseModelMatrix * vec4(cameraPosition, 1.0)).xyz;
+    vec3 rayDirection = normalize(localPosition - rayOrigin);
+    vec3 firstHitWorldPoint = vec3(0.0);
+    float stepsTaken = 0.0;
+
+    vec4 outputColor = raycastAccumulation(
+        rayOrigin,
+        rayDirection,
+        firstHitWorldPoint,
+        stepsTaken
+    );
 
     if (targetOutput == TARGET_OUTPUT_STEPS) {
-        outputColor = vec3(stepsTaken / float(MAX_RAY_STEPS));
+        outputColor = vec4(vec3(stepsTaken / float(MAX_RAY_STEPS)), outputColor.a);
     } else {
-        outputColor = applyVisionTransform(outputColor);
+        outputColor.rgb = applyVisionTransform(outputColor.rgb);
     }
 
     vec4 clipPosition = projectionMatrix * viewMatrix * vec4(firstHitWorldPoint, 1.0);
     gl_FragDepth = clamp(clipPosition.z / clipPosition.w * 0.5 + 0.5, 0.0, 1.0);
 
-    outColor = vec4(outputColor, accumulatedAlpha);
+    outColor = outputColor;
 }

@@ -22,6 +22,7 @@ const uint TRANSFORM_MODE_MONOCHROMACY = 4u;
 
 const int MAX_RAY_STEPS = 96;
 const float MAX_DENSITY = 500000.0;
+const float TRANSFORM_BOUNDS_EPSILON = 0.0001;
 
 const vec3 cubeMin = vec3(-0.5);
 const vec3 cubeMax = vec3(0.5);
@@ -178,9 +179,12 @@ float customMat3Density(vec3 pos) {
     vec3 inversePos = inverse(transformMatrix) * pos;
 
     if (
-        inversePos.r >= 0.0 && inversePos.r <= 1.0 &&
-        inversePos.g >= 0.0 && inversePos.g <= 1.0 &&
-        inversePos.b >= 0.0 && inversePos.b <= 1.0
+        inversePos.r >= -TRANSFORM_BOUNDS_EPSILON &&
+        inversePos.r <= 1.0 + TRANSFORM_BOUNDS_EPSILON &&
+        inversePos.g >= -TRANSFORM_BOUNDS_EPSILON &&
+        inversePos.g <= 1.0 + TRANSFORM_BOUNDS_EPSILON &&
+        inversePos.b >= -TRANSFORM_BOUNDS_EPSILON &&
+        inversePos.b <= 1.0 + TRANSFORM_BOUNDS_EPSILON
     ) {
         return MAX_DENSITY;
     }
@@ -198,6 +202,35 @@ vec2 intersectBox(vec3 rayOrigin, vec3 rayDirection, vec3 boxMin, vec3 boxMax) {
     float entry = max(max(tNear.x, tNear.y), tNear.z);
     float exit = min(min(tFar.x, tFar.y), tFar.z);
     return vec2(entry, exit);
+}
+
+vec2 intersectColorCubeBounds(vec3 rayOrigin, vec3 rayDirection) {
+    vec2 cubeBounds = intersectBox(rayOrigin, rayDirection, cubeMin, cubeMax);
+
+    if (transformSpaceMode == TRANSFORM_MODE_DEFAULT) {
+        return cubeBounds;
+    }
+
+    mat3 transformMatrix = getTransformSpaceMatrix();
+    float det = determinant(transformMatrix);
+
+    if (abs(det) < 0.00001) {
+        return cubeBounds;
+    }
+
+    mat3 inverseTransformMatrix = inverse(transformMatrix);
+    vec3 colorRayOrigin = rayOrigin - cubeMin;
+    vec2 transformBounds = intersectBox(
+        inverseTransformMatrix * colorRayOrigin,
+        inverseTransformMatrix * rayDirection,
+        vec3(0.0),
+        vec3(1.0)
+    );
+
+    return vec2(
+        max(cubeBounds.x, transformBounds.x),
+        min(cubeBounds.y, transformBounds.y)
+    );
 }
 
 vec4 raycastAccumulation(
@@ -263,8 +296,11 @@ vec4 raycastAccumulation(
     return accumulatedColor;
 }
 
-bool sampleHitsDefaultSpace(vec3 sampleColor) {
-    return densityByOppositeContrast(sampleColor) > 0.0;
+bool sampleHits(vec3 sampleColor) {
+    return min(
+        densityByOppositeContrast(sampleColor),
+        customMat3Density(sampleColor)
+    ) > 0.0;
 }
 
 vec4 raycastBinarySearch(
@@ -276,12 +312,7 @@ vec4 raycastBinarySearch(
 ) {
     stepCountMax = 10.0;
 
-    vec2 bounds = intersectBox(
-        rayOrigin,
-        rayDirection,
-        cubeMin,
-        cubeMax
-    );
+    vec2 bounds = intersectColorCubeBounds(rayOrigin, rayDirection);
 
     if (bounds.x > bounds.y) {
         discard;
@@ -292,7 +323,7 @@ vec4 raycastBinarySearch(
     vec3 nearPoint = rayOrigin + rayDirection * missT;
     vec3 nearColor = nearPoint - cubeMin;
 
-    if (sampleHitsDefaultSpace(nearColor)) {
+    if (sampleHits(nearColor)) {
         firstHitWorldPoint = (modelMatrix * vec4(nearPoint, 1.0)).xyz;
         return vec4(nearColor, 1.0);
     }
@@ -300,7 +331,7 @@ vec4 raycastBinarySearch(
     vec3 farPoint = rayOrigin + rayDirection * hitT;
     vec3 farColor = farPoint - cubeMin;
 
-    if (!sampleHitsDefaultSpace(farColor)) {
+    if (!sampleHits(farColor)) {
         discard;
     }
 
@@ -311,7 +342,7 @@ vec4 raycastBinarySearch(
         vec3 midPoint = rayOrigin + rayDirection * midT;
         vec3 midColor = midPoint - cubeMin;
 
-        if (sampleHitsDefaultSpace(midColor)) {
+        if (sampleHits(midColor)) {
             hitT = midT;
             farPoint = midPoint;
             farColor = midColor;

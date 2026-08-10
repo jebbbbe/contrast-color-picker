@@ -1,6 +1,8 @@
 uniform mat4 modelMatrix;
 uniform mat4 projectionMatrix;
 uniform float contrastRatio;
+uniform vec3 targetColor;
+uniform bool useTargetColor;
 uniform uint targetOutput;
 uniform uint transformMode;
 uniform uint transformSpaceMode;
@@ -129,10 +131,15 @@ vec3 getOppositeHSLColor(vec3 rgb) {
 
 float densityByOppositeContrast(vec3 sampleColor) {
     float luminance = dot(sampleColor, vec3(0.2126, 0.7152, 0.0722));
-    vec3 oppositeColor = getOppositeHSLColor(sampleColor);
-    float oppositeLuminance = dot(oppositeColor, vec3(0.2126, 0.7152, 0.0722));
-    float l1 = max(luminance, oppositeLuminance);
-    float l2 = min(luminance, oppositeLuminance);
+    vec3 contrastTarget = useTargetColor
+        ? targetColor
+        : getOppositeHSLColor(sampleColor);
+    float contrastTargetLuminance = dot(
+        contrastTarget,
+        vec3(0.2126, 0.7152, 0.0722)
+    );
+    float l1 = max(luminance, contrastTargetLuminance);
+    float l2 = min(luminance, contrastTargetLuminance);
     float contrastRatioCalc = (l1 + 0.05) / (l2 + 0.05);
     return contrastRatioCalc < contrastRatio ? 0.0 : MAX_DENSITY;
 }

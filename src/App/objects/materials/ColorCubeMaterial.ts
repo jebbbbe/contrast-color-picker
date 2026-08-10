@@ -1,4 +1,5 @@
 import {
+    Color,
     DoubleSide,
     GLSL3,
     ShaderLib,
@@ -10,7 +11,7 @@ import {
 import frag from "./glsl/ColorCubeMaterial.frag.glsl?raw"
 import vert from "./glsl/SdfMaterial.vert.glsl?raw"
 
-import type { ShaderMaterialParameters } from "three"
+import type { ColorRepresentation, ShaderMaterialParameters } from "three"
 
 export const ColorCubeTargetOutputColor = 0
 export const ColorCubeTargetOutputLit = 1
@@ -26,6 +27,8 @@ export const ColorCubeTransformModeMonochromacy = 4
 
 export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
     contrastRatio?: number
+    targetColor?: ColorRepresentation
+    useTargetColor?: boolean
     targetOutput?: number
     transformMode?: number
     transformSpaceMode?: number
@@ -33,6 +36,8 @@ export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
 
 ;(UniformsLib as any).colorCube = {
     contrastRatio: { value: 4.5 },
+    targetColor: { value: new Color("#ffffff") },
+    useTargetColor: { value: false },
     targetOutput: { value: ColorCubeTargetOutputColor },
     transformMode: { value: ColorCubeTransformModeDefault },
     transformSpaceMode: { value: ColorCubeTransformModeDefault },
@@ -68,6 +73,22 @@ export class ColorCubeMaterial extends ShaderMaterial {
 
     set targetOutput(value: number) {
         this.uniforms.targetOutput.value = Math.max(0, Math.floor(value))
+    }
+
+    get targetColor(): Color {
+        return this.uniforms.targetColor.value
+    }
+
+    set targetColor(value: ColorRepresentation) {
+        this.uniforms.targetColor.value.set(value)
+    }
+
+    get useTargetColor(): boolean {
+        return this.uniforms.useTargetColor.value
+    }
+
+    set useTargetColor(value: number | boolean) {
+        this.uniforms.useTargetColor.value = Boolean(value)
     }
 
     get transformMode(): number {

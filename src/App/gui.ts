@@ -75,6 +75,12 @@ export class SceneGui {
         colorCubeFolder
             .add(colorCubeMaterial, "contrastRatio", 1.0, 21.0, 0.1)
             .name("Contrast Ratio")
+        const targetColorController = colorCubeFolder
+            .addColor(colorCubeMaterial, "targetColor")
+            .name("Target Color")
+        const useTargetColorController = colorCubeFolder
+            .add(colorCubeMaterial, "useTargetColor")
+            .name("Use Target Color")
 
         const syncOutputSpaceState = (value: number): void => {
             const isDefault = value === ColorCube.ColorCubeTransformModeDefault
@@ -94,6 +100,20 @@ export class SceneGui {
             syncOutputSpaceState(value)
         })
         syncOutputSpaceState(colorCubeMaterial.transformSpaceMode)
+
+        const syncTargetColorState = (value: boolean): void => {
+            if (value) {
+                targetColorController.enable()
+                return
+            }
+
+            targetColorController.disable()
+        }
+
+        syncTargetColorState(colorCubeMaterial.useTargetColor)
+        useTargetColorController.onChange((value: boolean) => {
+            syncTargetColorState(value)
+        })
 
         clipPlaneFolder.add(clipPlane, "enabled").name("Enabled")
         clipPlaneFolder

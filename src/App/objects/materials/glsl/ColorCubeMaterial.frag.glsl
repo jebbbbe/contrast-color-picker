@@ -204,9 +204,11 @@ vec4 raycastAccumulation(
     vec3 rayOrigin,
     vec3 rayDirection,
     inout vec3 firstHitWorldPoint,
-    inout float stepsTaken
+    inout float stepsTaken,
+    inout float stepCountMax
 ) {
     vec4 accumulatedColor = vec4(0.0);
+    stepCountMax = float(MAX_RAY_STEPS);
 
     vec2 bounds = intersectBox(
         rayOrigin,
@@ -261,22 +263,85 @@ vec4 raycastAccumulation(
     return accumulatedColor;
 }
 
+bool sampleHitsDefaultSpace(vec3 sampleColor) {
+    return densityByOppositeContrast(sampleColor) > 0.0;
+}
+
+vec4 raycastBinarySearch(
+    vec3 rayOrigin,
+    vec3 rayDirection,
+    inout vec3 firstHitWorldPoint,
+    inout float stepsTaken,
+    inout float stepCountMax
+) {
+    stepCountMax = 10.0;
+
+    vec2 bounds = intersectBox(
+        rayOrigin,
+        rayDirection,
+        cubeMin,
+        cubeMax
+    );
+
+    if (bounds.x > bounds.y) {
+        discard;
+    }
+
+    float missT = max(bounds.x, 0.0);
+    float hitT = bounds.y;
+    vec3 nearPoint = rayOrigin + rayDirection * missT;
+    vec3 nearColor = nearPoint - cubeMin;
+
+    if (sampleHitsDefaultSpace(nearColor)) {
+        firstHitWorldPoint = (modelMatrix * vec4(nearPoint, 1.0)).xyz;
+        return vec4(nearColor, 1.0);
+    }
+
+    vec3 farPoint = rayOrigin + rayDirection * hitT;
+    vec3 farColor = farPoint - cubeMin;
+
+    if (!sampleHitsDefaultSpace(farColor)) {
+        discard;
+    }
+
+    for (int i = 0; i < 10; i++) {
+        stepsTaken += 1.0;
+
+        float midT = (missT + hitT) * 0.5;
+        vec3 midPoint = rayOrigin + rayDirection * midT;
+        vec3 midColor = midPoint - cubeMin;
+
+        if (sampleHitsDefaultSpace(midColor)) {
+            hitT = midT;
+            farPoint = midPoint;
+            farColor = midColor;
+        } else {
+            missT = midT;
+        }
+    }
+
+    firstHitWorldPoint = (modelMatrix * vec4(farPoint, 1.0)).xyz;
+    return vec4(farColor, 1.0);
+}
+
 void main() {
     mat4 inverseModelMatrix = inverse(modelMatrix);
     vec3 rayOrigin = (inverseModelMatrix * vec4(cameraPosition, 1.0)).xyz;
     vec3 rayDirection = normalize(localPosition - rayOrigin);
     vec3 firstHitWorldPoint = vec3(0.0);
     float stepsTaken = 0.0;
+    float stepCountMax = 1.0;
 
-    vec4 outputColor = raycastAccumulation(
+    vec4 outputColor = raycastBinarySearch(
         rayOrigin,
         rayDirection,
         firstHitWorldPoint,
-        stepsTaken
+        stepsTaken,
+        stepCountMax
     );
 
     if (targetOutput == TARGET_OUTPUT_STEPS) {
-        outputColor = vec4(vec3(stepsTaken / float(MAX_RAY_STEPS)), outputColor.a);
+        outputColor = vec4(vec3(stepsTaken / stepCountMax), outputColor.a);
     } else {
         outputColor.rgb = applyVisionTransform(outputColor.rgb);
     }

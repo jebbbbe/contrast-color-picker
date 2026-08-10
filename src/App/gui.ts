@@ -25,7 +25,6 @@ const shapeTitles = {
 
 const colorCubeTargetOutputTitles = {
     Color: ColorCube.ColorCubeTargetOutputColor,
-    Normal: ColorCube.ColorCubeTargetOutputNormal,
     Steps: ColorCube.ColorCubeTargetOutputSteps,
 } as const
 

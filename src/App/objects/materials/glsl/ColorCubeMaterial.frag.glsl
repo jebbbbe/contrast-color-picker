@@ -7,19 +7,12 @@ uniform uint targetOutput;
 uniform uint transformMode;
 uniform uint transformSpaceMode;
 
-#if NUM_CLIPPING_PLANES > 0
-uniform vec4 clippingPlanes[ NUM_CLIPPING_PLANES ];
-#endif
-
 varying vec3 localPosition;
 
 out highp vec4 outColor;
 
 const uint TARGET_OUTPUT_COLOR = 0u;
-const uint TARGET_OUTPUT_LIT = 1u;
-const uint TARGET_OUTPUT_NORMAL = 2u;
 const uint TARGET_OUTPUT_STEPS = 3u;
-const uint TARGET_OUTPUT_WORLD_POSITION = 4u;
 
 const uint TRANSFORM_MODE_DEFAULT = 0u;
 const uint TRANSFORM_MODE_PROTANOPIA = 1u;
@@ -145,14 +138,14 @@ float densityByOppositeContrast(vec3 sampleColor) {
 }
 
 vec3 applyVisionTransform(vec3 sampleColor) {
-    switch (int(transformMode)) {
-        case 1:
+    switch (transformMode) {
+        case 1u:
             return protanopiaMatrix * sampleColor;
-        case 2:
+        case 2u:
             return deuteranopiaMatrix * sampleColor;
-        case 3:
+        case 3u:
             return tritanopiaMatrix * sampleColor;
-        case 4:
+        case 4u:
             return monochromacyMatrix * sampleColor;
         default:
             return sampleColor;
@@ -160,14 +153,14 @@ vec3 applyVisionTransform(vec3 sampleColor) {
 }
 
 mat3 getTransformSpaceMatrix() {
-    switch (int(transformSpaceMode)) {
-        case 1:
+    switch (transformSpaceMode) {
+        case 1u:
             return protanopiaMatrix;
-        case 2:
+        case 2u:
             return deuteranopiaMatrix;
-        case 3:
+        case 3u:
             return tritanopiaMatrix;
-        case 4:
+        case 4u:
             return monochromacyMatrix;
         default:
             return mat3(1.0);
@@ -207,57 +200,6 @@ vec2 intersectBox(vec3 rayOrigin, vec3 rayDirection, vec3 boxMin, vec3 boxMax) {
     return vec2(entry, exit);
 }
 
-vec3 boxNormal(vec3 p) {
-    vec3 ap = abs(p);
-
-    if (ap.x > ap.y && ap.x > ap.z) {
-        return vec3(sign(p.x), 0.0, 0.0);
-    }
-
-    if (ap.y > ap.z) {
-        return vec3(0.0, sign(p.y), 0.0);
-    }
-
-    return vec3(0.0, 0.0, sign(p.z));
-}
-
-#if NUM_CLIPPING_PLANES > 0
-bool clippedByPlanes(vec3 worldPoint) {
-    vec3 clipPosition = -(viewMatrix * vec4(worldPoint, 1.0)).xyz;
-
-    #pragma unroll_loop_start
-    for (int i = 0; i < UNION_CLIPPING_PLANES; i++) {
-        vec4 plane = clippingPlanes[i];
-
-        if (dot(clipPosition, plane.xyz) > plane.w) {
-            return true;
-        }
-    }
-    #pragma unroll_loop_end
-
-    #if UNION_CLIPPING_PLANES < NUM_CLIPPING_PLANES
-    bool clipped = true;
-
-    #pragma unroll_loop_start
-    for (int i = UNION_CLIPPING_PLANES; i < NUM_CLIPPING_PLANES; i++) {
-        vec4 plane = clippingPlanes[i];
-        clipped = (dot(clipPosition, plane.xyz) > plane.w) && clipped;
-    }
-    #pragma unroll_loop_end
-
-    if (clipped) {
-        return true;
-    }
-    #endif
-
-    return false;
-}
-#else
-bool clippedByPlanes(vec3 worldPoint) {
-    return false;
-}
-#endif
-
 void main() {
     mat4 inverseModelMatrix = inverse(modelMatrix);
     vec3 rayOrigin = (inverseModelMatrix * vec4(cameraPosition, 1.0)).xyz;
@@ -280,7 +222,6 @@ void main() {
     vec3 accumulatedColor = vec3(0.0);
     float accumulatedAlpha = 0.0;
     bool foundDensity = false;
-    vec3 firstHitLocalPoint = vec3(0.0);
     vec3 firstHitWorldPoint = vec3(0.0);
 
     for (int i = 0; i < MAX_RAY_STEPS; i++) {
@@ -290,10 +231,6 @@ void main() {
         vec3 samplePoint = rayOrigin + rayDirection * t;
         vec3 sampleColor = samplePoint - cubeMin;
         vec3 worldPoint = (modelMatrix * vec4(samplePoint, 1.0)).xyz;
-
-        if (clippedByPlanes(worldPoint)) {
-            continue;
-        }
 
         float density = densityByOppositeContrast(sampleColor);
 
@@ -305,7 +242,6 @@ void main() {
 
         if (!foundDensity) {
             foundDensity = true;
-            firstHitLocalPoint = samplePoint;
             firstHitWorldPoint = worldPoint;
         }
 
@@ -322,17 +258,10 @@ void main() {
         discard;
     }
 
-    vec3 normal = boxNormal(firstHitLocalPoint);
-    mat3 viewNormalMatrix = transpose(inverse(mat3(viewMatrix * modelMatrix)));
-    vec3 viewNormal = normalize(viewNormalMatrix * normal);
     vec3 outputColor = accumulatedColor;
 
-    if (targetOutput == TARGET_OUTPUT_NORMAL) {
-        outputColor = viewNormal * 0.5 + 0.5;
-    } else if (targetOutput == TARGET_OUTPUT_STEPS) {
+    if (targetOutput == TARGET_OUTPUT_STEPS) {
         outputColor = vec3(stepsTaken / float(MAX_RAY_STEPS));
-    } else if (targetOutput == TARGET_OUTPUT_WORLD_POSITION) {
-        outputColor = firstHitWorldPoint;
     } else {
         outputColor = applyVisionTransform(outputColor);
     }

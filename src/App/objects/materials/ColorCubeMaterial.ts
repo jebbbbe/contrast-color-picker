@@ -14,10 +14,7 @@ import vert from "./glsl/SdfMaterial.vert.glsl?raw"
 import type { ColorRepresentation, ShaderMaterialParameters } from "three"
 
 export const ColorCubeTargetOutputColor = 0
-export const ColorCubeTargetOutputLit = 1
-export const ColorCubeTargetOutputNormal = 2
 export const ColorCubeTargetOutputSteps = 3
-export const ColorCubeTargetOutputWorldPosition = 4
 
 export const ColorCubeTransformModeDefault = 0
 export const ColorCubeTransformModeProtanopia = 1
@@ -60,7 +57,6 @@ export class ColorCubeMaterial extends ShaderMaterial {
             uniforms: UniformsUtils.clone((ShaderLib as any).colorCube.uniforms),
             vertexShader: (ShaderLib as any).colorCube.vertexShader,
             fragmentShader: (ShaderLib as any).colorCube.fragmentShader,
-            clipping: true,
             side: DoubleSide,
         })
 

@@ -36,6 +36,11 @@ const colorCubeTransformTitles = {
     Monochromacy: ColorCube.ColorCubeTransformModeMonochromacy,
 } as const
 
+const colorCubeRaycastTitles = {
+    Accumulation: ColorCube.ColorCubeRaycastModeAccumulation,
+    "Binary Search": ColorCube.ColorCubeRaycastModeBinarySearch,
+} as const
+
 export class SceneGui {
     readonly gui: GUI
 
@@ -61,6 +66,9 @@ export class SceneGui {
         colorCubeFolder
             .add(colorCubeMaterial, "targetOutput", colorCubeTargetOutputTitles)
             .name("Target Output")
+        colorCubeFolder
+            .add(colorCubeMaterial, "raycastMode", colorCubeRaycastTitles)
+            .name("Raycast Mode")
         const outputSpaceController = colorCubeFolder
             .add(colorCubeMaterial, "transformMode", colorCubeTransformTitles)
             .name("Output Space")

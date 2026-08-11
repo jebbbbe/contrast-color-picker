@@ -1,6 +1,7 @@
 uniform mat4 modelMatrix;
 uniform mat4 projectionMatrix;
 uniform float contrastRatio;
+uniform uint raycastMode;
 uniform vec3 targetColor;
 uniform bool useTargetColor;
 uniform uint targetOutput;
@@ -19,6 +20,9 @@ const uint TRANSFORM_MODE_PROTANOPIA = 1u;
 const uint TRANSFORM_MODE_DEUTERANOPIA = 2u;
 const uint TRANSFORM_MODE_TRITANOPIA = 3u;
 const uint TRANSFORM_MODE_MONOCHROMACY = 4u;
+
+const uint RAYCAST_MODE_ACCUMULATION = 0u;
+const uint RAYCAST_MODE_BINARY_SEARCH = 1u;
 
 const int MAX_RAY_STEPS = 96;
 const float MAX_DENSITY = 500000.0;
@@ -335,7 +339,7 @@ vec4 raycastBinarySearch(
         discard;
     }
 
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 11; i++) {
         stepsTaken += 1.0;
 
         float midT = (missT + hitT) * 0.5;
@@ -363,13 +367,25 @@ void main() {
     float stepsTaken = 0.0;
     float stepCountMax = 1.0;
 
-    vec4 outputColor = raycastBinarySearch(
-        rayOrigin,
-        rayDirection,
-        firstHitWorldPoint,
-        stepsTaken,
-        stepCountMax
-    );
+    vec4 outputColor;
+
+    if (raycastMode == RAYCAST_MODE_ACCUMULATION) {
+        outputColor = raycastAccumulation(
+            rayOrigin,
+            rayDirection,
+            firstHitWorldPoint,
+            stepsTaken,
+            stepCountMax
+        );
+    } else {
+        outputColor = raycastBinarySearch(
+            rayOrigin,
+            rayDirection,
+            firstHitWorldPoint,
+            stepsTaken,
+            stepCountMax
+        );
+    }
 
     if (targetOutput == TARGET_OUTPUT_STEPS) {
         outputColor = vec4(vec3(stepsTaken / stepCountMax), outputColor.a);

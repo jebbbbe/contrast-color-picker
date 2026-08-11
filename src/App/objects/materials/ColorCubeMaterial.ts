@@ -22,8 +22,12 @@ export const ColorCubeTransformModeDeuteranopia = 2
 export const ColorCubeTransformModeTritanopia = 3
 export const ColorCubeTransformModeMonochromacy = 4
 
+export const ColorCubeRaycastModeAccumulation = 0
+export const ColorCubeRaycastModeBinarySearch = 1
+
 export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
     contrastRatio?: number
+    raycastMode?: number
     targetColor?: ColorRepresentation
     useTargetColor?: boolean
     targetOutput?: number
@@ -33,6 +37,7 @@ export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
 
 ;(UniformsLib as any).colorCube = {
     contrastRatio: { value: 4.5 },
+    raycastMode: { value: ColorCubeRaycastModeBinarySearch },
     targetColor: { value: new Color("#ffffff") },
     useTargetColor: { value: false },
     targetOutput: { value: ColorCubeTargetOutputColor },
@@ -69,6 +74,14 @@ export class ColorCubeMaterial extends ShaderMaterial {
 
     set targetOutput(value: number) {
         this.uniforms.targetOutput.value = Math.max(0, Math.floor(value))
+    }
+
+    get raycastMode(): number {
+        return this.uniforms.raycastMode.value
+    }
+
+    set raycastMode(value: number) {
+        this.uniforms.raycastMode.value = Math.max(0, Math.floor(value))
     }
 
     get targetColor(): Color {

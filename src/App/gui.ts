@@ -1,6 +1,7 @@
 import GUI from "lil-gui"
 
 import type { ClipPlaneController } from "./objects/clipPlane"
+import type { SdfColorCube } from "./objects/SdfColorCube"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
 import * as SDF from "./objects/materials/SdfMaterial"
 
@@ -46,10 +47,12 @@ export class SceneGui {
 
     constructor(
         sdfMaterial: SDF.SdfMaterial,
-        colorCubeMaterial: ColorCube.ColorCubeMaterial,
+        colorCube: SdfColorCube,
         clipPlane: ClipPlaneController
     ) {
         this.gui = new GUI({ title: "Scene" })
+
+        const colorCubeMaterial = colorCube.material
 
         const colorCubeFolder = this.gui.addFolder("Color Cube")
         const sdfFolder = this.gui.addFolder("SDF Material")

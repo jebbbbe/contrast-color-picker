@@ -1,7 +1,7 @@
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
+import { SdfColorCube } from "./objects/SdfColorCube"
 import { ClipPlaneController, defaultClipPlaneZ } from "./objects/clipPlane"
-import * as ColorCube from "./objects/materials/ColorCubeMaterial.js"
 import * as SDF from "./objects/materials/SdfMaterial.js"
 import { AspectLayout } from "./utils/AspectLayout.js"
 import { SceneGui } from "./gui"
@@ -52,31 +52,7 @@ export class ThreeSceneApp {
         )
         cube.position.x = 3
 
-        const colorCubeGroup = new THREE.Group()
-        const colorCubeMesh = new THREE.Mesh(
-            new THREE.BoxGeometry(1, 1, 1),
-            new ColorCube.ColorCubeMaterial()
-        )
-        const colorCubeEdges = new THREE.EdgesGeometry(colorCubeMesh.geometry)
-        const edgePositions = colorCubeEdges.getAttribute("position")
-        const edgeColors = edgePositions.array.slice() as Float32Array
-
-        for (let i = 0; i < edgeColors.length; i++) {
-            edgeColors[i] += 0.5
-        }
-
-        colorCubeEdges.setAttribute(
-            "color",
-            new THREE.BufferAttribute(edgeColors, 3)
-        )
-        const colorCubeWireframe = new THREE.LineSegments(
-            colorCubeEdges,
-            new THREE.LineBasicMaterial({ vertexColors: true })
-        )
-        colorCubeGroup.add(colorCubeMesh, colorCubeWireframe)
-        colorCubeGroup.scale.set(1, 1, 1)
-        colorCubeGroup.rotation.set(0, 0, 0)
-        colorCubeGroup.position.set(0, 0, 0)
+        const sdfColorCube = new SdfColorCube()
 
         const sdfGroup = new THREE.Group()
         const sdfMesh = new THREE.Mesh(
@@ -98,16 +74,13 @@ export class ThreeSceneApp {
         sdfGroup.rotation.set(0, 0, 0)
         sdfGroup.position.set(2, 0, 2)
 
-        const grid = new THREE.GridHelper(10, 10, 0x64748b, 0xcbd5e1)
-
         const clipPlane = new ClipPlaneController(renderer)
         clipPlane.position = defaultClipPlaneZ
 
         scene.add(
             ambientLight,
             directionalLight,
-            grid,
-            colorCubeGroup,
+            sdfColorCube,
             cube,
             sdfGroup,
             clipPlane.outline
@@ -116,7 +89,7 @@ export class ThreeSceneApp {
         // ui
         const gui = new SceneGui(
             sdfMesh.material,
-            colorCubeMesh.material,
+            sdfColorCube,
             clipPlane
         )
 

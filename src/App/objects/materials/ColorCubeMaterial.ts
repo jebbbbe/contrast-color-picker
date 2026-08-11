@@ -2,6 +2,7 @@ import {
     Color,
     DoubleSide,
     GLSL3,
+    Matrix3,
     ShaderLib,
     ShaderMaterial,
     UniformsLib,
@@ -13,36 +14,42 @@ import vert from "./glsl/SdfMaterial.vert.glsl?raw"
 
 import type { ColorRepresentation, ShaderMaterialParameters } from "three"
 
-export const ColorCubeTargetOutputColor = 0
-export const ColorCubeTargetOutputSteps = 3
+export const TargetOutputColor = 0
+export const TargetOutputSteps = 3
 
-export const ColorCubeTransformModeDefault = 0
-export const ColorCubeTransformModeProtanopia = 1
-export const ColorCubeTransformModeDeuteranopia = 2
-export const ColorCubeTransformModeTritanopia = 3
-export const ColorCubeTransformModeMonochromacy = 4
+export const TransformDefault = 0
+export const TransformProtanopia = 1
+export const TransformDeuteranopia = 2
+export const TransformTritanopia = 3
+export const TransformMonochromacy = 4
+export const TransformCustom = 5
 
-export const ColorCubeRaycastModeAccumulation = 0
-export const ColorCubeRaycastModeBinarySearch = 1
+export const RaycastAccumulation = 0
+export const RaycastBinarySearch = 1
+
+export const SearchNone = 0
+export const SearchOppositeColor = 1
+export const SearchTargetColor = 2
+export const SearchBlackAndWhite = 3
 
 export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
     contrastRatio?: number
     raycastMode?: number
+    searchMode?: number
     targetColor?: ColorRepresentation
-    useTargetColor?: boolean
     targetOutput?: number
     transformMode?: number
-    transformSpaceMode?: number
+    transformSpaceMatrix?: Matrix3
 }
 
 ;(UniformsLib as any).colorCube = {
     contrastRatio: { value: 4.5 },
-    raycastMode: { value: ColorCubeRaycastModeBinarySearch },
+    raycastMode: { value: RaycastBinarySearch },
+    searchMode: { value: SearchOppositeColor },
     targetColor: { value: new Color("#ffffff") },
-    useTargetColor: { value: false },
-    targetOutput: { value: ColorCubeTargetOutputColor },
-    transformMode: { value: ColorCubeTransformModeDefault },
-    transformSpaceMode: { value: ColorCubeTransformModeDefault },
+    targetOutput: { value: TargetOutputColor },
+    transformMode: { value: TransformDefault },
+    transformSpaceMatrix: { value: new Matrix3() },
 }
 
 ;(ShaderLib as any).colorCube = {
@@ -84,20 +91,20 @@ export class ColorCubeMaterial extends ShaderMaterial {
         this.uniforms.raycastMode.value = Math.max(0, Math.floor(value))
     }
 
+    get searchMode(): number {
+        return this.uniforms.searchMode.value
+    }
+
+    set searchMode(value: number) {
+        this.uniforms.searchMode.value = Math.max(0, Math.floor(value))
+    }
+
     get targetColor(): Color {
         return this.uniforms.targetColor.value
     }
 
     set targetColor(value: ColorRepresentation) {
         this.uniforms.targetColor.value.set(value)
-    }
-
-    get useTargetColor(): boolean {
-        return this.uniforms.useTargetColor.value
-    }
-
-    set useTargetColor(value: number | boolean) {
-        this.uniforms.useTargetColor.value = Boolean(value)
     }
 
     get transformMode(): number {
@@ -108,12 +115,12 @@ export class ColorCubeMaterial extends ShaderMaterial {
         this.uniforms.transformMode.value = Math.max(0, Math.floor(value))
     }
 
-    get transformSpaceMode(): number {
-        return this.uniforms.transformSpaceMode.value
+    get transformSpaceMatrix(): Matrix3 {
+        return this.uniforms.transformSpaceMatrix.value
     }
 
-    set transformSpaceMode(value: number) {
-        this.uniforms.transformSpaceMode.value = Math.max(0, Math.floor(value))
+    set transformSpaceMatrix(value: Matrix3) {
+        this.uniforms.transformSpaceMatrix.value.copy(value)
     }
 
     get contrastRatio(): number {

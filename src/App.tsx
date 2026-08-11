@@ -11,6 +11,8 @@ function App() {
 
         const app = new ThreeSceneApp(threeSceneMountRef.current)
         app.animate()
+		
+		;(globalThis as any).app = app
 
         return () => {
             app.dispose()

@@ -10,9 +10,14 @@ export class ThreeSceneApp {
     private readonly renderer: THREE.WebGLRenderer
     private readonly scene: THREE.Scene
     private readonly camera: THREE.PerspectiveCamera
-    private readonly controls: OrbitControls
     private readonly aspectLayout: AspectLayout
     private readonly gui: SceneGui
+    readonly controls: OrbitControls
+    readonly ctx: {
+        clipPlane: ClipPlaneController
+        sdfColorCube: SdfColorCube
+        sdfGroup: THREE.Group
+    }
     private animationFrameId = 0
 
     constructor(container: HTMLElement) {
@@ -31,11 +36,12 @@ export class ThreeSceneApp {
 
         // camera
         const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
-        camera.position.set(3, 3, 5)
+        camera.position.set(-0.75, 0.25, 1.75)
 
         // controls
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enableDamping = true
+        controls.autoRotateSpeed = 2.5
         controls.target.set(0, 0, 0)
         camera.lookAt(controls.target)
         controls.update()
@@ -46,12 +52,6 @@ export class ThreeSceneApp {
         directionalLight.position.set(4, 6, 8)
 
         // content
-        const cube = new THREE.Mesh(
-            new THREE.BoxGeometry(1, 1, 1),
-            new THREE.MeshStandardMaterial({ color: "#8b5cf6" })
-        )
-        cube.position.x = 3
-
         const sdfColorCube = new SdfColorCube()
 
         const sdfGroup = new THREE.Group()
@@ -73,6 +73,7 @@ export class ThreeSceneApp {
         sdfGroup.scale.set(1, 1, 1)
         sdfGroup.rotation.set(0, 0, 0)
         sdfGroup.position.set(2, 0, 2)
+        sdfGroup.visible = false
 
         const clipPlane = new ClipPlaneController(renderer)
         clipPlane.position = defaultClipPlaneZ
@@ -81,24 +82,25 @@ export class ThreeSceneApp {
             ambientLight,
             directionalLight,
             sdfColorCube,
-            cube,
             sdfGroup,
             clipPlane.outline
         )
 
         // ui
-        const gui = new SceneGui(
-            sdfMesh.material,
-            sdfColorCube,
-            clipPlane
-        )
-
         // props
         this.aspectLayout = aspectLayout
         this.renderer = renderer
         this.scene = scene
         this.camera = camera
         this.controls = controls
+        this.ctx = {
+            clipPlane,
+            sdfColorCube,
+            sdfGroup,
+        }
+
+        const gui = new SceneGui(this)
+
         this.gui = gui
 
         // listeners

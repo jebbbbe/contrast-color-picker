@@ -2,11 +2,11 @@ uniform mat4 modelMatrix;
 uniform mat4 projectionMatrix;
 uniform float contrastRatio;
 uniform uint raycastMode;
+uniform uint searchMode;
 uniform vec3 targetColor;
-uniform bool useTargetColor;
 uniform uint targetOutput;
 uniform uint transformMode;
-uniform uint transformSpaceMode;
+uniform mat3 transformSpaceMatrix;
 
 varying vec3 localPosition;
 
@@ -15,14 +15,13 @@ out highp vec4 outColor;
 const uint TARGET_OUTPUT_COLOR = 0u;
 const uint TARGET_OUTPUT_STEPS = 3u;
 
-const uint TRANSFORM_MODE_DEFAULT = 0u;
-const uint TRANSFORM_MODE_PROTANOPIA = 1u;
-const uint TRANSFORM_MODE_DEUTERANOPIA = 2u;
-const uint TRANSFORM_MODE_TRITANOPIA = 3u;
-const uint TRANSFORM_MODE_MONOCHROMACY = 4u;
+const uint RAYCAST_ACCUMULATION = 0u;
+const uint RAYCAST_BINARY_SEARCH = 1u;
 
-const uint RAYCAST_MODE_ACCUMULATION = 0u;
-const uint RAYCAST_MODE_BINARY_SEARCH = 1u;
+const uint SEARCH_NONE = 0u;
+const uint SEARCH_OPPOSITE_COLOR = 1u;
+const uint SEARCH_TARGET_COLOR = 2u;
+const uint SEARCH_BLACK_AND_WHITE = 3u;
 
 const int MAX_RAY_STEPS = 96;
 const float MAX_DENSITY = 500000.0;
@@ -127,11 +126,8 @@ vec3 getOppositeHSLColor(vec3 rgb) {
     return hsl2rgb(hsl);
 }
 
-float densityByOppositeContrast(vec3 sampleColor) {
+float densityByContrastTarget(vec3 sampleColor, vec3 contrastTarget) {
     float luminance = dot(sampleColor, vec3(0.2126, 0.7152, 0.0722));
-    vec3 contrastTarget = useTargetColor
-        ? targetColor
-        : getOppositeHSLColor(sampleColor);
     float contrastTargetLuminance = dot(
         contrastTarget,
         vec3(0.2126, 0.7152, 0.0722)
@@ -140,6 +136,21 @@ float densityByOppositeContrast(vec3 sampleColor) {
     float l2 = min(luminance, contrastTargetLuminance);
     float contrastRatioCalc = (l1 + 0.05) / (l2 + 0.05);
     return contrastRatioCalc < contrastRatio ? 0.0 : MAX_DENSITY;
+}
+
+float densityBySearchMode(vec3 sampleColor) {
+    if (searchMode == SEARCH_NONE) {
+        return MAX_DENSITY;
+    } else if (searchMode == SEARCH_TARGET_COLOR) {
+        return densityByContrastTarget(sampleColor, targetColor);
+    } else if (searchMode == SEARCH_BLACK_AND_WHITE) {
+        return min(
+            densityByContrastTarget(sampleColor, vec3(0.0)),
+            densityByContrastTarget(sampleColor, vec3(1.0))
+        );
+    } else {
+        return densityByContrastTarget(sampleColor, getOppositeHSLColor(sampleColor));
+    }
 }
 
 vec3 applyVisionTransform(vec3 sampleColor) {
@@ -157,23 +168,8 @@ vec3 applyVisionTransform(vec3 sampleColor) {
     }
 }
 
-mat3 getTransformSpaceMatrix() {
-    switch (transformSpaceMode) {
-        case 1u:
-            return protanopiaMatrix;
-        case 2u:
-            return deuteranopiaMatrix;
-        case 3u:
-            return tritanopiaMatrix;
-        case 4u:
-            return monochromacyMatrix;
-        default:
-            return mat3(1.0);
-    }
-}
-
 float customMat3Density(vec3 pos) {
-    mat3 transformMatrix = getTransformSpaceMatrix();
+    mat3 transformMatrix = transformSpaceMatrix;
     float det = determinant(transformMatrix);
 
     if (abs(det) < 0.00001) {
@@ -211,11 +207,7 @@ vec2 intersectBox(vec3 rayOrigin, vec3 rayDirection, vec3 boxMin, vec3 boxMax) {
 vec2 intersectColorCubeBounds(vec3 rayOrigin, vec3 rayDirection) {
     vec2 cubeBounds = intersectBox(rayOrigin, rayDirection, cubeMin, cubeMax);
 
-    if (transformSpaceMode == TRANSFORM_MODE_DEFAULT) {
-        return cubeBounds;
-    }
-
-    mat3 transformMatrix = getTransformSpaceMatrix();
+    mat3 transformMatrix = transformSpaceMatrix;
     float det = determinant(transformMatrix);
 
     if (abs(det) < 0.00001) {
@@ -271,7 +263,7 @@ vec4 raycastAccumulation(
         vec3 sampleColor = samplePoint - cubeMin;
         vec3 worldPoint = (modelMatrix * vec4(samplePoint, 1.0)).xyz;
 
-        float density = densityByOppositeContrast(sampleColor);
+        float density = densityBySearchMode(sampleColor);
 
         density = min(density, customMat3Density(sampleColor));
 
@@ -302,7 +294,7 @@ vec4 raycastAccumulation(
 
 bool sampleHits(vec3 sampleColor) {
     return min(
-        densityByOppositeContrast(sampleColor),
+        densityBySearchMode(sampleColor),
         customMat3Density(sampleColor)
     ) > 0.0;
 }
@@ -369,7 +361,7 @@ void main() {
 
     vec4 outputColor;
 
-    if (raycastMode == RAYCAST_MODE_ACCUMULATION) {
+    if (raycastMode == RAYCAST_ACCUMULATION) {
         outputColor = raycastAccumulation(
             rayOrigin,
             rayDirection,

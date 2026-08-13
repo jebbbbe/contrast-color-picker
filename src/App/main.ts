@@ -26,6 +26,9 @@ export class ThreeSceneApp {
 
         // renderer
         const renderer = new THREE.WebGLRenderer({ antialias: true })
+        // renderer.outputColorSpace = THREE.LinearSRGBColorSpace
+        renderer.outputColorSpace = THREE.SRGBColorSpace
+        renderer.toneMapping = THREE.NoToneMapping
         renderer.setPixelRatio(globalThis.devicePixelRatio)
         renderer.setSize(1, 1)
         container.appendChild(renderer.domElement)

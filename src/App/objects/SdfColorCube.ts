@@ -45,7 +45,11 @@ export class SdfColorCube extends THREE.Group {
         )
         const targetColorMarker = new THREE.Mesh(
             new THREE.SphereGeometry(0.02, 16, 16),
-            new THREE.MeshBasicMaterial()
+            new THREE.MeshBasicMaterial({
+                fog: false,
+                vertexColors: false,
+                transparent: false,
+            })
         )
 
         mesh.onBeforeRender = () => {

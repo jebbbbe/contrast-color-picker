@@ -25,10 +25,12 @@ const uint SEARCH_BLACK_AND_WHITE = 3u;
 
 const int MAX_RAY_STEPS = 96;
 const float MAX_DENSITY = 500000.0;
-const float TRANSFORM_BOUNDS_EPSILON = 0.0001;
+const float EPSILON = 0.0001;
 
 const vec3 cubeMin = vec3(-0.5);
 const vec3 cubeMax = vec3(0.5);
+
+const vec3 lumCoefficients = vec3(0.2126, 0.7152, 0.0722);
 
 const mat3 protanopiaMatrix = mat3(
     0.567, 0.558, 0.0,
@@ -126,30 +128,46 @@ vec3 getOppositeHSLColor(vec3 rgb) {
     return hsl2rgb(hsl);
 }
 
-float densityByContrastTarget(vec3 sampleColor, vec3 contrastTarget) {
-    float luminance = dot(sampleColor, vec3(0.2126, 0.7152, 0.0722));
-    float contrastTargetLuminance = dot(
-        contrastTarget,
-        vec3(0.2126, 0.7152, 0.0722)
+vec3 getOppositeLinearColor(vec3 rgb){
+	return vec3(1.) - rgb ; 
+}
+
+float getContrastRatio(vec3 color1, vec3 color2){
+    float lum1 = dot(color1, lumCoefficients);
+    float lum2 = dot(color2, lumCoefficients);
+    float l1 = max(lum1, lum2);
+    float l2 = min(lum1, lum2);
+    return (l1 + 0.05) / (l2 + 0.05);
+}
+
+vec3 sRGBToLinear(vec3 c) {
+    return mix(
+        c / 12.92,
+        pow((c + 0.055) / 1.055, vec3(2.4)),
+        step(vec3(0.04045), c)
     );
-    float l1 = max(luminance, contrastTargetLuminance);
-    float l2 = min(luminance, contrastTargetLuminance);
-    float contrastRatioCalc = (l1 + 0.05) / (l2 + 0.05);
-    return contrastRatioCalc < contrastRatio ? 0.0 : MAX_DENSITY;
+}
+
+float densityByContrastTarget(vec3 sampleColor, vec3 bkColor) {
+	// sampleColor = sRGBToLinear(sampleColor);
+    return getContrastRatio(sampleColor, bkColor) < contrastRatio ? 0.0 : MAX_DENSITY;
 }
 
 float densityBySearchMode(vec3 sampleColor) {
     if (searchMode == SEARCH_NONE) {
         return MAX_DENSITY;
     } else if (searchMode == SEARCH_TARGET_COLOR) {
-        return densityByContrastTarget(sampleColor, targetColor);
+		// vec3 tc = sRGBToLinear(targetColor);
+		vec3 tc = targetColor;
+        return densityByContrastTarget(sampleColor, tc);
     } else if (searchMode == SEARCH_BLACK_AND_WHITE) {
         return min(
             densityByContrastTarget(sampleColor, vec3(0.0)),
             densityByContrastTarget(sampleColor, vec3(1.0))
         );
     } else {
-        return densityByContrastTarget(sampleColor, getOppositeHSLColor(sampleColor));
+        // return densityByContrastTarget(sampleColor, getOppositeHSLColor(sampleColor));
+        return densityByContrastTarget(sampleColor, getOppositeLinearColor(sampleColor));
     }
 }
 
@@ -179,12 +197,12 @@ float customMat3Density(vec3 pos) {
     vec3 inversePos = inverse(transformMatrix) * pos;
 
     if (
-        inversePos.r >= -TRANSFORM_BOUNDS_EPSILON &&
-        inversePos.r <= 1.0 + TRANSFORM_BOUNDS_EPSILON &&
-        inversePos.g >= -TRANSFORM_BOUNDS_EPSILON &&
-        inversePos.g <= 1.0 + TRANSFORM_BOUNDS_EPSILON &&
-        inversePos.b >= -TRANSFORM_BOUNDS_EPSILON &&
-        inversePos.b <= 1.0 + TRANSFORM_BOUNDS_EPSILON
+        inversePos.r >= -EPSILON &&
+        inversePos.r <= 1.0 + EPSILON &&
+        inversePos.g >= -EPSILON &&
+        inversePos.g <= 1.0 + EPSILON &&
+        inversePos.b >= -EPSILON &&
+        inversePos.b <= 1.0 + EPSILON
     ) {
         return MAX_DENSITY;
     }

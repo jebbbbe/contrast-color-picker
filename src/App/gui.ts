@@ -1,4 +1,5 @@
 import GUI from "lil-gui"
+import * as THREE from "three"
 
 import type { ThreeSceneApp } from "./main"
 import type { SdfColorCube } from "./objects/SdfColorCube"
@@ -6,45 +7,45 @@ import * as ColorCube from "./objects/materials/ColorCubeMaterial"
 import * as SDF from "./objects/materials/SdfMaterial"
 
 const sdfMaterialTargetOutputTitles = {
-    "Color": SDF.SdfTargetOutputColor,
-    "Lit": SDF.SdfTargetOutputLit,
-    "Normal": SDF.SdfTargetOutputNormal,
-    "Steps": SDF.SdfTargetOutputSteps,
+    Color: SDF.SdfTargetOutputColor,
+    Lit: SDF.SdfTargetOutputLit,
+    Normal: SDF.SdfTargetOutputNormal,
+    Steps: SDF.SdfTargetOutputSteps,
     "World Position": SDF.SdfTargetOutputWorldPosition,
 } as const
 
 const sdfMaterialShapeTitles = {
-    "Sphere": SDF.SdfShapeSphere,
-    "Box": SDF.SdfShapeBox,
+    Sphere: SDF.SdfShapeSphere,
+    Box: SDF.SdfShapeBox,
     "Round Box": SDF.SdfShapeRoundBox,
-    "Cone": SDF.SdfShapeCone,
+    Cone: SDF.SdfShapeCone,
     "Solid Angle": SDF.SdfShapeSolidAngle,
     "Cut Hollow Sphere": SDF.SdfShapeCutHollowSphere,
-    "Octahedron": SDF.SdfShapeOctahedron,
-    "Triangle": SDF.SdfShapeTriangle,
+    Octahedron: SDF.SdfShapeOctahedron,
+    Triangle: SDF.SdfShapeTriangle,
 } as const
 
 const sdfColorTargetOutputTitles = {
-    "Color": ColorCube.TargetOutputColor,
-    "Steps": ColorCube.TargetOutputSteps,
+    Color: ColorCube.TargetOutputColor,
+    Steps: ColorCube.TargetOutputSteps,
 } as const
 
 const sdfColorTransformTitles = {
-    "Default": ColorCube.TransformDefault,
-    "Protanopia": ColorCube.TransformProtanopia,
-    "Deuteranopia": ColorCube.TransformDeuteranopia,
-    "Tritanopia": ColorCube.TransformTritanopia,
-    "Monochromacy": ColorCube.TransformMonochromacy,
-    "Custom": ColorCube.TransformCustom,
+    Default: ColorCube.TransformDefault,
+    Protanopia: ColorCube.TransformProtanopia,
+    Deuteranopia: ColorCube.TransformDeuteranopia,
+    Tritanopia: ColorCube.TransformTritanopia,
+    Monochromacy: ColorCube.TransformMonochromacy,
+    Custom: ColorCube.TransformCustom,
 } as const
 
 const sdfColorRaycastTitles = {
-    "Accumulation": ColorCube.RaycastAccumulation,
+    Accumulation: ColorCube.RaycastAccumulation,
     "Binary Search": ColorCube.RaycastBinarySearch,
 } as const
 
 const sdfColorSearchTitles = {
-    "None": ColorCube.SearchNone,
+    None: ColorCube.SearchNone,
     "Opposite Color": ColorCube.SearchOppositeColor,
     "Target Color": ColorCube.SearchTargetColor,
     "Black + White": ColorCube.SearchBlackAndWhite,
@@ -65,7 +66,7 @@ export class SceneGui {
         ).material
         const contrastPresetState: { value: "" | number } = { value: "" }
         const targetColorState: { value: string } = {
-            value: `#${colorCubeMaterial.targetColor.getHexString()}`,
+            value: `#${colorCubeMaterial.targetColor.getHexString(THREE.SRGBColorSpace)}`,
         }
 
         this.gui = new GUI({ title: "Scene" })
@@ -78,7 +79,9 @@ export class SceneGui {
         sdfFolder.add(sdfMaterial, "size", 0.05, 2.0, 0.01).name("Size")
         sdfFolder.add(sdfGroup, "visible").name("Visible")
 
-        sdfFolder.add(sdfMaterial, "shape", sdfMaterialShapeTitles).name("Shape")
+        sdfFolder
+            .add(sdfMaterial, "shape", sdfMaterialShapeTitles)
+            .name("Shape")
         sdfFolder
             .add(sdfMaterial, "targetOutput", sdfMaterialTargetOutputTitles)
             .name("Target Output")
@@ -98,11 +101,7 @@ export class SceneGui {
             .add(colorCubeMaterial, "transformMode", sdfColorTransformTitles)
             .name("Output Space")
         const transformSpaceController = colorCubeFolder
-            .add(
-                colorCube,
-                "transformSpaceMode",
-                sdfColorTransformTitles
-            )
+            .add(colorCube, "transformSpaceMode", sdfColorTransformTitles)
             .name("Transform Space")
         const contrastPresetController = colorCubeFolder
             .add(contrastPresetState, "value", sdfColorContrastPresetValues)
@@ -114,7 +113,10 @@ export class SceneGui {
             .addColor(targetColorState, "value")
             .name("Target Color")
             .onChange((value: string) => {
-                colorCubeMaterial.targetColor = value
+                colorCubeMaterial.targetColor.setHex(
+                    Number.parseInt(value.slice(1), 16),
+                    THREE.SRGBColorSpace
+                )
             })
 
         const syncContrastPresetState = (value: number): void => {
@@ -150,8 +152,7 @@ export class SceneGui {
                 return
             }
 
-            colorCubeMaterial.transformMode =
-                ColorCube.TransformDefault
+            colorCubeMaterial.transformMode = ColorCube.TransformDefault
             outputSpaceController.updateDisplay()
             outputSpaceController.disable()
         }
@@ -212,17 +213,7 @@ export class SceneGui {
                         e7 = e7 / s3
                         e8 = e8 / s3
 
-                        mat.set(
-                            e0,
-                            e1,
-                            e2,
-                            e3,
-                            e4,
-                            e5,
-                            e6,
-                            e7,
-                            e8
-                        )
+                        mat.set(e0, e1, e2, e3, e4, e5, e6, e7, e8)
                         colorCube.transformSpaceMode = ColorCube.TransformCustom
                         transformSpaceController.updateDisplay()
                         syncOutputSpaceState(colorCube.transformSpaceMode)

@@ -64,6 +64,9 @@ export class SceneGui {
             sdfGroup.children[0] as unknown as { material: SDF.SdfMaterial }
         ).material
         const contrastPresetState: { value: "" | number } = { value: "" }
+        const targetColorState: { value: string } = {
+            value: `#${colorCubeMaterial.targetColor.getHexString()}`,
+        }
 
         this.gui = new GUI({ title: "Scene" })
 
@@ -108,8 +111,11 @@ export class SceneGui {
             .add(colorCubeMaterial, "contrastRatio", 1.0, 21.0, 0.1)
             .name("Contrast Ratio")
         const targetColorController = colorCubeFolder
-            .addColor(colorCubeMaterial, "targetColor")
+            .addColor(targetColorState, "value")
             .name("Target Color")
+            .onChange((value: string) => {
+                colorCubeMaterial.targetColor = value
+            })
 
         const syncContrastPresetState = (value: number): void => {
             if (value === 3 || value === 4.5 || value === 7) {

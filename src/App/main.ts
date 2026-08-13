@@ -4,6 +4,7 @@ import { SdfColorCube } from "./objects/SdfColorCube"
 import { ClipPlaneController, defaultClipPlaneZ } from "./objects/clipPlane"
 import * as SDF from "./objects/materials/SdfMaterial.js"
 import { AspectLayout } from "./utils/AspectLayout.js"
+import { logScenePixel } from "./utils/logScenePixel"
 import { SceneGui } from "./gui"
 
 export class ThreeSceneApp {
@@ -50,9 +51,9 @@ export class ThreeSceneApp {
         controls.update()
 
         // lights
-        const ambientLight = new THREE.AmbientLight(0xffffff, 1.2)
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 2)
-        directionalLight.position.set(4, 6, 8)
+        // const ambientLight = new THREE.AmbientLight(0xffffff, 1.2)
+        // const directionalLight = new THREE.DirectionalLight(0xffffff, 2)
+        // directionalLight.position.set(4, 6, 8)
 
         // content
         const sdfColorCube = new SdfColorCube()
@@ -61,7 +62,8 @@ export class ThreeSceneApp {
         const sdfMesh = new THREE.Mesh(
             new THREE.BoxGeometry(1, 1, 1),
             new SDF.SdfMaterial({
-                lightPosition: directionalLight.position,
+                // lightPosition: directionalLight.position,
+                lightPosition: new THREE.Vector3(4, 6, 8),
                 color: 0xffffff,
                 targetOutput: SDF.SdfTargetOutputLit,
                 shape: SDF.SdfShapeCutHollowSphere,
@@ -82,8 +84,8 @@ export class ThreeSceneApp {
         clipPlane.position = defaultClipPlaneZ
 
         scene.add(
-            ambientLight,
-            directionalLight,
+            // ambientLight,
+            // directionalLight,
             sdfColorCube,
             sdfGroup,
             clipPlane.outline
@@ -108,6 +110,7 @@ export class ThreeSceneApp {
 
         // listeners
         aspectLayout.addResizeListener(renderer, camera, this.handleResize)
+        renderer.domElement.addEventListener("click", this.handleCanvasClick)
     }
 
     dispose(): void {
@@ -117,6 +120,10 @@ export class ThreeSceneApp {
         this.gui.destroy()
         this.disposeSceneResources()
         this.renderer.dispose()
+        this.renderer.domElement.removeEventListener(
+            "click",
+            this.handleCanvasClick
+        )
         this.renderer.domElement.remove()
         this.animationFrameId = 0
     }
@@ -130,6 +137,17 @@ export class ThreeSceneApp {
     private readonly handleResize = (): void => {
         this.renderer.setPixelRatio(globalThis.devicePixelRatio)
         this.controls.update()
+    }
+
+    private readonly handleCanvasClick = (event: MouseEvent): void => {
+        logScenePixel(
+            this.renderer,
+            this.scene,
+            this.camera,
+            this.controls,
+            event.clientX,
+            event.clientY
+        )
     }
 
     private disposeSceneResources(): void {

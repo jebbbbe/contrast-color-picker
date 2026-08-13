@@ -9,8 +9,8 @@ uniform uint transformMode;
 uniform mat3 transformSpaceMatrix;
 
 in vec3 localPosition;
-
 out highp vec4 outColor;
+#define gl_FragColor outColor
 
 const uint TARGET_OUTPUT_COLOR = 0u;
 const uint TARGET_OUTPUT_STEPS = 3u;
@@ -405,6 +405,7 @@ void main() {
 
     vec4 clipPosition = projectionMatrix * viewMatrix * vec4(firstHitWorldPoint, 1.0);
     gl_FragDepth = clamp(clipPosition.z / clipPosition.w * 0.5 + 0.5, 0.0, 1.0);
-
-    outColor = outputColor;
+    gl_FragColor = outputColor;
+    #include <colorspace_fragment>
+	
 }

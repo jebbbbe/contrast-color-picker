@@ -11,7 +11,7 @@ uniform bool clipToBounds;
 uniform vec4 clippingPlanes[ NUM_CLIPPING_PLANES ];
 #endif
 
-varying vec3 localPosition;
+in vec3 localPosition;
 
 out highp vec4 outColor;
 

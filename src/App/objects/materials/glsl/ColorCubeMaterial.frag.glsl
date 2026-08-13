@@ -8,7 +8,7 @@ uniform uint targetOutput;
 uniform uint transformMode;
 uniform mat3 transformSpaceMatrix;
 
-varying vec3 localPosition;
+in vec3 localPosition;
 
 out highp vec4 outColor;
 

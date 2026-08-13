@@ -1,4 +1,4 @@
-varying vec3 localPosition;
+out vec3 localPosition;
 
 void main() {
     localPosition = position;

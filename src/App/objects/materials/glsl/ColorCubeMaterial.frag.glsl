@@ -58,95 +58,10 @@ float sdBox(vec3 p, vec3 b) {
     return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
 }
 
-vec3 rgb2hsl(vec3 color) {
-    float r = color.r;
-    float g = color.g;
-    float b = color.b;
-    float maxc = max(max(r, g), b);
-    float minc = min(min(r, g), b);
-    float h;
-    float s;
-    float l = (maxc + minc) * 0.5;
 
-    if (maxc == minc) {
-        h = 0.0;
-        s = 0.0;
-    } else {
-        float d = maxc - minc;
-        s = l > 0.5 ? d / (2.0 - maxc - minc) : d / (maxc + minc);
+#include <color_func>
+#include <quantize_func>
 
-        if (maxc == r) {
-            h = (g - b) / d + (g < b ? 6.0 : 0.0);
-        } else if (maxc == g) {
-            h = (b - r) / d + 2.0;
-        } else {
-            h = (r - g) / d + 4.0;
-        }
-
-        h /= 6.0;
-    }
-
-    return vec3(h, s, l);
-}
-
-float hue2rgb(float p, float q, float t) {
-    if (t < 0.0) t += 1.0;
-    if (t > 1.0) t -= 1.0;
-    if (t < 1.0 / 6.0) return p + (q - p) * 6.0 * t;
-    if (t < 1.0 / 2.0) return q;
-    if (t < 2.0 / 3.0) return p + (q - p) * (2.0 / 3.0 - t) * 6.0;
-    return p;
-}
-
-vec3 hsl2rgb(vec3 hsl) {
-    float h = hsl.x;
-    float s = hsl.y;
-    float l = hsl.z;
-    float r;
-    float g;
-    float b;
-
-    if (s == 0.0) {
-        r = l;
-        g = l;
-        b = l;
-    } else {
-        float q = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
-        float p = 2.0 * l - q;
-        r = hue2rgb(p, q, h + 1.0 / 3.0);
-        g = hue2rgb(p, q, h);
-        b = hue2rgb(p, q, h - 1.0 / 3.0);
-    }
-
-    return vec3(r, g, b);
-}
-
-vec3 getOppositeHSLColor(vec3 rgb) {
-    vec3 hsl = rgb2hsl(rgb);
-    hsl.x = mod(hsl.x + 0.5, 1.0);
-    hsl.z = 1.0 - hsl.z;
-    return hsl2rgb(hsl);
-}
-
-vec3 getOppositeLinearColor(vec3 rgb){
-	return vec3(1.) - rgb ; 
-}
-
-vec3 sRGBToLinear(vec3 c) {
-    return mix(
-        c / 12.92,
-        pow((c + 0.055) / 1.055, vec3(2.4)),
-        step(vec3(0.04045), c)
-    );
-}
-
-vec3 linearToSRGB(vec3 c) {	
-    return mix(
-        pow(c, vec3(0.41666)) * 1.055 - vec3(0.055),
-        c * 12.92,
-        vec3(lessThanEqual(c, vec3(0.0031308)))
-    );
-}
 
 float getContrastRatio(vec3 sRGB1, vec3 sRGB2){
     vec3 linear1 = sRGBToLinear(sRGB1);
@@ -160,8 +75,9 @@ float getContrastRatio(vec3 sRGB1, vec3 sRGB2){
 
 
 float densityByContrastTarget(vec3 sampleColor, vec3 bkColor) {
-	// sampleColor = sRGBToLinear(sampleColor);
-    return getContrastRatio(sampleColor, bkColor) < contrastRatio ? 0.0 : MAX_DENSITY;
+    vec3 sampleColor8 = quantize8(sampleColor);
+    vec3 bkColor8 = quantize8(bkColor);
+    return getContrastRatio(sampleColor8, bkColor8) < contrastRatio ? 0.0 : MAX_DENSITY;
 }
 
 float densityBySearchMode(vec3 sampleColor) {
@@ -316,7 +232,8 @@ vec4 raycastAccumulation(
     if (!foundDensity || accumulatedColor.a <= 0.0) {
         discard;
     }
-
+	
+	// accumulatedColor.rgb = quantize8(accumulatedColor.rgb);
     return accumulatedColor;
 }
 

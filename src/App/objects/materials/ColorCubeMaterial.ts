@@ -11,6 +11,7 @@ import {
 
 import frag from "./glsl/ColorCubeMaterial.frag.glsl?raw"
 import vert from "./glsl/SdfMaterial.vert.glsl?raw"
+import * as noop from "./glsl/chunk/registerChunks"
 
 import type { ColorRepresentation, ShaderMaterialParameters } from "three"
 
@@ -41,17 +42,15 @@ export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
     transformMode?: number
     transformSpaceMatrix?: Matrix3
 }
-
 ;(UniformsLib as any).colorCube = {
     contrastRatio: { value: 4.5 },
     raycastMode: { value: RaycastBinarySearch },
-    searchMode: { value: SearchOppositeColor },
+    searchMode: { value: SearchTargetColor },
     targetColor: { value: new Color("#7f7f7f") },
     targetOutput: { value: TargetOutputColor },
     transformMode: { value: TransformDefault },
     transformSpaceMatrix: { value: new Matrix3() },
 }
-
 ;(ShaderLib as any).colorCube = {
     uniforms: UniformsUtils.merge([
         UniformsLib.common,
@@ -66,7 +65,9 @@ export class ColorCubeMaterial extends ShaderMaterial {
     constructor(parameters: ColorCubeMaterialParameters = {}) {
         super({
             glslVersion: GLSL3,
-            uniforms: UniformsUtils.clone((ShaderLib as any).colorCube.uniforms),
+            uniforms: UniformsUtils.clone(
+                (ShaderLib as any).colorCube.uniforms
+            ),
             vertexShader: (ShaderLib as any).colorCube.vertexShader,
             fragmentShader: (ShaderLib as any).colorCube.fragmentShader,
             side: DoubleSide,

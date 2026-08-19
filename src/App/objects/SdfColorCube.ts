@@ -14,6 +14,7 @@ const transformSpaceMatrices = {
 
 export class SdfColorCube extends THREE.Group {
     readonly material: ColorCube.ColorCubeMaterial
+    private readonly markerPositionColor = new THREE.Color()
 
     private readonly targetColorMarker: THREE.Mesh<
         THREE.SphereGeometry,
@@ -35,6 +36,21 @@ export class SdfColorCube extends THREE.Group {
 
         for (let i = 0; i < edgeColors.length; i++) {
             edgeColors[i] += 0.5
+        }
+        const edgeColor = new THREE.Color()
+
+        for (let i = 0; i < edgeColors.length; i += 3) {
+            edgeColor
+                .setRGB(
+                    edgeColors[i],
+                    edgeColors[i + 1],
+                    edgeColors[i + 2],
+                    THREE.LinearSRGBColorSpace
+                )
+
+            edgeColors[i] = edgeColor.r
+            edgeColors[i + 1] = edgeColor.g
+            edgeColors[i + 2] = edgeColor.b
         }
 
         edges.setAttribute("color", new THREE.BufferAttribute(edgeColors, 3))
@@ -99,7 +115,10 @@ export class SdfColorCube extends THREE.Group {
             return
         }
 
-        const { r, g, b } = this.material.targetColor
+        const { r, g, b } = this.markerPositionColor
+            .copy(this.material.targetColor)
+            .convertLinearToSRGB()
+
         this.targetColorMarker.position.set(r - 0.5, g - 0.5, b - 0.5)
         this.targetColorMarker.material.color.copy(this.material.targetColor)
     }

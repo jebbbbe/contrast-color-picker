@@ -132,14 +132,6 @@ vec3 getOppositeLinearColor(vec3 rgb){
 	return vec3(1.) - rgb ; 
 }
 
-float getContrastRatio(vec3 color1, vec3 color2){
-    float lum1 = dot(color1, lumCoefficients);
-    float lum2 = dot(color2, lumCoefficients);
-    float l1 = max(lum1, lum2);
-    float l2 = min(lum1, lum2);
-    return (l1 + 0.05) / (l2 + 0.05);
-}
-
 vec3 sRGBToLinear(vec3 c) {
     return mix(
         c / 12.92,
@@ -147,6 +139,25 @@ vec3 sRGBToLinear(vec3 c) {
         step(vec3(0.04045), c)
     );
 }
+
+vec3 linearToSRGB(vec3 c) {	
+    return mix(
+        pow(c, vec3(0.41666)) * 1.055 - vec3(0.055),
+        c * 12.92,
+        vec3(lessThanEqual(c, vec3(0.0031308)))
+    );
+}
+
+float getContrastRatio(vec3 sRGB1, vec3 sRGB2){
+    vec3 linear1 = sRGBToLinear(sRGB1);
+    vec3 linear2 = sRGBToLinear(sRGB2);
+    float lum1 = dot(linear1, lumCoefficients);
+    float lum2 = dot(linear2, lumCoefficients);
+    float l1 = max(lum1, lum2);
+    float l2 = min(lum1, lum2);
+    return (l1 + 0.05) / (l2 + 0.05);
+}
+
 
 float densityByContrastTarget(vec3 sampleColor, vec3 bkColor) {
 	// sampleColor = sRGBToLinear(sampleColor);
@@ -157,8 +168,7 @@ float densityBySearchMode(vec3 sampleColor) {
     if (searchMode == SEARCH_NONE) {
         return MAX_DENSITY;
     } else if (searchMode == SEARCH_TARGET_COLOR) {
-		// vec3 tc = sRGBToLinear(targetColor);
-		vec3 tc = targetColor;
+		vec3 tc = linearToSRGB(targetColor);
         return densityByContrastTarget(sampleColor, tc);
     } else if (searchMode == SEARCH_BLACK_AND_WHITE) {
         return min(
@@ -406,6 +416,5 @@ void main() {
     vec4 clipPosition = projectionMatrix * viewMatrix * vec4(firstHitWorldPoint, 1.0);
     gl_FragDepth = clamp(clipPosition.z / clipPosition.w * 0.5 + 0.5, 0.0, 1.0);
     gl_FragColor = outputColor;
-    #include <colorspace_fragment>
-	
+    // #include <colorspace_fragment>
 }

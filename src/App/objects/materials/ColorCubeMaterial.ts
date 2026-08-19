@@ -46,7 +46,7 @@ export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
     contrastRatio: { value: 4.5 },
     raycastMode: { value: RaycastBinarySearch },
     searchMode: { value: SearchOppositeColor },
-    targetColor: { value: new Color("#ffffff") },
+    targetColor: { value: new Color("#7f7f7f") },
     targetOutput: { value: TargetOutputColor },
     transformMode: { value: TransformDefault },
     transformSpaceMatrix: { value: new Matrix3() },

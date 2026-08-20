@@ -27,6 +27,7 @@ const sdfMaterialShapeTitles = {
 
 const sdfColorTargetOutputTitles = {
     Color: ColorCube.TargetOutputColor,
+    Luminance: ColorCube.TargetOutputLuminance,
     Steps: ColorCube.TargetOutputSteps,
 } as const
 
@@ -103,6 +104,9 @@ export class SceneGui {
         debugFolder
             .add(colorCubeMaterial, "raycastMode", sdfColorRaycastTitles)
             .name("Raycast Mode")
+        debugFolder
+            .add(colorCubeMaterial, "quantizeSearch")
+            .name("Quantize Search")
         debugFolder.add(controls, "autoRotate").name("Rotate Camera")
         const searchModeController = colorCubeFolder
             .add(colorCubeMaterial, "searchMode", sdfColorSearchTitles)

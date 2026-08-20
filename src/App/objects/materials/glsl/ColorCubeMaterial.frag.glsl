@@ -13,6 +13,7 @@ out highp vec4 outColor;
 #define gl_FragColor outColor
 
 const uint TARGET_OUTPUT_COLOR = 0u;
+const uint TARGET_OUTPUT_LUMINANCE = 1u;
 const uint TARGET_OUTPUT_STEPS = 3u;
 
 const uint RAYCAST_ACCUMULATION = 0u;
@@ -26,6 +27,8 @@ const uint SEARCH_BLACK_AND_WHITE = 3u;
 const int MAX_RAY_STEPS = 96;
 const float MAX_DENSITY = 500000.0;
 const float EPSILON = 0.0001;
+const int OUTPUT_QUANTIZE_LEVELS = 256;
+const int OUTPUT_QUANTIZE_RADIUS = 2;
 
 const vec3 cubeMin = vec3(-0.5);
 const vec3 cubeMax = vec3(0.5);
@@ -62,6 +65,15 @@ float sdBox(vec3 p, vec3 b) {
 #include <color_func>
 #include <quantize_func>
 
+float getLuminanceFromSRGB(vec3 sRGB) {
+    return dot(sRGBToLinear(sRGB), lumCoefficients);
+}
+
+vec3 quantize(vec3 c ){
+	return quantize8(c);
+	// return quantizeTo(c, 4);
+}
+
 
 float getContrastRatio(vec3 sRGB1, vec3 sRGB2){
     vec3 linear1 = sRGBToLinear(sRGB1);
@@ -73,27 +85,28 @@ float getContrastRatio(vec3 sRGB1, vec3 sRGB2){
     return (l1 + 0.05) / (l2 + 0.05);
 }
 
-
-float densityByContrastTarget(vec3 sampleColor, vec3 bkColor) {
-    vec3 sampleColor8 = quantize8(sampleColor);
-    vec3 bkColor8 = quantize8(bkColor);
-    return getContrastRatio(sampleColor8, bkColor8) < contrastRatio ? 0.0 : MAX_DENSITY;
+float contrastDensity(vec3 sRGB1, vec3 sRGB2) {
+    #ifdef QUANTIZE_SEARCH
+    sRGB1 = quantize(sRGB1);
+    sRGB2 = quantize(sRGB2);
+    #endif
+    return getContrastRatio(sRGB1, sRGB2) < contrastRatio ? 0.0 : MAX_DENSITY;
 }
 
-float densityBySearchMode(vec3 sampleColor) {
+float densityBySearchMode(vec3 sRGBsample) {
     if (searchMode == SEARCH_NONE) {
         return MAX_DENSITY;
     } else if (searchMode == SEARCH_TARGET_COLOR) {
-		vec3 tc = linearToSRGB(targetColor);
-        return densityByContrastTarget(sampleColor, tc);
+		vec3 sRGBtarget = linearToSRGB(targetColor);
+        return contrastDensity(sRGBsample, sRGBtarget);
     } else if (searchMode == SEARCH_BLACK_AND_WHITE) {
         return min(
-            densityByContrastTarget(sampleColor, vec3(0.0)),
-            densityByContrastTarget(sampleColor, vec3(1.0))
+            contrastDensity(sRGBsample, vec3(0.0)),
+            contrastDensity(sRGBsample, vec3(1.0))
         );
     } else {
-        // return densityByContrastTarget(sampleColor, getOppositeHSLColor(sampleColor));
-        return densityByContrastTarget(sampleColor, getOppositeLinearColor(sampleColor));
+        // return contrastDensity(sRGBsample, getOppositeHSLColor(sRGBsample));
+        return contrastDensity(sRGBsample, getOppositeLinearColor(sRGBsample));
     }
 }
 
@@ -233,7 +246,6 @@ vec4 raycastAccumulation(
         discard;
     }
 	
-	// accumulatedColor.rgb = quantize8(accumulatedColor.rgb);
     return accumulatedColor;
 }
 
@@ -327,7 +339,12 @@ void main() {
     if (targetOutput == TARGET_OUTPUT_STEPS) {
         outputColor = vec4(vec3(stepsTaken / stepCountMax), outputColor.a);
     } else {
+        outputColor.rgb = quantize(outputColor.rgb);
         outputColor.rgb = applyVisionTransform(outputColor.rgb);
+
+        if (targetOutput == TARGET_OUTPUT_LUMINANCE) {
+            outputColor = vec4(vec3(getLuminanceFromSRGB(outputColor.rgb)), outputColor.a);
+        }
     }
 
     vec4 clipPosition = projectionMatrix * viewMatrix * vec4(firstHitWorldPoint, 1.0);

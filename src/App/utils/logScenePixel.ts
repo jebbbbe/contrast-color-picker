@@ -8,7 +8,7 @@ export function logScenePixel(
     controls: OrbitControls,
     clientX: number,
     clientY: number
-): void {
+): string {
     const canvas = renderer.domElement
     const rect = canvas.getBoundingClientRect()
     const gl = renderer.getContext()
@@ -50,7 +50,7 @@ export function logScenePixel(
         rgba: [...pixel],
         hex,
     }
-    console.log(result.hex)
+    return result.hex
 }
 
 export default logScenePixel

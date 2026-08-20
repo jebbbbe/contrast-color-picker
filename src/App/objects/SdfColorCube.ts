@@ -12,14 +12,49 @@ const transformSpaceMatrices = {
     custom:       new THREE.Matrix3(),
 }
 
-export class SdfColorCube extends THREE.Group {
-    readonly material: ColorCube.ColorCubeMaterial
-    private readonly markerPositionColor = new THREE.Color()
+const _markerSphereGeometry = new THREE.SphereGeometry(0.02, 16, 16)
+const _markerPositionColor = new THREE.Color()
 
-    private readonly targetColorMarker: THREE.Mesh<
-        THREE.SphereGeometry,
-        THREE.MeshBasicMaterial
-    >
+export class Marker extends THREE.Mesh<
+    THREE.SphereGeometry,
+    THREE.MeshBasicMaterial
+> {
+    constructor(visible = false, color: THREE.ColorRepresentation = 0x000000) {
+        super(
+            _markerSphereGeometry,
+            new THREE.MeshBasicMaterial({
+                color: new THREE.Color(),
+                fog: false,
+                vertexColors: false,
+                transparent: false,
+            })
+        )
+
+        this.update(visible, color)
+    }
+
+    update(visible: boolean, color: THREE.ColorRepresentation): void {
+        this.visible = visible
+        this.material.color.set(color)
+
+        if (!visible) {
+            return
+        }
+
+        const { r, g, b } = _markerPositionColor
+            .set(color)
+            .convertLinearToSRGB()
+
+        this.position.set(r - 0.5, g - 0.5, b - 0.5)
+    }
+}
+
+export class SdfColorCube extends THREE.Group {
+    readonly mesh: THREE.Mesh<THREE.BoxGeometry, ColorCube.ColorCubeMaterial>
+    readonly markers: {
+        onClick: Marker
+        target: Marker
+    }
 
     private readonly transformSpaceMatrices = transformSpaceMatrices
     private transformSpaceModeValue = ColorCube.TransformDefault
@@ -40,13 +75,12 @@ export class SdfColorCube extends THREE.Group {
         const edgeColor = new THREE.Color()
 
         for (let i = 0; i < edgeColors.length; i += 3) {
-            edgeColor
-                .setRGB(
-                    edgeColors[i],
-                    edgeColors[i + 1],
-                    edgeColors[i + 2],
-                    THREE.LinearSRGBColorSpace
-                )
+            edgeColor.setRGB(
+                edgeColors[i],
+                edgeColors[i + 1],
+                edgeColors[i + 2],
+                THREE.LinearSRGBColorSpace
+            )
 
             edgeColors[i] = edgeColor.r
             edgeColors[i + 1] = edgeColor.g
@@ -59,24 +93,19 @@ export class SdfColorCube extends THREE.Group {
             edges,
             new THREE.LineBasicMaterial({ vertexColors: true })
         )
-        const targetColorMarker = new THREE.Mesh(
-            new THREE.SphereGeometry(0.02, 16, 16),
-            new THREE.MeshBasicMaterial({
-                fog: false,
-                vertexColors: false,
-                transparent: false,
-            })
+        const targetColorMarker = new Marker(
+            material.searchMode === ColorCube.SearchTargetColor,
+            material.targetColor
         )
+        const onClickMarker = new Marker(false)
 
-        mesh.onBeforeRender = () => {
-            this.syncTargetColorMarker()
+        this.mesh = mesh
+        this.markers = {
+            onClick: onClickMarker,
+            target: targetColorMarker,
         }
-
-        this.material = material
-        this.targetColorMarker = targetColorMarker
         this.transformSpaceMode = ColorCube.TransformDefault
-        this.syncTargetColorMarker()
-        this.add(mesh, wireframe, targetColorMarker)
+        this.add(mesh, wireframe, ...Object.values(this.markers))
     }
 
     get transformSpaceMode(): number {
@@ -104,23 +133,7 @@ export class SdfColorCube extends THREE.Group {
         }
 
         this.transformSpaceModeValue = nextValue
-        this.material.transformSpaceMatrix.copy(nextMatrix)
-    }
-
-    private syncTargetColorMarker(): void {
-        this.targetColorMarker.visible =
-            this.material.searchMode === ColorCube.SearchTargetColor
-
-        if (!this.targetColorMarker.visible) {
-            return
-        }
-
-        const { r, g, b } = this.markerPositionColor
-            .copy(this.material.targetColor)
-            .convertLinearToSRGB()
-
-        this.targetColorMarker.position.set(r - 0.5, g - 0.5, b - 0.5)
-        this.targetColorMarker.material.color.copy(this.material.targetColor)
+        this.mesh.material.transformSpaceMatrix.copy(nextMatrix)
     }
 }
 

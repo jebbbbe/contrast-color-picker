@@ -2,6 +2,7 @@ import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import { SdfColorCube } from "./objects/SdfColorCube"
 import { ClipPlaneController, defaultClipPlaneZ } from "./objects/clipPlane"
+import * as ColorCube from "./objects/materials/ColorCubeMaterial"
 import * as SDF from "./objects/materials/SdfMaterial.js"
 import { AspectLayout } from "./utils/AspectLayout.js"
 import { logScenePixel } from "./utils/logScenePixel"
@@ -140,7 +141,7 @@ export class ThreeSceneApp {
     }
 
     private readonly handleCanvasClick = (event: MouseEvent): void => {
-        logScenePixel(
+        const hex = logScenePixel(
             this.renderer,
             this.scene,
             this.camera,
@@ -148,6 +149,26 @@ export class ThreeSceneApp {
             event.clientX,
             event.clientY
         )
+        console.log(hex)
+
+        if (
+            this.ctx.sdfColorCube.mesh.material.searchMode !==
+            ColorCube.SearchTargetColor
+        ) {
+            return
+        }
+
+        const sceneBackgroundHex =
+            this.scene.background instanceof THREE.Color
+                ? `#${this.scene.background.getHexString(THREE.SRGBColorSpace)}`
+                : null
+
+        if (hex === sceneBackgroundHex) {
+            return
+        }
+
+        this.gui.setOnClickColor(hex)
+        this.ctx.sdfColorCube.markers.onClick.update(true, hex)
     }
 
     private disposeSceneResources(): void {

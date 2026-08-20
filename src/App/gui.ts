@@ -1,4 +1,4 @@
-import GUI from "lil-gui"
+import GUI, { type Controller } from "lil-gui"
 import * as THREE from "three"
 
 import type { ThreeSceneApp } from "./main"
@@ -55,21 +55,30 @@ const sdfColorContrastPresetValues = ["", 3, 4.5, 7] as const
 
 export class SceneGui {
     readonly gui: GUI
+    private readonly onClickColorState: { value: string }
+    private readonly onClickColorController: Controller
 
     constructor(app: ThreeSceneApp) {
         const { controls, ctx } = app
         const { clipPlane, sdfColorCube, sdfGroup } = ctx
         const colorCube: SdfColorCube = sdfColorCube
-        const colorCubeMaterial = colorCube.material
+        const colorCubeMaterial = colorCube.mesh.material
+        const onClickMarker = colorCube.markers.onClick
+        const targetColorMarker = colorCube.markers.target
         const sdfMaterial = (
             sdfGroup.children[0] as unknown as { material: SDF.SdfMaterial }
         ).material
         const contrastPresetState: { value: "" | number } = { value: "" }
+        const onClickColor = onClickMarker.material.color.clone()
+        const onClickColorState: { value: string } = {
+            value: `#${onClickMarker.material.color.getHexString(THREE.SRGBColorSpace)}`,
+        }
         const targetColorState: { value: string } = {
             value: `#${colorCubeMaterial.targetColor.getHexString(THREE.SRGBColorSpace)}`,
         }
 
         this.gui = new GUI({ title: "Scene" })
+        this.onClickColorState = onClickColorState
 
         const debugFolder = this.gui.addFolder("Debug")
         const colorCubeFolder = this.gui.addFolder("Color Cube")
@@ -107,7 +116,7 @@ export class SceneGui {
             .add(contrastPresetState, "value", sdfColorContrastPresetValues)
             .name("WCAG Contrast")
         const contrastRatioController = colorCubeFolder
-            .add(colorCubeMaterial, "contrastRatio", 1.0, 21.0, 0.1)
+            .add(colorCubeMaterial, "contrastRatio", 1.0, 21.0, 0.001)
             .name("Contrast Ratio")
         const targetColorController = colorCubeFolder
             .addColor(targetColorState, "value")
@@ -117,6 +126,20 @@ export class SceneGui {
                     Number.parseInt(value.slice(1), 16),
                     THREE.SRGBColorSpace
                 )
+                targetColorMarker.update(
+                    colorCubeMaterial.searchMode === ColorCube.SearchTargetColor,
+                    colorCubeMaterial.targetColor
+                )
+            })
+        this.onClickColorController = colorCubeFolder
+            .addColor(onClickColorState, "value")
+            .name("Secondary Color")
+            .onChange((value: string) => {
+                onClickColor.setHex(
+                    Number.parseInt(value.slice(1), 16),
+                    THREE.SRGBColorSpace
+                )
+                onClickMarker.update(onClickMarker.visible, onClickColor)
             })
 
         const syncContrastPresetState = (value: number): void => {
@@ -226,15 +249,25 @@ export class SceneGui {
         const syncTargetColorState = (value: number): void => {
             if (value === ColorCube.SearchTargetColor) {
                 targetColorController.enable()
+                this.onClickColorController.enable()
                 return
             }
 
             targetColorController.disable()
+            this.onClickColorController.disable()
         }
 
         syncTargetColorState(colorCubeMaterial.searchMode)
         searchModeController.onChange((value: number) => {
             syncTargetColorState(value)
+            targetColorMarker.update(
+                value === ColorCube.SearchTargetColor,
+                colorCubeMaterial.targetColor
+            )
+
+            if (value !== ColorCube.SearchTargetColor) {
+                onClickMarker.update(false, onClickMarker.material.color)
+            }
         })
 
         sdfFolder.close()
@@ -248,6 +281,11 @@ export class SceneGui {
 
     destroy(): void {
         this.gui.destroy()
+    }
+
+    setOnClickColor(value: string): void {
+        this.onClickColorState.value = value
+        this.onClickColorController.updateDisplay()
     }
 }
 

@@ -6,7 +6,7 @@ const textBank = [
 ]
 
 function FontSwatch() {
-    const txt = textBank[0]
+    const txt = textBank[Math.floor(Math.random() * textBank.length)]
     return (
         <>
             <span

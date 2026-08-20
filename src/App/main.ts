@@ -5,6 +5,7 @@ import { ClipPlaneController, defaultClipPlaneZ } from "./objects/clipPlane"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
 import * as SDF from "./objects/materials/SdfMaterial.js"
 import { AspectLayout } from "./utils/AspectLayout.js"
+import { getContrastRatio } from "./utils/contrast"
 import { logScenePixel } from "./utils/logScenePixel"
 import { SceneGui } from "./gui"
 
@@ -150,6 +151,8 @@ export class ThreeSceneApp {
             event.clientY
         )
         console.log(hex)
+        console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
+        console.log("#000000", getContrastRatio(hex, "#000000"))
 
         if (
             this.ctx.sdfColorCube.mesh.material.searchMode !==

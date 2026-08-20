@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react"
 import ThreeSceneApp from "./App/main"
+import FontSwatch from "./components/FontSwatch"
+import Header from "./components/Header"
 
 function App() {
     const threeSceneMountRef = useRef<HTMLDivElement | null>(null)
@@ -19,7 +21,16 @@ function App() {
         }
     }, [])
 
-    return <div id="app" ref={threeSceneMountRef} />
+    return (
+        <>
+            <div id="app" ref={threeSceneMountRef} />
+
+            {/* <div className="overlay"> */}
+                {/* <Header /> */}
+                {/* <FontSwatch /> */}
+            {/* </div> */}
+        </>
+    )
 }
 
 export default App

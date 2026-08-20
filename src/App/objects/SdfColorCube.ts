@@ -15,27 +15,61 @@ const transformSpaceMatrices = {
 const _markerSphereGeometry = new THREE.SphereGeometry(0.02, 16, 16)
 const _markerPositionColor = new THREE.Color()
 
-export class Marker extends THREE.Mesh<
-    THREE.SphereGeometry,
-    THREE.MeshBasicMaterial
-> {
+type Dot = THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>
+type MarkerData = {
+    primary: Dot
+    inverse: Dot
+}
+
+export class Marker extends THREE.Group {
     constructor(visible = false, color: THREE.ColorRepresentation = 0x000000) {
-        super(
+        super()
+
+        const primary: Dot = new THREE.Mesh(
             _markerSphereGeometry,
             new THREE.MeshBasicMaterial({
                 color: new THREE.Color(),
                 fog: false,
                 vertexColors: false,
                 transparent: false,
+                depthTest: false,
             })
         )
+        const inverse: Dot = new THREE.Mesh(
+            _markerSphereGeometry,
+            new THREE.MeshBasicMaterial({
+                color: new THREE.Color(),
+                fog: false,
+                vertexColors: false,
+                transparent: false,
+                side: THREE.BackSide,
+                depthTest: false,
+            })
+        )
+
+        inverse.renderOrder = 1
+        primary.renderOrder = 2
+        inverse.scale.setScalar(1.2)
+
+        const userData = this.userData as MarkerData
+
+        userData.primary = primary
+        userData.inverse = inverse
+        this.add(inverse, primary)
 
         this.update(visible, color)
     }
 
     update(visible: boolean, color: THREE.ColorRepresentation): void {
+        const { primary, inverse } = this.userData as MarkerData
+
         this.visible = visible
-        this.material.color.set(color)
+        primary.material.color.set(color)
+        inverse.material.color.setRGB(
+            1 - primary.material.color.r,
+            1 - primary.material.color.g,
+            1 - primary.material.color.b
+        )
 
         if (!visible) {
             return

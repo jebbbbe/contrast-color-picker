@@ -64,14 +64,15 @@ export class SceneGui {
         const colorCube: SdfColorCube = sdfColorCube
         const colorCubeMaterial = colorCube.mesh.material
         const onClickMarker = colorCube.markers.onClick
+        const onClickPrimary = onClickMarker.userData.primary
         const targetColorMarker = colorCube.markers.target
         const sdfMaterial = (
             sdfGroup.children[0] as unknown as { material: SDF.SdfMaterial }
         ).material
         const contrastPresetState: { value: "" | number } = { value: "" }
-        const onClickColor = onClickMarker.material.color.clone()
+        const onClickColor = onClickPrimary.material.color.clone()
         const onClickColorState: { value: string } = {
-            value: `#${onClickMarker.material.color.getHexString(THREE.SRGBColorSpace)}`,
+            value: `#${onClickPrimary.material.color.getHexString(THREE.SRGBColorSpace)}`,
         }
         const targetColorState: { value: string } = {
             value: `#${colorCubeMaterial.targetColor.getHexString(THREE.SRGBColorSpace)}`,
@@ -266,7 +267,7 @@ export class SceneGui {
             )
 
             if (value !== ColorCube.SearchTargetColor) {
-                onClickMarker.update(false, onClickMarker.material.color)
+                onClickMarker.update(false, onClickPrimary.material.color)
             }
         })
 

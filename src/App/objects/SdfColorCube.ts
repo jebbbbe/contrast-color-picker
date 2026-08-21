@@ -14,6 +14,7 @@ const transformSpaceMatrices = {
 
 const _markerSphereGeometry = new THREE.SphereGeometry(0.02, 16, 16)
 const _markerPositionColor = new THREE.Color()
+const _markerInverseColor = new THREE.Color()
 
 type Dot = THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>
 type MarkerData = {
@@ -65,10 +66,12 @@ export class Marker extends THREE.Group {
 
         this.visible = visible
         primary.material.color.set(color)
+        primary.material.color.getRGB(_markerInverseColor, THREE.SRGBColorSpace)
         inverse.material.color.setRGB(
-            1 - primary.material.color.r,
-            1 - primary.material.color.g,
-            1 - primary.material.color.b
+            1 - _markerInverseColor.r,
+            1 - _markerInverseColor.g,
+            1 - _markerInverseColor.b,
+            THREE.SRGBColorSpace
         )
 
         if (!visible) {

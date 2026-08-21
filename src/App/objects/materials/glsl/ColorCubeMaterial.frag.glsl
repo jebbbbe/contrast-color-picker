@@ -199,16 +199,16 @@ vec4 raycastBinarySearch(
     vec2 bounds,
     inout float stepsTaken
 ) {
-    float missT = max(bounds.x, 0.0);
-    float hitT = bounds.y;
-    vec3 nearPoint = rayOrigin + rayDirection * missT;
+    float tStart = max(bounds.x, 0.0);
+    float tEnd = bounds.y;
+    vec3 nearPoint = rayOrigin + rayDirection * tStart;
     vec3 nearColor = nearPoint - cubeMin;
 
     if (sampleHits(nearColor)) {
         return vec4(nearColor, 1.0);
     }
 
-    vec3 farPoint = rayOrigin + rayDirection * hitT;
+    vec3 farPoint = rayOrigin + rayDirection * tEnd;
     vec3 farColor = farPoint - cubeMin;
 
     if (!sampleHits(farColor)) {
@@ -218,8 +218,8 @@ vec4 raycastBinarySearch(
     return refineRaycastHit(
         rayOrigin,
         rayDirection,
-        missT,
-        hitT,
+        tStart,
+        tEnd,
         stepsTaken
     );
 }
@@ -481,36 +481,44 @@ vec3 quantizeToNearestAcceptableColor(
     inout float stepsTaken
 ) {
     vec3 quantizedColor = quantize(sampleColor);
+    float quantizeScale = float(OUTPUT_QUANTIZE_LEVELS - 1);
     stepsTaken++;
 
     if (sampleHits(quantizedColor)) {
         return quantizedColor;
     }
 
-    ivec3 baseIndex = getOutputQuantizeIndex(sampleColor);
+    ivec3 quantizedIndex = ivec3(quantizedColor * quantizeScale + 0.5);
+    ivec3 maxIndex = ivec3(OUTPUT_QUANTIZE_LEVELS - 1);
     vec3 bestColor = quantizedColor;
     float bestDistance = 0.0;
     bool found = false;
 
-    for (int x = -OUTPUT_QUANTIZE_RADIUS; x <= OUTPUT_QUANTIZE_RADIUS; x++) {
-        for (int y = -OUTPUT_QUANTIZE_RADIUS; y <= OUTPUT_QUANTIZE_RADIUS; y++) {
-            for (int z = -OUTPUT_QUANTIZE_RADIUS; z <= OUTPUT_QUANTIZE_RADIUS; z++) {
-                ivec3 candidateIndex = clamp(
-                    baseIndex + ivec3(x, y, z),
-                    ivec3(0),
-                    ivec3(OUTPUT_QUANTIZE_LEVELS - 1)
-                );
-                vec3 candidateColor = getOutputQuantizeColor(candidateIndex);
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            for (int z = -1; z <= 1; z++) {
+                if (x == 0 && y == 0 && z == 0) {
+                    continue;
+                }
+
+                ivec3 candidateIndex = quantizedIndex + ivec3(x, y, z);
+
+                if (
+                    any(lessThan(candidateIndex, ivec3(0))) ||
+                    any(greaterThan(candidateIndex, maxIndex))
+                ) {
+                    continue;
+                }
+
+                vec3 candidateColor = vec3(candidateIndex) / quantizeScale;
                 stepsTaken++;
 
                 if (!sampleHits(candidateColor)) {
                     continue;
                 }
 
-                float candidateDistance = dot(
-                    candidateColor - sampleColor,
-                    candidateColor - sampleColor
-                );
+                vec3 candidateDelta = candidateColor - sampleColor;
+                float candidateDistance = dot(candidateDelta, candidateDelta);
 
                 if (!found || candidateDistance < bestDistance) {
                     bestColor = candidateColor;
@@ -581,22 +589,6 @@ void main() {
     }
 
     vec3 outputPosition = (modelMatrix * vec4(outputColor.rgb + cubeMin, 1.0)).xyz;
-
-	/*
-	// debug view quantived areas
-	vec3 quan = quantizeToNearestAcceptableColor(
-		outputColor.rgb,
-		stepsTaken,
-		stepCountMax
-	);
-	vec3 quan0 = quantize(outputColor.rgb);
-	if (quan == quan0){
-		discard;
-		// outputColor.a = 0.;
-	}
-    outputColor.rgb = quan;
-	*/
-
 
     stepCountMax += QUANTIZE_STEP_COUNT_MAX;
     outputColor.rgb = quantizeToNearestAcceptableColor(

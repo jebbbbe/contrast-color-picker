@@ -87,3 +87,17 @@ vec3 linearToSRGB(vec3 c) {
         vec3(lessThanEqual(c, vec3(0.0031308)))
     );
 }
+
+const vec3 lumCoefficients = vec3(0.2126, 0.7152, 0.0722);
+
+float getLuminanceFromSRGB(vec3 sRGB) {
+    return dot(sRGBToLinear(sRGB), lumCoefficients);
+}
+
+float getContrastRatio(vec3 sRGB1, vec3 sRGB2) {
+    float lum1 = getLuminanceFromSRGB(sRGB1);
+    float lum2 = getLuminanceFromSRGB(sRGB2);
+    float l1 = max(lum1, lum2);
+    float l2 = min(lum1, lum2);
+    return (l1 + 0.05) / (l2 + 0.05);
+}

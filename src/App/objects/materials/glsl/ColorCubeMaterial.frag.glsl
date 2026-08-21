@@ -18,6 +18,8 @@ const uint TARGET_OUTPUT_STEPS = 3u;
 
 const uint RAYCAST_ACCUMULATION = 0u;
 const uint RAYCAST_BINARY_SEARCH = 1u;
+const uint RAYCAST_BRACKETED = 2u;
+const uint RAYCAST_BRACKETED2 = 3u;
 
 const uint SEARCH_NONE = 0u;
 const uint SEARCH_OPPOSITE_COLOR = 1u;
@@ -25,15 +27,13 @@ const uint SEARCH_TARGET_COLOR = 2u;
 const uint SEARCH_BLACK_AND_WHITE = 3u;
 
 const int MAX_RAY_STEPS = 96;
+const int BINARY_SEARCH_STEPS = 10;
+const int BRACKET_RAY_STEPS = 24;
 const float MAX_DENSITY = 500000.0;
 const float EPSILON = 0.0001;
-const int OUTPUT_QUANTIZE_LEVELS = 256;
-const int OUTPUT_QUANTIZE_RADIUS = 2;
 
 const vec3 cubeMin = vec3(-0.5);
 const vec3 cubeMax = vec3(0.5);
-
-const vec3 lumCoefficients = vec3(0.2126, 0.7152, 0.0722);
 
 const mat3 protanopiaMatrix = mat3(
     0.567, 0.558, 0.0,
@@ -65,26 +65,6 @@ float sdBox(vec3 p, vec3 b) {
 #include <color_func>
 #include <quantize_func>
 
-float getLuminanceFromSRGB(vec3 sRGB) {
-    return dot(sRGBToLinear(sRGB), lumCoefficients);
-}
-
-vec3 quantize(vec3 c ){
-	return quantize8(c);
-	// return quantizeTo(c, 4);
-}
-
-
-float getContrastRatio(vec3 sRGB1, vec3 sRGB2){
-    vec3 linear1 = sRGBToLinear(sRGB1);
-    vec3 linear2 = sRGBToLinear(sRGB2);
-    float lum1 = dot(linear1, lumCoefficients);
-    float lum2 = dot(linear2, lumCoefficients);
-    float l1 = max(lum1, lum2);
-    float l2 = min(lum1, lum2);
-    return (l1 + 0.05) / (l2 + 0.05);
-}
-
 float contrastDensity(vec3 sRGB1, vec3 sRGB2) {
     #ifdef QUANTIZE_SEARCH
     sRGB1 = quantize(sRGB1);
@@ -92,6 +72,32 @@ float contrastDensity(vec3 sRGB1, vec3 sRGB2) {
     #endif
     return getContrastRatio(sRGB1, sRGB2) < contrastRatio ? 0.0 : MAX_DENSITY;
 }
+
+float getBlackAndWhiteMinLuminance() {
+    return (contrastRatio - 1.0) / 20.0;
+}
+
+float getBlackAndWhiteMaxLuminance() {
+    return 1.05 / contrastRatio - 0.05;
+}
+
+int classifyBlackAndWhiteSample(vec3 sRGBsample) {
+    float lum = getLuminanceFromSRGB(sRGBsample);
+    float minLum = getBlackAndWhiteMinLuminance();
+    float maxLum = getBlackAndWhiteMaxLuminance();
+
+    if (lum < minLum) {
+        return -1;
+    }
+
+    if (lum > maxLum) {
+        return 1;
+    }
+
+    return 0;
+}
+
+
 
 float densityBySearchMode(vec3 sRGBsample) {
     if (searchMode == SEARCH_NONE) {
@@ -105,7 +111,6 @@ float densityBySearchMode(vec3 sRGBsample) {
             contrastDensity(sRGBsample, vec3(1.0))
         );
     } else {
-        // return contrastDensity(sRGBsample, getOppositeHSLColor(sRGBsample));
         return contrastDensity(sRGBsample, getOppositeLinearColor(sRGBsample));
     }
 }
@@ -186,6 +191,9 @@ vec2 intersectColorCubeBounds(vec3 rayOrigin, vec3 rayDirection) {
     );
 }
 
+// Marches a fixed number of samples through the cube bounds.
+// Accumulates color and opacity from every hit sample along the ray.
+// Most robust mode, but softer and more expensive than surface search.
 vec4 raycastAccumulation(
     vec3 rayOrigin,
     vec3 rayDirection,
@@ -213,7 +221,7 @@ vec4 raycastAccumulation(
     bool foundDensity = false;
 
     for (int i = 0; i < MAX_RAY_STEPS; i++) {
-        stepsTaken += 1.0;
+        stepsTaken++;
 
         float t = tStart + float(i) * dt;
         vec3 samplePoint = rayOrigin + rayDirection * t;
@@ -256,6 +264,85 @@ bool sampleHits(vec3 sampleColor) {
     ) > 0.0;
 }
 
+vec4 finalizeRaycastHit(
+    vec3 hitPoint,
+    vec3 hitColor,
+    inout vec3 firstHitWorldPoint
+) {
+    firstHitWorldPoint = (modelMatrix * vec4(hitPoint, 1.0)).xyz;
+    return vec4(hitColor, 1.0);
+}
+
+vec4 refineRaycastHit(
+    vec3 rayOrigin,
+    vec3 rayDirection,
+    float missT,
+    float hitT,
+    inout vec3 firstHitWorldPoint,
+    inout float stepsTaken
+) {
+    vec3 hitPoint = rayOrigin + rayDirection * hitT;
+    vec3 hitColor = hitPoint - cubeMin;
+
+    for (int i = 0; i < BINARY_SEARCH_STEPS; i++) {
+        stepsTaken++;
+
+        float midT = (missT + hitT) * 0.5;
+        vec3 midPoint = rayOrigin + rayDirection * midT;
+        vec3 midColor = midPoint - cubeMin;
+
+        if (sampleHits(midColor)) {
+            hitT = midT;
+            hitPoint = midPoint;
+            hitColor = midColor;
+        } else {
+            missT = midT;
+        }
+    }
+
+    return finalizeRaycastHit(hitPoint, hitColor, firstHitWorldPoint);
+}
+
+vec4 refineBlackAndWhiteBoundaryHit(
+    vec3 rayOrigin,
+    vec3 rayDirection,
+    float missT,
+    float hitT,
+    int missClass,
+    inout vec3 firstHitWorldPoint,
+    inout float stepsTaken
+) {
+    float minLum = getBlackAndWhiteMinLuminance();
+    float maxLum = getBlackAndWhiteMaxLuminance();
+    vec3 hitPoint = rayOrigin + rayDirection * hitT;
+    vec3 hitColor = hitPoint - cubeMin;
+
+    for (int i = 0; i < BINARY_SEARCH_STEPS; i++) {
+        stepsTaken++;
+
+        float midT = (missT + hitT) * 0.5;
+        vec3 midPoint = rayOrigin + rayDirection * midT;
+        vec3 midColor = midPoint - cubeMin;
+        float midLum = getLuminanceFromSRGB(midColor);
+
+        if (
+            (missClass < 0 && midLum >= minLum) ||
+            (missClass > 0 && midLum <= maxLum)
+        ) {
+            hitT = midT;
+            hitPoint = midPoint;
+            hitColor = midColor;
+        } else {
+            missT = midT;
+        }
+    }
+
+    return finalizeRaycastHit(hitPoint, hitColor, firstHitWorldPoint);
+}
+
+// Assumes the ray interval starts outside and ends inside the volume.
+// Refines that single miss to hit bracket with binary subdivision only.
+// Fastest crisp surface mode, but misses curved volumes without a valid bracket.
 vec4 raycastBinarySearch(
     vec3 rayOrigin,
     vec3 rayDirection,
@@ -263,7 +350,7 @@ vec4 raycastBinarySearch(
     inout float stepsTaken,
     inout float stepCountMax
 ) {
-    stepCountMax = 10.0;
+    stepCountMax = float(BINARY_SEARCH_STEPS);
 
     vec2 bounds = intersectColorCubeBounds(rayOrigin, rayDirection);
 
@@ -277,8 +364,7 @@ vec4 raycastBinarySearch(
     vec3 nearColor = nearPoint - cubeMin;
 
     if (sampleHits(nearColor)) {
-        firstHitWorldPoint = (modelMatrix * vec4(nearPoint, 1.0)).xyz;
-        return vec4(nearColor, 1.0);
+        return finalizeRaycastHit(nearPoint, nearColor, firstHitWorldPoint);
     }
 
     vec3 farPoint = rayOrigin + rayDirection * hitT;
@@ -288,24 +374,200 @@ vec4 raycastBinarySearch(
         discard;
     }
 
-    for (int i = 0; i < 11; i++) {
-        stepsTaken += 1.0;
+    return refineRaycastHit(
+        rayOrigin,
+        rayDirection,
+        missT,
+        hitT,
+        firstHitWorldPoint,
+        stepsTaken
+    );
+}
 
-        float midT = (missT + hitT) * 0.5;
-        vec3 midPoint = rayOrigin + rayDirection * midT;
-        vec3 midColor = midPoint - cubeMin;
+// Coarsely marches the interval until it finds the first interior hit sample.
+// Refines the previous miss to current hit segment with binary subdivision.
+// Handles curved volumes better than pure binary search, but can skip thin shells.
+vec4 raycastBracketedSearch(
+    vec3 rayOrigin,
+    vec3 rayDirection,
+    inout vec3 firstHitWorldPoint,
+    inout float stepsTaken,
+    inout float stepCountMax
+) {
+    stepCountMax = float(BRACKET_RAY_STEPS + BINARY_SEARCH_STEPS);
 
-        if (sampleHits(midColor)) {
-            hitT = midT;
-            farPoint = midPoint;
-            farColor = midColor;
-        } else {
-            missT = midT;
+    vec2 bounds = intersectColorCubeBounds(rayOrigin, rayDirection);
+
+    if (bounds.x > bounds.y) {
+        discard;
+    }
+
+    float tStart = max(bounds.x, 0.0);
+    float tEnd = bounds.y;
+    vec3 nearPoint = rayOrigin + rayDirection * tStart;
+    vec3 nearColor = nearPoint - cubeMin;
+
+    if (sampleHits(nearColor)) {
+        return finalizeRaycastHit(nearPoint, nearColor, firstHitWorldPoint);
+    }
+
+    float prevT = tStart;
+
+    for (int i = 1; i <= BRACKET_RAY_STEPS; i++) {
+        stepsTaken++;
+
+        float currT = mix(tStart, tEnd, float(i) / float(BRACKET_RAY_STEPS));
+        vec3 currPoint = rayOrigin + rayDirection * currT;
+        vec3 currColor = currPoint - cubeMin;
+
+        if (sampleHits(currColor)) {
+            return refineRaycastHit(
+                rayOrigin,
+                rayDirection,
+                prevT,
+                currT,
+                firstHitWorldPoint,
+                stepsTaken
+            );
+        }
+
+        prevT = currT;
+    }
+
+    discard;
+}
+
+// Coarsely marches like Bracketed, but also detects threshold boundary crossings.
+// In black and white mode it can refine into a thin valid shell without sampling inside it.
+// Best compromise for thin surfaces, at a small extra cost over Bracketed.
+vec4 raycastBracketedSearch2(
+    vec3 rayOrigin,
+    vec3 rayDirection,
+    inout vec3 firstHitWorldPoint,
+    inout float stepsTaken,
+    inout float stepCountMax
+) {
+    stepCountMax = float(BRACKET_RAY_STEPS + BINARY_SEARCH_STEPS);
+
+    vec2 bounds = intersectColorCubeBounds(rayOrigin, rayDirection);
+
+    if (bounds.x > bounds.y) {
+        discard;
+    }
+
+    float tStart = max(bounds.x, 0.0);
+    float tEnd = bounds.y;
+    vec3 prevPoint = rayOrigin + rayDirection * tStart;
+    vec3 prevColor = prevPoint - cubeMin;
+    bool prevHit = sampleHits(prevColor);
+
+    if (prevHit) {
+        return finalizeRaycastHit(prevPoint, prevColor, firstHitWorldPoint);
+    }
+
+    int prevBlackAndWhiteClass = classifyBlackAndWhiteSample(prevColor);
+    float prevT = tStart;
+
+    for (int i = 1; i <= BRACKET_RAY_STEPS; i++) {
+        stepsTaken++;
+
+        float currT = mix(tStart, tEnd, float(i) / float(BRACKET_RAY_STEPS));
+        vec3 currPoint = rayOrigin + rayDirection * currT;
+        vec3 currColor = currPoint - cubeMin;
+        bool currHit = sampleHits(currColor);
+
+        if (currHit) {
+            return refineRaycastHit(
+                rayOrigin,
+                rayDirection,
+                prevT,
+                currT,
+                firstHitWorldPoint,
+                stepsTaken
+            );
+        }
+
+        if (searchMode == SEARCH_BLACK_AND_WHITE) {
+            int currBlackAndWhiteClass = classifyBlackAndWhiteSample(currColor);
+
+            if (
+                prevBlackAndWhiteClass != 0 &&
+                currBlackAndWhiteClass != prevBlackAndWhiteClass
+            ) {
+                return refineBlackAndWhiteBoundaryHit(
+                    rayOrigin,
+                    rayDirection,
+                    prevT,
+                    currT,
+                    prevBlackAndWhiteClass,
+                    firstHitWorldPoint,
+                    stepsTaken
+                );
+            }
+
+            prevBlackAndWhiteClass = currBlackAndWhiteClass;
+        }
+
+        prevT = currT;
+    }
+
+    discard;
+}
+
+vec3 quantizeToNearestAcceptableColor(
+    vec3 sampleColor,
+    inout float stepsTaken,
+    inout float stepCountMax
+) {
+    stepCountMax += float(
+        1 +
+        (OUTPUT_QUANTIZE_RADIUS * 2 + 1) *
+        (OUTPUT_QUANTIZE_RADIUS * 2 + 1) *
+        (OUTPUT_QUANTIZE_RADIUS * 2 + 1)
+    );
+
+    vec3 quantizedColor = quantize(sampleColor);
+    stepsTaken++;
+
+    if (sampleHits(quantizedColor)) {
+        return quantizedColor;
+    }
+
+    ivec3 baseIndex = getOutputQuantizeIndex(sampleColor);
+    vec3 bestColor = quantizedColor;
+    float bestDistance = 0.0;
+    bool found = false;
+
+    for (int x = -OUTPUT_QUANTIZE_RADIUS; x <= OUTPUT_QUANTIZE_RADIUS; x++) {
+        for (int y = -OUTPUT_QUANTIZE_RADIUS; y <= OUTPUT_QUANTIZE_RADIUS; y++) {
+            for (int z = -OUTPUT_QUANTIZE_RADIUS; z <= OUTPUT_QUANTIZE_RADIUS; z++) {
+                ivec3 candidateIndex = clamp(
+                    baseIndex + ivec3(x, y, z),
+                    ivec3(0),
+                    ivec3(OUTPUT_QUANTIZE_LEVELS - 1)
+                );
+                vec3 candidateColor = getOutputQuantizeColor(candidateIndex);
+                stepsTaken++;
+
+                if (!sampleHits(candidateColor)) {
+                    continue;
+                }
+
+                float candidateDistance = dot(
+                    candidateColor - sampleColor,
+                    candidateColor - sampleColor
+                );
+
+                if (!found || candidateDistance < bestDistance) {
+                    bestColor = candidateColor;
+                    bestDistance = candidateDistance;
+                    found = true;
+                }
+            }
         }
     }
 
-    firstHitWorldPoint = (modelMatrix * vec4(farPoint, 1.0)).xyz;
-    return vec4(farColor, 1.0);
+    return found ? bestColor : quantizedColor;
 }
 
 void main() {
@@ -326,6 +588,22 @@ void main() {
             stepsTaken,
             stepCountMax
         );
+    } else if (raycastMode == RAYCAST_BRACKETED2) {
+        outputColor = raycastBracketedSearch2(
+            rayOrigin,
+            rayDirection,
+            firstHitWorldPoint,
+            stepsTaken,
+            stepCountMax
+        );
+    } else if (raycastMode == RAYCAST_BRACKETED) {
+        outputColor = raycastBracketedSearch(
+            rayOrigin,
+            rayDirection,
+            firstHitWorldPoint,
+            stepsTaken,
+            stepCountMax
+        );
     } else {
         outputColor = raycastBinarySearch(
             rayOrigin,
@@ -336,10 +614,30 @@ void main() {
         );
     }
 
+	/*
+	vec3 quan = quantizeToNearestAcceptableColor(
+		outputColor.rgb,
+		stepsTaken,
+		stepCountMax
+	);
+	vec3 quan0 = quantize(outputColor.rgb);
+	if (quan == quan0){
+		discard;
+		// outputColor.a = 0.;
+	}
+    outputColor.rgb = quan;
+	*/
+
+
+    outputColor.rgb = quantizeToNearestAcceptableColor(
+		outputColor.rgb,	
+		stepsTaken,
+		stepCountMax
+	);
+
     if (targetOutput == TARGET_OUTPUT_STEPS) {
         outputColor = vec4(vec3(stepsTaken / stepCountMax), outputColor.a);
     } else {
-        outputColor.rgb = quantize(outputColor.rgb);
         outputColor.rgb = applyVisionTransform(outputColor.rgb);
 
         if (targetOutput == TARGET_OUTPUT_LUMINANCE) {

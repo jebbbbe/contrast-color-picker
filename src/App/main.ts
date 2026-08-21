@@ -150,9 +150,15 @@ export class ThreeSceneApp {
             event.clientX,
             event.clientY
         )
+        const targetColorMarkerHex = `#${this.ctx.sdfColorCube.markers.target.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`
+
         console.log(hex)
-        console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
+        console.log(
+            targetColorMarkerHex,
+            getContrastRatio(hex, targetColorMarkerHex)
+        )
         console.log("#000000", getContrastRatio(hex, "#000000"))
+        console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
 
         if (
             this.ctx.sdfColorCube.mesh.material.searchMode !==

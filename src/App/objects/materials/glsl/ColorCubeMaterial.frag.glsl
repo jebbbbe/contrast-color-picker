@@ -20,6 +20,7 @@ const uint RAYCAST_ACCUMULATION = 0u;
 const uint RAYCAST_BINARY_SEARCH = 1u;
 const uint RAYCAST_BRACKETED = 2u;
 const uint RAYCAST_BRACKETED2 = 3u;
+const uint RAYCAST_BRACKETED3 = 4u;
 
 const uint SEARCH_NONE = 0u;
 const uint SEARCH_OPPOSITE_COLOR = 1u;
@@ -71,30 +72,6 @@ float contrastDensity(vec3 sRGB1, vec3 sRGB2) {
     sRGB2 = quantize(sRGB2);
     #endif
     return getContrastRatio(sRGB1, sRGB2) < contrastRatio ? 0.0 : MAX_DENSITY;
-}
-
-float getBlackAndWhiteMinLuminance() {
-    return (contrastRatio - 1.0) / 20.0;
-}
-
-float getBlackAndWhiteMaxLuminance() {
-    return 1.05 / contrastRatio - 0.05;
-}
-
-int classifyBlackAndWhiteSample(vec3 sRGBsample) {
-    float lum = getLuminanceFromSRGB(sRGBsample);
-    float minLum = getBlackAndWhiteMinLuminance();
-    float maxLum = getBlackAndWhiteMaxLuminance();
-
-    if (lum < minLum) {
-        return -1;
-    }
-
-    if (lum > maxLum) {
-        return 1;
-    }
-
-    return 0;
 }
 
 
@@ -303,43 +280,6 @@ vec4 refineRaycastHit(
     return finalizeRaycastHit(hitPoint, hitColor, firstHitWorldPoint);
 }
 
-vec4 refineBlackAndWhiteBoundaryHit(
-    vec3 rayOrigin,
-    vec3 rayDirection,
-    float missT,
-    float hitT,
-    int missClass,
-    inout vec3 firstHitWorldPoint,
-    inout float stepsTaken
-) {
-    float minLum = getBlackAndWhiteMinLuminance();
-    float maxLum = getBlackAndWhiteMaxLuminance();
-    vec3 hitPoint = rayOrigin + rayDirection * hitT;
-    vec3 hitColor = hitPoint - cubeMin;
-
-    for (int i = 0; i < BINARY_SEARCH_STEPS; i++) {
-        stepsTaken++;
-
-        float midT = (missT + hitT) * 0.5;
-        vec3 midPoint = rayOrigin + rayDirection * midT;
-        vec3 midColor = midPoint - cubeMin;
-        float midLum = getLuminanceFromSRGB(midColor);
-
-        if (
-            (missClass < 0 && midLum >= minLum) ||
-            (missClass > 0 && midLum <= maxLum)
-        ) {
-            hitT = midT;
-            hitPoint = midPoint;
-            hitColor = midColor;
-        } else {
-            missT = midT;
-        }
-    }
-
-    return finalizeRaycastHit(hitPoint, hitColor, firstHitWorldPoint);
-}
-
 // Assumes the ray interval starts outside and ends inside the volume.
 // Refines that single miss to hit bracket with binary subdivision only.
 // Fastest crisp surface mode, but misses curved volumes without a valid bracket.
@@ -437,6 +377,67 @@ vec4 raycastBracketedSearch(
     discard;
 }
 
+float getBlackAndWhiteMinLuminance() {
+    return (contrastRatio - 1.0) / 20.0;
+}
+
+float getBlackAndWhiteMaxLuminance() {
+    return 1.05 / contrastRatio - 0.05;
+}
+
+int classifyBlackAndWhiteSample(vec3 sRGBsample) {
+    float lum = getLuminanceFromSRGB(sRGBsample);
+    float minLum = getBlackAndWhiteMinLuminance();
+    float maxLum = getBlackAndWhiteMaxLuminance();
+
+    if (lum < minLum) {
+        return -1;
+    }
+
+    if (lum > maxLum) {
+        return 1;
+    }
+
+    return 0;
+}
+
+vec4 refineBlackAndWhiteBoundaryHit(
+    vec3 rayOrigin,
+    vec3 rayDirection,
+    float missT,
+    float hitT,
+    int missClass,
+    inout vec3 firstHitWorldPoint,
+    inout float stepsTaken
+) {
+    float minLum = getBlackAndWhiteMinLuminance();
+    float maxLum = getBlackAndWhiteMaxLuminance();
+    vec3 hitPoint = rayOrigin + rayDirection * hitT;
+    vec3 hitColor = hitPoint - cubeMin;
+
+    for (int i = 0; i < BINARY_SEARCH_STEPS; i++) {
+        stepsTaken++;
+
+        float midT = (missT + hitT) * 0.5;
+        vec3 midPoint = rayOrigin + rayDirection * midT;
+        vec3 midColor = midPoint - cubeMin;
+        float midLum = getLuminanceFromSRGB(midColor);
+
+        if (
+            (missClass < 0 && midLum >= minLum) ||
+            (missClass > 0 && midLum <= maxLum)
+        ) {
+            hitT = midT;
+            hitPoint = midPoint;
+            hitColor = midColor;
+        } else {
+            missT = midT;
+        }
+    }
+
+    return finalizeRaycastHit(hitPoint, hitColor, firstHitWorldPoint);
+}
+
 // Coarsely marches like Bracketed, but also detects threshold boundary crossings.
 // In black and white mode it can refine into a thin valid shell without sampling inside it.
 // Best compromise for thin surfaces, at a small extra cost over Bracketed.
@@ -514,6 +515,102 @@ vec4 raycastBracketedSearch2(
     discard;
 }
 
+int classifyBracketed3Sample(vec3 sampleColor) {
+    if (searchMode == SEARCH_BLACK_AND_WHITE) {
+        return classifyBlackAndWhiteSample(sampleColor);
+    }
+
+    return sampleHits(sampleColor) ? 0 : -1;
+}
+
+vec4 refineBracketed3Hit(
+    vec3 rayOrigin,
+    vec3 rayDirection,
+    float missT,
+    float hitT,
+    int missClass,
+    inout vec3 firstHitWorldPoint,
+    inout float stepsTaken
+) {
+    if (searchMode == SEARCH_BLACK_AND_WHITE && missClass != 0) {
+        return refineBlackAndWhiteBoundaryHit(
+            rayOrigin,
+            rayDirection,
+            missT,
+            hitT,
+            missClass,
+            firstHitWorldPoint,
+            stepsTaken
+        );
+    }
+
+    return refineRaycastHit(
+        rayOrigin,
+        rayDirection,
+        missT,
+        hitT,
+        firstHitWorldPoint,
+        stepsTaken
+    );
+}
+
+// Always refines the first coarse state change it sees along the ray.
+// For black and white, a -1 to 1 class change means the thin luminance band was crossed.
+// Slightly more work than Bracketed2, but the loop stays simple and consistent.
+vec4 raycastBracketedSearch3(
+    vec3 rayOrigin,
+    vec3 rayDirection,
+    inout vec3 firstHitWorldPoint,
+    inout float stepsTaken,
+    inout float stepCountMax
+) {
+    stepCountMax = float(BRACKET_RAY_STEPS + BINARY_SEARCH_STEPS);
+
+    vec2 bounds = intersectColorCubeBounds(rayOrigin, rayDirection);
+
+    if (bounds.x > bounds.y) {
+        discard;
+    }
+
+    float tStart = max(bounds.x, 0.0);
+    float tEnd = bounds.y;
+    vec3 prevPoint = rayOrigin + rayDirection * tStart;
+    vec3 prevColor = prevPoint - cubeMin;
+    int prevClass = classifyBracketed3Sample(prevColor);
+
+    if (prevClass == 0) {
+        return finalizeRaycastHit(prevPoint, prevColor, firstHitWorldPoint);
+    }
+
+    float prevT = tStart;
+
+    for (int i = 1; i <= BRACKET_RAY_STEPS; i++) {
+        stepsTaken++;
+
+        float currT = mix(tStart, tEnd, float(i) / float(BRACKET_RAY_STEPS));
+        vec3 currPoint = rayOrigin + rayDirection * currT;
+        vec3 currColor = currPoint - cubeMin;
+        int currClass = classifyBracketed3Sample(currColor);
+
+        if (currClass == 0 || currClass != prevClass) {
+            return refineBracketed3Hit(
+                rayOrigin,
+                rayDirection,
+                prevT,
+                currT,
+                prevClass,
+                firstHitWorldPoint,
+                stepsTaken
+            );
+        }
+
+        prevT = currT;
+        prevClass = currClass;
+    }
+
+    discard;
+}
+
 vec3 quantizeToNearestAcceptableColor(
     vec3 sampleColor,
     inout float stepsTaken,
@@ -582,6 +679,14 @@ void main() {
 
     if (raycastMode == RAYCAST_ACCUMULATION) {
         outputColor = raycastAccumulation(
+            rayOrigin,
+            rayDirection,
+            firstHitWorldPoint,
+            stepsTaken,
+            stepCountMax
+        );
+    } else if (raycastMode == RAYCAST_BRACKETED3) {
+        outputColor = raycastBracketedSearch3(
             rayOrigin,
             rayDirection,
             firstHitWorldPoint,

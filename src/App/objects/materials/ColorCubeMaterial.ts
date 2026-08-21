@@ -30,6 +30,7 @@ export const RaycastAccumulation = 0
 export const RaycastBinarySearch = 1
 export const RaycastBracketed = 2
 export const RaycastBracketed2 = 3
+export const RaycastBracketed3 = 4
 
 export const SearchNone = 0
 export const SearchOppositeColor = 1
@@ -48,7 +49,7 @@ export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
 }
 ;(UniformsLib as any).colorCube = {
     contrastRatio: { value: 4.5 },
-    raycastMode: { value: RaycastBracketed2 },
+    raycastMode: { value: RaycastBracketed3 },
     searchMode: { value: SearchTargetColor },
     targetColor: { value: new Color("#ffffff") }, // "#7f7f7f"
     targetOutput: { value: TargetOutputColor },

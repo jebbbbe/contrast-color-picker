@@ -28,7 +28,6 @@ const uint SEARCH_BLACK_AND_WHITE = 3u;
 
 const int BINARY_SEARCH_STEPS = 10;
 const int BRACKET_RAY_STEPS = 24;
-const float MAX_DENSITY = 500000.0;
 const float EPSILON = 0.0001;
 
 const vec3 cubeMin = vec3(-0.5);
@@ -55,40 +54,33 @@ const mat3 monochromacyMatrix = mat3(
     0.114, 0.114, 0.114
 );
 
-float sdBox(vec3 p, vec3 b) {
-    vec3 q = abs(p) - b;
-    return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
-}
-
 
 #include <color_func>
 #include <quantize_func>
 
-float contrastDensity(vec3 sRGB1, vec3 sRGB2) {
+bool meetsContrastThreshold(vec3 sRGB1, vec3 sRGB2) {
     #ifdef QUANTIZE_SEARCH
     sRGB1 = quantize(sRGB1);
     sRGB2 = quantize(sRGB2);
     #endif
-    return getContrastRatio(sRGB1, sRGB2) < contrastRatio ? 0.0 : MAX_DENSITY;
+    return getContrastRatio(sRGB1, sRGB2) >= contrastRatio;
 }
 
 
 
-float densityBySearchMode(vec3 sRGBsample) {
+bool passesSearchFilter(vec3 sRGBsample) {
     if (searchMode == SEARCH_NONE) {
-        return MAX_DENSITY;
+        return true;
     } else if (searchMode == SEARCH_OPPOSITE_COLOR) {
-        return contrastDensity(sRGBsample, getOppositeLinearColor(sRGBsample));
+        return meetsContrastThreshold(sRGBsample, getOppositeLinearColor(sRGBsample));
     } else if (searchMode == SEARCH_TARGET_COLOR) {
-		vec3 sRGBtarget = linearToSRGB(targetColor);
-        return contrastDensity(sRGBsample, sRGBtarget);
+        vec3 sRGBtarget = linearToSRGB(targetColor);
+        return meetsContrastThreshold(sRGBsample, sRGBtarget);
     } else if (searchMode == SEARCH_BLACK_AND_WHITE) {
-        return min(
-            contrastDensity(sRGBsample, vec3(0.0)),
-            contrastDensity(sRGBsample, vec3(1.0))
-        );
+        return meetsContrastThreshold(sRGBsample, vec3(0.0)) &&
+            meetsContrastThreshold(sRGBsample, vec3(1.0));
     } else {
-        return MAX_DENSITY;
+        return true;
     }
 }
 
@@ -109,28 +101,23 @@ vec3 applyVisionTransform(vec3 sampleColor) {
     }
 }
 
-float customMat3Density(vec3 pos) {
+bool isInsideTransformedBounds(vec3 pos) {
     mat3 transformMatrix = transformSpaceMatrix;
     float det = determinant(transformMatrix);
 
     if (abs(det) < 0.00001) {
-        return MAX_DENSITY;
+        return true;
     }
 
     vec3 inversePos = inverse(transformMatrix) * pos;
 
-    if (
+    return
         inversePos.r >= -EPSILON &&
         inversePos.r <= 1.0 + EPSILON &&
         inversePos.g >= -EPSILON &&
         inversePos.g <= 1.0 + EPSILON &&
         inversePos.b >= -EPSILON &&
-        inversePos.b <= 1.0 + EPSILON
-    ) {
-        return MAX_DENSITY;
-    }
-
-    return 0.0;
+        inversePos.b <= 1.0 + EPSILON;
 }
 
 vec2 intersectBox(vec3 rayOrigin, vec3 rayDirection, vec3 boxMin, vec3 boxMax) {
@@ -171,10 +158,7 @@ vec2 intersectColorCubeBounds(vec3 rayOrigin, vec3 rayDirection) {
 }
 
 bool sampleHits(vec3 sampleColor) {
-    return min(
-        densityBySearchMode(sampleColor),
-        customMat3Density(sampleColor)
-    ) > 0.0;
+    return passesSearchFilter(sampleColor) && isInsideTransformedBounds(sampleColor);
 }
 
 vec4 refineRaycastHit(
@@ -622,8 +606,7 @@ void main() {
 
     outputColor.rgb = applyVisionTransform(outputColor.rgb);
 
-    if (targetOutput == TARGET_OUTPUT_COLOR) {
-    } else if (targetOutput == TARGET_OUTPUT_LUMINANCE) {
+    if (targetOutput == TARGET_OUTPUT_LUMINANCE) {
         outputColor = vec4(vec3(getLuminanceFromSRGB(outputColor.rgb)), outputColor.a);
     } else if (targetOutput == TARGET_OUTPUT_STEPS) {
         outputColor = vec4(vec3(stepsTaken / stepCountMax), outputColor.a);

@@ -182,7 +182,6 @@ vec4 refineRaycastHit(
     vec3 rayDirection,
     float missT,
     float hitT,
-    inout vec3 outputPosition,
     inout float stepsTaken
 ) {
     vec3 hitPoint = rayOrigin + rayDirection * hitT;
@@ -204,7 +203,6 @@ vec4 refineRaycastHit(
         }
     }
 
-    outputPosition = hitPoint;
     return vec4(hitColor, 1.0);
 }
 
@@ -214,7 +212,6 @@ vec4 refineRaycastHit(
 vec4 raycastBinarySearch(
     vec3 rayOrigin,
     vec3 rayDirection,
-    inout vec3 outputPosition,
     inout float stepsTaken,
     inout float stepCountMax
 ) {
@@ -232,7 +229,6 @@ vec4 raycastBinarySearch(
     vec3 nearColor = nearPoint - cubeMin;
 
     if (sampleHits(nearColor)) {
-        outputPosition = nearPoint;
         return vec4(nearColor, 1.0);
     }
 
@@ -248,7 +244,6 @@ vec4 raycastBinarySearch(
         rayDirection,
         missT,
         hitT,
-        outputPosition,
         stepsTaken
     );
 }
@@ -259,7 +254,6 @@ vec4 raycastBinarySearch(
 vec4 raycastBracketedSearch(
     vec3 rayOrigin,
     vec3 rayDirection,
-    inout vec3 outputPosition,
     inout float stepsTaken,
     inout float stepCountMax
 ) {
@@ -277,7 +271,6 @@ vec4 raycastBracketedSearch(
     vec3 nearColor = nearPoint - cubeMin;
 
     if (sampleHits(nearColor)) {
-        outputPosition = nearPoint;
         return vec4(nearColor, 1.0);
     }
 
@@ -296,7 +289,6 @@ vec4 raycastBracketedSearch(
                 rayDirection,
                 prevT,
                 currT,
-                outputPosition,
                 stepsTaken
             );
         }
@@ -337,7 +329,6 @@ vec4 refineBlackAndWhiteBoundaryHit(
     float missT,
     float hitT,
     int missClass,
-    inout vec3 outputPosition,
     inout float stepsTaken
 ) {
     float minLum = getBlackAndWhiteMinLuminance();
@@ -365,7 +356,6 @@ vec4 refineBlackAndWhiteBoundaryHit(
         }
     }
 
-    outputPosition = hitPoint;
     return vec4(hitColor, 1.0);
 }
 
@@ -375,7 +365,6 @@ vec4 refineBlackAndWhiteBoundaryHit(
 vec4 raycastBracketedSearch2(
     vec3 rayOrigin,
     vec3 rayDirection,
-    inout vec3 outputPosition,
     inout float stepsTaken,
     inout float stepCountMax
 ) {
@@ -394,7 +383,6 @@ vec4 raycastBracketedSearch2(
     bool prevHit = sampleHits(prevColor);
 
     if (prevHit) {
-        outputPosition = prevPoint;
         return vec4(prevColor, 1.0);
     }
 
@@ -415,7 +403,6 @@ vec4 raycastBracketedSearch2(
                 rayDirection,
                 prevT,
                 currT,
-                outputPosition,
                 stepsTaken
             );
         }
@@ -433,7 +420,6 @@ vec4 raycastBracketedSearch2(
                     prevT,
                     currT,
                     prevBlackAndWhiteClass,
-                    outputPosition,
                     stepsTaken
                 );
             }
@@ -461,7 +447,6 @@ vec4 refineBracketed3Hit(
     float missT,
     float hitT,
     int missClass,
-    inout vec3 outputPosition,
     inout float stepsTaken
 ) {
     if (searchMode == SEARCH_BLACK_AND_WHITE && missClass != 0) {
@@ -471,7 +456,6 @@ vec4 refineBracketed3Hit(
             missT,
             hitT,
             missClass,
-            outputPosition,
             stepsTaken
         );
     }
@@ -481,7 +465,6 @@ vec4 refineBracketed3Hit(
         rayDirection,
         missT,
         hitT,
-        outputPosition,
         stepsTaken
     );
 }
@@ -492,7 +475,6 @@ vec4 refineBracketed3Hit(
 vec4 raycastBracketedSearch3(
     vec3 rayOrigin,
     vec3 rayDirection,
-    inout vec3 outputPosition,
     inout float stepsTaken,
     inout float stepCountMax
 ) {
@@ -511,7 +493,6 @@ vec4 raycastBracketedSearch3(
     int prevClass = classifyBracketed3Sample(prevColor);
 
     if (prevClass == 0) {
-        outputPosition = prevPoint;
         return vec4(prevColor, 1.0);
     }
 
@@ -532,7 +513,6 @@ vec4 raycastBracketedSearch3(
                 prevT,
                 currT,
                 prevClass,
-                outputPosition,
                 stepsTaken
             );
         }
@@ -604,7 +584,6 @@ void main() {
     mat4 inverseModelMatrix = inverse(modelMatrix);
     vec3 rayOrigin = (inverseModelMatrix * vec4(cameraPosition, 1.0)).xyz;
     vec3 rayDirection = normalize(localPosition - rayOrigin);
-    vec3 outputPosition = vec3(0.0);
     float stepsTaken = 0.0;
     float stepCountMax = 1.0;
 
@@ -614,7 +593,6 @@ void main() {
         outputColor = raycastBinarySearch(
             rayOrigin,
             rayDirection,
-            outputPosition,
             stepsTaken,
             stepCountMax
         );
@@ -622,7 +600,6 @@ void main() {
         outputColor = raycastBracketedSearch(
             rayOrigin,
             rayDirection,
-            outputPosition,
             stepsTaken,
             stepCountMax
         );
@@ -630,7 +607,6 @@ void main() {
         outputColor = raycastBracketedSearch2(
             rayOrigin,
             rayDirection,
-            outputPosition,
             stepsTaken,
             stepCountMax
         );
@@ -638,7 +614,6 @@ void main() {
         outputColor = raycastBracketedSearch3(
             rayOrigin,
             rayDirection,
-            outputPosition,
             stepsTaken,
             stepCountMax
         );
@@ -646,13 +621,11 @@ void main() {
         outputColor = raycastBinarySearch(
             rayOrigin,
             rayDirection,
-            outputPosition,
             stepsTaken,
             stepCountMax
         );
     }
-
-    outputPosition = (modelMatrix * vec4(outputPosition, 1.0)).xyz;
+    vec3 outputPosition = (modelMatrix * vec4(outputColor.rgb + cubeMin, 1.0)).xyz;
 
 	/*
 	// debug view quantived areas

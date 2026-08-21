@@ -79,6 +79,8 @@ float contrastDensity(vec3 sRGB1, vec3 sRGB2) {
 float densityBySearchMode(vec3 sRGBsample) {
     if (searchMode == SEARCH_NONE) {
         return MAX_DENSITY;
+    } else if (searchMode == SEARCH_OPPOSITE_COLOR) {
+        return contrastDensity(sRGBsample, getOppositeLinearColor(sRGBsample));
     } else if (searchMode == SEARCH_TARGET_COLOR) {
 		vec3 sRGBtarget = linearToSRGB(targetColor);
         return contrastDensity(sRGBsample, sRGBtarget);
@@ -88,12 +90,14 @@ float densityBySearchMode(vec3 sRGBsample) {
             contrastDensity(sRGBsample, vec3(1.0))
         );
     } else {
-        return contrastDensity(sRGBsample, getOppositeLinearColor(sRGBsample));
+        return MAX_DENSITY;
     }
 }
 
 vec3 applyVisionTransform(vec3 sampleColor) {
     switch (transformMode) {
+        case 0u:
+            return sampleColor;
         case 1u:
             return protanopiaMatrix * sampleColor;
         case 2u:
@@ -174,7 +178,7 @@ vec2 intersectColorCubeBounds(vec3 rayOrigin, vec3 rayDirection) {
 vec4 raycastAccumulation(
     vec3 rayOrigin,
     vec3 rayDirection,
-    inout vec3 firstHitWorldPoint,
+    inout vec3 outputPosition,
     inout float stepsTaken,
     inout float stepCountMax
 ) {
@@ -203,7 +207,6 @@ vec4 raycastAccumulation(
         float t = tStart + float(i) * dt;
         vec3 samplePoint = rayOrigin + rayDirection * t;
         vec3 sampleColor = samplePoint - cubeMin;
-        vec3 worldPoint = (modelMatrix * vec4(samplePoint, 1.0)).xyz;
 
         float density = densityBySearchMode(sampleColor);
 
@@ -215,7 +218,7 @@ vec4 raycastAccumulation(
 
         if (!foundDensity) {
             foundDensity = true;
-            firstHitWorldPoint = worldPoint;
+            outputPosition = samplePoint;
         }
 
         float alphaStep = 1.0 - exp(-density * dt);
@@ -241,21 +244,12 @@ bool sampleHits(vec3 sampleColor) {
     ) > 0.0;
 }
 
-vec4 finalizeRaycastHit(
-    vec3 hitPoint,
-    vec3 hitColor,
-    inout vec3 firstHitWorldPoint
-) {
-    firstHitWorldPoint = (modelMatrix * vec4(hitPoint, 1.0)).xyz;
-    return vec4(hitColor, 1.0);
-}
-
 vec4 refineRaycastHit(
     vec3 rayOrigin,
     vec3 rayDirection,
     float missT,
     float hitT,
-    inout vec3 firstHitWorldPoint,
+    inout vec3 outputPosition,
     inout float stepsTaken
 ) {
     vec3 hitPoint = rayOrigin + rayDirection * hitT;
@@ -277,7 +271,8 @@ vec4 refineRaycastHit(
         }
     }
 
-    return finalizeRaycastHit(hitPoint, hitColor, firstHitWorldPoint);
+    outputPosition = hitPoint;
+    return vec4(hitColor, 1.0);
 }
 
 // Assumes the ray interval starts outside and ends inside the volume.
@@ -286,7 +281,7 @@ vec4 refineRaycastHit(
 vec4 raycastBinarySearch(
     vec3 rayOrigin,
     vec3 rayDirection,
-    inout vec3 firstHitWorldPoint,
+    inout vec3 outputPosition,
     inout float stepsTaken,
     inout float stepCountMax
 ) {
@@ -304,7 +299,8 @@ vec4 raycastBinarySearch(
     vec3 nearColor = nearPoint - cubeMin;
 
     if (sampleHits(nearColor)) {
-        return finalizeRaycastHit(nearPoint, nearColor, firstHitWorldPoint);
+        outputPosition = nearPoint;
+        return vec4(nearColor, 1.0);
     }
 
     vec3 farPoint = rayOrigin + rayDirection * hitT;
@@ -319,7 +315,7 @@ vec4 raycastBinarySearch(
         rayDirection,
         missT,
         hitT,
-        firstHitWorldPoint,
+        outputPosition,
         stepsTaken
     );
 }
@@ -330,7 +326,7 @@ vec4 raycastBinarySearch(
 vec4 raycastBracketedSearch(
     vec3 rayOrigin,
     vec3 rayDirection,
-    inout vec3 firstHitWorldPoint,
+    inout vec3 outputPosition,
     inout float stepsTaken,
     inout float stepCountMax
 ) {
@@ -348,7 +344,8 @@ vec4 raycastBracketedSearch(
     vec3 nearColor = nearPoint - cubeMin;
 
     if (sampleHits(nearColor)) {
-        return finalizeRaycastHit(nearPoint, nearColor, firstHitWorldPoint);
+        outputPosition = nearPoint;
+        return vec4(nearColor, 1.0);
     }
 
     float prevT = tStart;
@@ -366,7 +363,7 @@ vec4 raycastBracketedSearch(
                 rayDirection,
                 prevT,
                 currT,
-                firstHitWorldPoint,
+                outputPosition,
                 stepsTaken
             );
         }
@@ -407,7 +404,7 @@ vec4 refineBlackAndWhiteBoundaryHit(
     float missT,
     float hitT,
     int missClass,
-    inout vec3 firstHitWorldPoint,
+    inout vec3 outputPosition,
     inout float stepsTaken
 ) {
     float minLum = getBlackAndWhiteMinLuminance();
@@ -435,7 +432,8 @@ vec4 refineBlackAndWhiteBoundaryHit(
         }
     }
 
-    return finalizeRaycastHit(hitPoint, hitColor, firstHitWorldPoint);
+    outputPosition = hitPoint;
+    return vec4(hitColor, 1.0);
 }
 
 // Coarsely marches like Bracketed, but also detects threshold boundary crossings.
@@ -444,7 +442,7 @@ vec4 refineBlackAndWhiteBoundaryHit(
 vec4 raycastBracketedSearch2(
     vec3 rayOrigin,
     vec3 rayDirection,
-    inout vec3 firstHitWorldPoint,
+    inout vec3 outputPosition,
     inout float stepsTaken,
     inout float stepCountMax
 ) {
@@ -463,7 +461,8 @@ vec4 raycastBracketedSearch2(
     bool prevHit = sampleHits(prevColor);
 
     if (prevHit) {
-        return finalizeRaycastHit(prevPoint, prevColor, firstHitWorldPoint);
+        outputPosition = prevPoint;
+        return vec4(prevColor, 1.0);
     }
 
     int prevBlackAndWhiteClass = classifyBlackAndWhiteSample(prevColor);
@@ -483,7 +482,7 @@ vec4 raycastBracketedSearch2(
                 rayDirection,
                 prevT,
                 currT,
-                firstHitWorldPoint,
+                outputPosition,
                 stepsTaken
             );
         }
@@ -501,7 +500,7 @@ vec4 raycastBracketedSearch2(
                     prevT,
                     currT,
                     prevBlackAndWhiteClass,
-                    firstHitWorldPoint,
+                    outputPosition,
                     stepsTaken
                 );
             }
@@ -529,7 +528,7 @@ vec4 refineBracketed3Hit(
     float missT,
     float hitT,
     int missClass,
-    inout vec3 firstHitWorldPoint,
+    inout vec3 outputPosition,
     inout float stepsTaken
 ) {
     if (searchMode == SEARCH_BLACK_AND_WHITE && missClass != 0) {
@@ -539,7 +538,7 @@ vec4 refineBracketed3Hit(
             missT,
             hitT,
             missClass,
-            firstHitWorldPoint,
+            outputPosition,
             stepsTaken
         );
     }
@@ -549,7 +548,7 @@ vec4 refineBracketed3Hit(
         rayDirection,
         missT,
         hitT,
-        firstHitWorldPoint,
+        outputPosition,
         stepsTaken
     );
 }
@@ -560,7 +559,7 @@ vec4 refineBracketed3Hit(
 vec4 raycastBracketedSearch3(
     vec3 rayOrigin,
     vec3 rayDirection,
-    inout vec3 firstHitWorldPoint,
+    inout vec3 outputPosition,
     inout float stepsTaken,
     inout float stepCountMax
 ) {
@@ -579,7 +578,8 @@ vec4 raycastBracketedSearch3(
     int prevClass = classifyBracketed3Sample(prevColor);
 
     if (prevClass == 0) {
-        return finalizeRaycastHit(prevPoint, prevColor, firstHitWorldPoint);
+        outputPosition = prevPoint;
+        return vec4(prevColor, 1.0);
     }
 
     float prevT = tStart;
@@ -599,7 +599,7 @@ vec4 raycastBracketedSearch3(
                 prevT,
                 currT,
                 prevClass,
-                firstHitWorldPoint,
+                outputPosition,
                 stepsTaken
             );
         }
@@ -671,7 +671,7 @@ void main() {
     mat4 inverseModelMatrix = inverse(modelMatrix);
     vec3 rayOrigin = (inverseModelMatrix * vec4(cameraPosition, 1.0)).xyz;
     vec3 rayDirection = normalize(localPosition - rayOrigin);
-    vec3 firstHitWorldPoint = vec3(0.0);
+    vec3 outputPosition = vec3(0.0);
     float stepsTaken = 0.0;
     float stepCountMax = 1.0;
 
@@ -681,23 +681,15 @@ void main() {
         outputColor = raycastAccumulation(
             rayOrigin,
             rayDirection,
-            firstHitWorldPoint,
+            outputPosition,
             stepsTaken,
             stepCountMax
         );
-    } else if (raycastMode == RAYCAST_BRACKETED3) {
-        outputColor = raycastBracketedSearch3(
+    } else if (raycastMode == RAYCAST_BINARY_SEARCH) {
+        outputColor = raycastBinarySearch(
             rayOrigin,
             rayDirection,
-            firstHitWorldPoint,
-            stepsTaken,
-            stepCountMax
-        );
-    } else if (raycastMode == RAYCAST_BRACKETED2) {
-        outputColor = raycastBracketedSearch2(
-            rayOrigin,
-            rayDirection,
-            firstHitWorldPoint,
+            outputPosition,
             stepsTaken,
             stepCountMax
         );
@@ -705,21 +697,40 @@ void main() {
         outputColor = raycastBracketedSearch(
             rayOrigin,
             rayDirection,
-            firstHitWorldPoint,
+            outputPosition,
+            stepsTaken,
+            stepCountMax
+        );
+    } else if (raycastMode == RAYCAST_BRACKETED2) {
+        outputColor = raycastBracketedSearch2(
+            rayOrigin,
+            rayDirection,
+            outputPosition,
+            stepsTaken,
+            stepCountMax
+        );
+    } else if (raycastMode == RAYCAST_BRACKETED3) {
+        outputColor = raycastBracketedSearch3(
+            rayOrigin,
+            rayDirection,
+            outputPosition,
             stepsTaken,
             stepCountMax
         );
     } else {
-        outputColor = raycastBinarySearch(
+        outputColor = raycastAccumulation(
             rayOrigin,
             rayDirection,
-            firstHitWorldPoint,
+            outputPosition,
             stepsTaken,
             stepCountMax
         );
     }
 
+    outputPosition = (modelMatrix * vec4(outputPosition, 1.0)).xyz;
+
 	/*
+	// debug view quantived areas
 	vec3 quan = quantizeToNearestAcceptableColor(
 		outputColor.rgb,
 		stepsTaken,
@@ -740,18 +751,16 @@ void main() {
 		stepCountMax
 	);
 
-    if (targetOutput == TARGET_OUTPUT_STEPS) {
-        outputColor = vec4(vec3(stepsTaken / stepCountMax), outputColor.a);
-    } else {
-        outputColor.rgb = applyVisionTransform(outputColor.rgb);
+    outputColor.rgb = applyVisionTransform(outputColor.rgb);
 
-        if (targetOutput == TARGET_OUTPUT_LUMINANCE) {
-            outputColor = vec4(vec3(getLuminanceFromSRGB(outputColor.rgb)), outputColor.a);
-        }
+    if (targetOutput == TARGET_OUTPUT_COLOR) {
+    } else if (targetOutput == TARGET_OUTPUT_LUMINANCE) {
+        outputColor = vec4(vec3(getLuminanceFromSRGB(outputColor.rgb)), outputColor.a);
+    } else if (targetOutput == TARGET_OUTPUT_STEPS) {
+        outputColor = vec4(vec3(stepsTaken / stepCountMax), outputColor.a);
     }
 
-    vec4 clipPosition = projectionMatrix * viewMatrix * vec4(firstHitWorldPoint, 1.0);
+    vec4 clipPosition = projectionMatrix * viewMatrix * vec4(outputPosition, 1.0);
     gl_FragDepth = clamp(clipPosition.z / clipPosition.w * 0.5 + 0.5, 0.0, 1.0);
     gl_FragColor = outputColor;
-    // #include <colorspace_fragment>
 }

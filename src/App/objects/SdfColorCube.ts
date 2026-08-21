@@ -131,7 +131,9 @@ export class SdfColorCube extends THREE.Group {
         const nextValue = Math.max(0, Math.floor(value))
         let nextMatrix = this.transformSpaceMatrices.default
 
-        if (nextValue === ColorCube.TransformProtanopia) {
+        if (nextValue === ColorCube.TransformDefault) {
+            nextMatrix = this.transformSpaceMatrices.default
+        } else if (nextValue === ColorCube.TransformProtanopia) {
             nextMatrix = this.transformSpaceMatrices.protanopia
         } else if (nextValue === ColorCube.TransformDeuteranopia) {
             nextMatrix = this.transformSpaceMatrices.deuteranopia
@@ -141,6 +143,8 @@ export class SdfColorCube extends THREE.Group {
             nextMatrix = this.transformSpaceMatrices.monochromacy
         } else if (nextValue === ColorCube.TransformCustom) {
             nextMatrix = this.transformSpaceMatrices.custom
+        } else {
+            nextMatrix = this.transformSpaceMatrices.default
         }
 
         this.transformSpaceModeValue = nextValue

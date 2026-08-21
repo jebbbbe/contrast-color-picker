@@ -1,5 +1,11 @@
 const int OUTPUT_QUANTIZE_LEVELS = 256;
 const int OUTPUT_QUANTIZE_RADIUS = 1;
+const float QUANTIZE_STEP_COUNT_MAX = float(
+    1 +
+    (OUTPUT_QUANTIZE_RADIUS * 2 + 1) *
+    (OUTPUT_QUANTIZE_RADIUS * 2 + 1) *
+    (OUTPUT_QUANTIZE_RADIUS * 2 + 1)
+);
 
 vec3 quantizeTo(vec3 c, int n) {
 	float levels = pow(2.0, float(n));

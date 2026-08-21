@@ -41,7 +41,6 @@ const sdfColorTransformTitles = {
 } as const
 
 const sdfColorRaycastTitles = {
-    Accumulation: ColorCube.RaycastAccumulation,
     "Binary Search": ColorCube.RaycastBinarySearch,
     Bracketed: ColorCube.RaycastBracketed,
     Bracketed2: ColorCube.RaycastBracketed2,

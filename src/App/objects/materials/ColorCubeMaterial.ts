@@ -26,11 +26,10 @@ export const TransformTritanopia = 3
 export const TransformMonochromacy = 4
 export const TransformCustom = 5
 
-export const RaycastAccumulation = 0
-export const RaycastBinarySearch = 1
-export const RaycastBracketed = 2
-export const RaycastBracketed2 = 3
-export const RaycastBracketed3 = 4
+export const RaycastBinarySearch = 0
+export const RaycastBracketed = 1
+export const RaycastBracketed2 = 2
+export const RaycastBracketed3 = 3
 
 export const SearchNone = 0
 export const SearchOppositeColor = 1

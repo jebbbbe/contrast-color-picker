@@ -16,11 +16,10 @@ const uint TARGET_OUTPUT_COLOR = 0u;
 const uint TARGET_OUTPUT_LUMINANCE = 1u;
 const uint TARGET_OUTPUT_STEPS = 3u;
 
-const uint RAYCAST_ACCUMULATION = 0u;
-const uint RAYCAST_BINARY_SEARCH = 1u;
-const uint RAYCAST_BRACKETED = 2u;
-const uint RAYCAST_BRACKETED2 = 3u;
-const uint RAYCAST_BRACKETED3 = 4u;
+const uint RAYCAST_BINARY_SEARCH = 0u;
+const uint RAYCAST_BRACKETED = 1u;
+const uint RAYCAST_BRACKETED2 = 2u;
+const uint RAYCAST_BRACKETED3 = 3u;
 
 const uint SEARCH_NONE = 0u;
 const uint SEARCH_OPPOSITE_COLOR = 1u;
@@ -170,71 +169,6 @@ vec2 intersectColorCubeBounds(vec3 rayOrigin, vec3 rayDirection) {
         max(cubeBounds.x, transformBounds.x),
         min(cubeBounds.y, transformBounds.y)
     );
-}
-
-// Marches a fixed number of samples through the cube bounds.
-// Accumulates color and opacity from every hit sample along the ray.
-// Most robust mode, but softer and more expensive than surface search.
-vec4 raycastAccumulation(
-    vec3 rayOrigin,
-    vec3 rayDirection,
-    inout vec3 outputPosition,
-    inout float stepsTaken,
-    inout float stepCountMax
-) {
-    vec4 accumulatedColor = vec4(0.0);
-    stepCountMax = float(MAX_RAY_STEPS);
-
-    vec2 bounds = intersectBox(
-        rayOrigin,
-        rayDirection,
-        cubeMin,
-        cubeMax
-    );
-
-    if (bounds.x > bounds.y) {
-        discard;
-    }
-
-    float tStart = max(bounds.x, 0.0);
-    float tEnd = bounds.y;
-    float dt = (tEnd - tStart) / float(MAX_RAY_STEPS);
-    bool foundDensity = false;
-
-    for (int i = 0; i < MAX_RAY_STEPS; i++) {
-        stepsTaken++;
-
-        float t = tStart + float(i) * dt;
-        vec3 samplePoint = rayOrigin + rayDirection * t;
-        vec3 sampleColor = samplePoint - cubeMin;
-
-        float density = densityBySearchMode(sampleColor);
-
-        density = min(density, customMat3Density(sampleColor));
-
-        if (density <= 0.0) {
-            continue;
-        }
-
-        if (!foundDensity) {
-            foundDensity = true;
-            outputPosition = samplePoint;
-        }
-
-        float alphaStep = 1.0 - exp(-density * dt);
-        accumulatedColor.rgb += (1.0 - accumulatedColor.a) * sampleColor * alphaStep;
-        accumulatedColor.a += (1.0 - accumulatedColor.a) * alphaStep;
-
-        if (accumulatedColor.a >= 0.95) {
-            break;
-        }
-    }
-
-    if (!foundDensity || accumulatedColor.a <= 0.0) {
-        discard;
-    }
-	
-    return accumulatedColor;
 }
 
 bool sampleHits(vec3 sampleColor) {
@@ -677,15 +611,7 @@ void main() {
 
     vec4 outputColor;
 
-    if (raycastMode == RAYCAST_ACCUMULATION) {
-        outputColor = raycastAccumulation(
-            rayOrigin,
-            rayDirection,
-            outputPosition,
-            stepsTaken,
-            stepCountMax
-        );
-    } else if (raycastMode == RAYCAST_BINARY_SEARCH) {
+    if (raycastMode == RAYCAST_BINARY_SEARCH) {
         outputColor = raycastBinarySearch(
             rayOrigin,
             rayDirection,
@@ -718,7 +644,7 @@ void main() {
             stepCountMax
         );
     } else {
-        outputColor = raycastAccumulation(
+        outputColor = raycastBinarySearch(
             rayOrigin,
             rayDirection,
             outputPosition,

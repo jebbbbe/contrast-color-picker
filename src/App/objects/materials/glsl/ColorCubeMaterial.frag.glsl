@@ -26,7 +26,6 @@ const uint SEARCH_OPPOSITE_COLOR = 1u;
 const uint SEARCH_TARGET_COLOR = 2u;
 const uint SEARCH_BLACK_AND_WHITE = 3u;
 
-const int MAX_RAY_STEPS = 96;
 const int BINARY_SEARCH_STEPS = 10;
 const int BRACKET_RAY_STEPS = 24;
 const float MAX_DENSITY = 500000.0;

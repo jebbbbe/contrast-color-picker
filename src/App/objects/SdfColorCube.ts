@@ -1,5 +1,6 @@
 import * as THREE from "three"
 
+import { ColorCubeEdges } from "./ColorCubeEdges"
 import * as ColorCube from "./materials/ColorCubeMaterial"
 
 /* prettier-ignore */
@@ -102,34 +103,7 @@ export class SdfColorCube extends THREE.Group {
         const geometry = new THREE.BoxGeometry(1, 1, 1)
         const material = new ColorCube.ColorCubeMaterial()
         const mesh = new THREE.Mesh(geometry, material)
-        const edges = new THREE.EdgesGeometry(geometry)
-        const edgePositions = edges.getAttribute("position")
-        const edgeColors = edgePositions.array.slice() as Float32Array
-
-        for (let i = 0; i < edgeColors.length; i++) {
-            edgeColors[i] += 0.5
-        }
-        const edgeColor = new THREE.Color()
-
-        for (let i = 0; i < edgeColors.length; i += 3) {
-            edgeColor.setRGB(
-                edgeColors[i],
-                edgeColors[i + 1],
-                edgeColors[i + 2],
-                THREE.LinearSRGBColorSpace
-            )
-
-            edgeColors[i] = edgeColor.r
-            edgeColors[i + 1] = edgeColor.g
-            edgeColors[i + 2] = edgeColor.b
-        }
-
-        edges.setAttribute("color", new THREE.BufferAttribute(edgeColors, 3))
-
-        const wireframe = new THREE.LineSegments(
-            edges,
-            new THREE.LineBasicMaterial({ vertexColors: true })
-        )
+        const wireframe = new ColorCubeEdges(geometry)
         const targetColorMarker = new Marker(
             material.searchMode === ColorCube.SearchTargetColor,
             material.targetColor

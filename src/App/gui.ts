@@ -140,6 +140,10 @@ export class SceneGui {
                     colorCubeMaterial.searchMode === ColorCube.SearchTargetColor,
                     colorCubeMaterial.targetColor
                 )
+                callbackBridge.setSwatch({
+                    color: value,
+                    backgroundColor: onClickColorState.value,
+                })
             })
         this.onClickColorController = colorCubeFolder
             .addColor(onClickColorState, "value")
@@ -150,6 +154,10 @@ export class SceneGui {
                     THREE.SRGBColorSpace
                 )
                 onClickMarker.update(onClickMarker.visible, onClickColor)
+                callbackBridge.setSwatch({
+                    color: targetColorState.value,
+                    backgroundColor: value,
+                })
             })
 
         const syncContrastPresetState = (value: number): void => {

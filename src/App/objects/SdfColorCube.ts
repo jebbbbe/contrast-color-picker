@@ -1,6 +1,7 @@
 import * as THREE from "three"
 
 import { ColorCubeEdges } from "./ColorCubeEdges"
+import { Marker } from "./Marker"
 import * as ColorCube from "./materials/ColorCubeMaterial"
 
 /* prettier-ignore */
@@ -11,80 +12,6 @@ const transformSpaceMatrices = {
     tritanopia:   new THREE.Matrix3(0.950, 0.050, 0.000, 0.433, 0.567, 0.000, 0.000, 0.475, 0.525),
     monochromacy: new THREE.Matrix3(0.299, 0.587, 0.114, 0.299, 0.587, 0.114, 0.299, 0.587, 0.114),
     custom:       new THREE.Matrix3(),
-}
-
-const _markerSphereGeometry = new THREE.SphereGeometry(0.02, 16, 16)
-const _markerPositionColor = new THREE.Color()
-const _markerInverseColor = new THREE.Color()
-
-type Dot = THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>
-type MarkerData = {
-    primary: Dot
-    inverse: Dot
-}
-
-export class Marker extends THREE.Group {
-    constructor(visible = false, color: THREE.ColorRepresentation = 0x000000) {
-        super()
-
-        const primary: Dot = new THREE.Mesh(
-            _markerSphereGeometry,
-            new THREE.MeshBasicMaterial({
-                color: new THREE.Color(),
-                fog: false,
-                vertexColors: false,
-                transparent: false,
-                depthTest: false,
-            })
-        )
-        const inverse: Dot = new THREE.Mesh(
-            _markerSphereGeometry,
-            new THREE.MeshBasicMaterial({
-                color: new THREE.Color(),
-                fog: false,
-                vertexColors: false,
-                transparent: false,
-                side: THREE.BackSide,
-                depthTest: false,
-            })
-        )
-
-        inverse.renderOrder = 1
-        primary.renderOrder = 2
-        inverse.scale.setScalar(1.2)
-
-        const userData = this.userData as MarkerData
-
-        userData.primary = primary
-        userData.inverse = inverse
-        this.add(inverse, primary)
-
-        this.update(visible, color)
-    }
-
-    update(visible: boolean, color: THREE.ColorRepresentation): void {
-        const { primary, inverse } = this.userData as MarkerData
-
-        this.visible = visible
-        primary.material.color.set(color)
-        primary.material.color.getRGB(_markerInverseColor, THREE.SRGBColorSpace)
-        inverse.material.color.setRGB(
-            1 - _markerInverseColor.r,
-            1 - _markerInverseColor.g,
-            1 - _markerInverseColor.b,
-            THREE.SRGBColorSpace
-        )
-
-        if (!visible) {
-            return
-        }
-
-        const { r, g, b } = _markerPositionColor
-            .set(color)
-            .convertLinearToSRGB()
-
-        this.position.set(r - 0.5, g - 0.5, b - 0.5)
-    }
 }
 
 export class SdfColorCube extends THREE.Group {

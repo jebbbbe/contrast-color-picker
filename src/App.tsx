@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import ThreeSceneApp from "./App/main"
 import FontSwatch from "./components/FontSwatch"
+import Footer from "./components/Footer"
 import Header from "./components/Header"
 
 function App() {
@@ -21,14 +22,20 @@ function App() {
     }, [])
 
     return (
-        <>
-            <div id="app" ref={threeSceneMountRef} />
-
-            <div className="overlay">
-                <Header />
-                <FontSwatch />
-            </div>
-        </>
+        <main>
+            <Header />
+            <article className="content">
+                <div className="container">
+                    <div className="app-holder">
+                        <div id="app" ref={threeSceneMountRef} />
+                    </div>
+                </div>
+                <div className="container">
+                    <FontSwatch />
+                </div>
+            </article>
+            <Footer />
+        </main>
     )
 }
 

@@ -1,321 +1,164 @@
-* {
-    margin: 0;
-    padding: 0;
+.fontSwatch {
+    width: 100%;
 }
 
-div {
-    display: block;
-    unicode-bidi: isolate;
+.fontSwatch,
+.fontSwatch * {
+    box-sizing: border-box;
 }
-span.pass {
+
+.fontSwatch .pass {
     background-color: #080;
     border-radius: 1em;
     color: #fff;
 }
 
-span.fail {
+.fontSwatch .fail {
     color: #c00;
 }
-article {
-    width: 700px;
-    display: inline;
-    float: left;
+
+.fontSwatch #maincontent {
+    display: flow-root;
+    width: min(700px, 100%);
+    max-width: 100%;
+    margin: 0 0 20px;
     position: relative;
     font-size: 1.125em;
     outline: 0;
-    margin-bottom: 20px;
-    margin-left: 10px;
-    margin-right: 10px;
 }
 
-article h2 {
-    font-family: "Roboto", Georgia, Times, serif;
-    color: #bf1722;
-    font-size: 150%;
-    border-bottom: 1px solid;
-    margin: 0;
-    margin-bottom: 6px;
-    line-height: 1.25em;
-    font-weight: normal;
+.fontSwatch #resultsContainer {
+    display: flow-root;
+    width: 100%;
 }
 
-#maincontent h2 {
-    padding-top: 15px;
-}
-
-h2 {
+.fontSwatch article h2 {
     clear: both;
+    margin: 0 0 6px;
+    padding-top: 15px;
+    border-bottom: 1px solid;
+    color: #bf1722;
+    font-family: "Roboto", Georgia, Times, serif;
+    font-size: 150%;
+    font-weight: normal;
+    line-height: 1.25em;
 }
 
-article p,
-pre {
-    line-height: 1.5em;
+.fontSwatch article p,
+.fontSwatch pre {
+    margin: 0;
     padding-bottom: 1em;
+    line-height: 1.5em;
 }
 
-main a:link,
-/* article a:link, */
-main a:visited,
-/* article a:visited, */
-
-aside a:link,
-aside a:visited {
+.fontSwatch a {
     color: #20399d;
-    -webkit-transition: background-color 0.25s linear;
+    text-decoration: underline;
     transition: background-color 0.25s linear;
 }
 
-a:-webkit-any-link {
-    color: -webkit-link;
-    cursor: pointer;
-    text-decoration: underline;
-}
-
-
-
-
-#headcontainer {
-	background-image: url(pastels-light.jpg) !important;
-}
-#maincontent h2 {
-	padding-top:15px;
-}
-#normal, #big, #ui {
-	border: 1px solid #CCC;
-	float: right;
-	padding: 1em;
-	text-align: center;
-	width: 460px;
-}
-#uibox {
-	border: 2px solid grey;
-	display: block;
-	margin: auto;
-	padding: 2px;
-}
-#ui {
-	padding:5px 0 10px 0;
-	margin-bottom:20px;
-}
-#ui::first-letter {
-	font-weight: bold;
-	font-size: 1.5em;
-}
-#normal a, #big a {
-	text-decoration: none;
-}
-#normal a:hover,
-#normal a:focus,
-#big a:hover,
-#big a:focus {
-	text-decoration: underline;
-}
-#big {
-	font-size: 14pt;
-	font-weight: bold;
-}
-
-#ratioContainer {
-	padding-top: .6em;
-	text-align: center;
-}
-#ratio,
-#textBackRatio,
-#linkTextRatio,
-#linkBackRatio {
-	display: block;
-	font-size: 3em;
-}
-#textBackRatio,
-#linkTextRatio,
-#linkBackRatio {
-	display: inline-block;
-	min-width: 4em;
-}
-#ratioContainer > span {
-	border: 1px solid #CCC;
-	border-radius: 6px;
-	display: inline-block;
-	margin-bottom: 6px;
-	padding: 10px;
-	min-width: 7em;
-}
-#textBackRatioContainer > span,
-#linkTextRatioContainer > span,
-#linkBackRatioContainer > span {
-	border: 1px solid #CCC;
-	border-radius: 6px;
-	display: block;
-	margin-bottom: 10px;
-	padding: 10px;
-}
-#ratioContainer.pass > span,
-#textBackRatioContainer.pass > span,
-#linkTextRatioContainer.pass > span,
-#linkBackRatioContainer.pass > span {
-	border: 3px solid #080;
-	padding: 8px;
-}
-#permalink {
-	display: block;
-	border:none;
-}
-
-
-
-#resultsContainer {
-}
-
-#ratioContainer {
+.fontSwatch #ratioContainer {
     padding-top: 0.6em;
     text-align: center;
 }
-#ratioContainer.pass > span,
-#textBackRatioContainer.pass > span,
-#linkTextRatioContainer.pass > span,
-#linkBackRatioContainer.pass > span {
+
+.fontSwatch #ratioContainer.pass > span,
+.fontSwatch #textBackRatioContainer.pass > span,
+.fontSwatch #linkTextRatioContainer.pass > span,
+.fontSwatch #linkBackRatioContainer.pass > span {
     border: 3px solid #080;
     padding: 8px;
 }
 
-#ratioContainer > span {
-    border: 1px solid #ccc;
-    border-radius: 6px;
+.fontSwatch #ratioContainer > span {
     display: inline-block;
+    min-width: 7em;
     margin-bottom: 6px;
     padding: 10px;
-    min-width: 7em;
+    border: 1px solid #ccc;
+    border-radius: 6px;
 }
 
-#ratio,
-#textBackRatio,
-#linkTextRatio,
-#linkBackRatio {
+.fontSwatch #ratio,
+.fontSwatch #textBackRatio,
+.fontSwatch #linkTextRatio,
+.fontSwatch #linkBackRatio {
     display: block;
     font-size: 3em;
 }
 
-#permalink {
+.fontSwatch #textBackRatio,
+.fontSwatch #linkTextRatio,
+.fontSwatch #linkBackRatio {
+    display: inline-block;
+    min-width: 4em;
+}
+
+.fontSwatch #permalink {
     display: block;
     border: none;
 }
 
-.results {
+.fontSwatch .results {
     float: left;
 }
-.results p {
+
+.fontSwatch .results p {
     padding-bottom: 2px;
 }
-.results span {
+
+.fontSwatch .results span {
+    box-sizing: content-box;
     float: right;
-    font-weight: bold;
+    width: 2.2em;
     margin: 0 0.5em;
     padding: 0 0.5em;
+    font-weight: bold;
     text-align: center;
     transition: all 0.2s;
-    width: 2.2em;
 }
 
-#normal,
-#big,
-#ui {
-    border: 1px solid #ccc;
+.fontSwatch #normal,
+.fontSwatch #big,
+.fontSwatch #ui {
     float: right;
+    width: min(460px, 100%);
+    max-width: 100%;
     padding: 1em;
+    border: 1px solid #ccc;
     text-align: center;
-    width: 460px;
 }
 
-#big {
+.fontSwatch #big {
     font-size: 14pt;
     font-weight: bold;
 }
 
-
-
-#headcontainer {
-	background-image: url(pastels-light.jpg) !important;
-}
-#maincontent h2 {
-	padding-top:15px;
-}
-#normal, #big, #ui {
-	border: 1px solid #CCC;
-	float: right;
-	padding: 1em;
-	text-align: center;
-	width: 460px;
-}
-#uibox {
-	border: 2px solid grey;
-	display: block;
-	margin: auto;
-	padding: 2px;
-}
-#ui {
-	padding:5px 0 10px 0;
-	margin-bottom:20px;
-}
-#ui::first-letter {
-	font-weight: bold;
-	font-size: 1.5em;
-}
-#normal a, #big a {
-	text-decoration: none;
-}
-#normal a:hover,
-#normal a:focus,
-#big a:hover,
-#big a:focus {
-	text-decoration: underline;
-}
-#big {
-	font-size: 14pt;
-	font-weight: bold;
+.fontSwatch #ui {
+    margin-bottom: 20px;
+    padding: 5px 0 10px;
 }
 
-#ratioContainer {
-	padding-top: .6em;
-	text-align: center;
+.fontSwatch #ui::first-letter {
+    font-size: 1.5em;
+    font-weight: bold;
 }
-#ratio,
-#textBackRatio,
-#linkTextRatio,
-#linkBackRatio {
-	display: block;
-	font-size: 3em;
+
+.fontSwatch #uibox {
+    display: block;
+    margin: auto;
+    padding: 2px;
+    border: 2px solid grey;
 }
-#textBackRatio,
-#linkTextRatio,
-#linkBackRatio {
-	display: inline-block;
-	min-width: 4em;
+
+.fontSwatch #normal a,
+.fontSwatch #big a {
+    text-decoration: none;
 }
-#ratioContainer > span {
-	border: 1px solid #CCC;
-	border-radius: 6px;
-	display: inline-block;
-	margin-bottom: 6px;
-	padding: 10px;
-	min-width: 7em;
-}
-#textBackRatioContainer > span,
-#linkTextRatioContainer > span,
-#linkBackRatioContainer > span {
-	border: 1px solid #CCC;
-	border-radius: 6px;
-	display: block;
-	margin-bottom: 10px;
-	padding: 10px;
-}
-#ratioContainer.pass > span,
-#textBackRatioContainer.pass > span,
-#linkTextRatioContainer.pass > span,
-#linkBackRatioContainer.pass > span {
-	border: 3px solid #080;
-	padding: 8px;
-}
-#permalink {
-	display: block;
-	border:none;
+
+.fontSwatch #normal a:hover,
+.fontSwatch #normal a:focus,
+.fontSwatch #big a:hover,
+.fontSwatch #big a:focus {
+    text-decoration: underline;
 }

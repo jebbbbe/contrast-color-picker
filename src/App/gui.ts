@@ -81,7 +81,10 @@ export class SceneGui {
             value: `#${colorCubeMaterial.targetColor.getHexString(THREE.SRGBColorSpace)}`,
         }
 
-        this.gui = new GUI({ title: "Scene" })
+        this.gui = new GUI({
+            title: "Scene",
+            container: app.container,
+        })
         this.onClickColorState = onClickColorState
 
         const debugFolder = this.gui.addFolder("Debug")

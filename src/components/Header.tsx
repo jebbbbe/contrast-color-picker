@@ -1,7 +1,7 @@
 function Header() {
     return (
         <>
-            <h1>COLOR</h1>
+            <h1>Contrast Color Picker</h1>
         </>
     )
 }

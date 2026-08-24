@@ -20,12 +20,10 @@ function FontSwatch() {
     const sampleText = textBank[0]
 
     return (
-        <>
-            <main id="maincontainer" className="clearfix"></main>
-
+        <div className="fontSwatch">
             <article id="maincontent">
                 <div id="resultsContainer">
-                    <div id="ratioContainer" className="pass">
+                    {/* <div id="ratioContainer" className="pass">
                         <span>
                             Contrast Ratio
                             <span
@@ -43,7 +41,7 @@ function FontSwatch() {
                         >
                             permalink
                         </a>
-                    </div>
+                    </div> */}
                     <h2>Normal Text</h2>
                     <div className="results">
                         <p>
@@ -54,15 +52,12 @@ function FontSwatch() {
                         </p>
                         <p>
                             WCAG AAA:{" "}
-                            <span id="normalAAA" className="pass">
-                                Pass
+                            <span id="normalAAA" className="fail">
+                                Fail
                             </span>
                         </p>
                     </div>
-                    <span
-                        id="normal"
-                        style={sampleStyle}
-                    >
+                    <span id="normal" style={sampleStyle}>
                         {sampleText}
                     </span>
                     <h2>Large Text</h2>
@@ -80,13 +75,10 @@ function FontSwatch() {
                             </span>
                         </p>
                     </div>
-                    <span
-                        id="big"
-                        style={sampleStyle}
-                    >
+                    <span id="big" style={sampleStyle}>
                         {sampleText}
                     </span>
-                    <h2>Graphical Objects and User Interface Components</h2>
+                    {/* <h2>Graphical Objects and User Interface Components</h2>
                     <div className="results">
                         <p>
                             WCAG AA: &nbsp;
@@ -95,10 +87,7 @@ function FontSwatch() {
                             </span>
                         </p>
                     </div>
-                    <span
-                        id="ui"
-                        style={sampleStyle}
-                    >
+                    <span id="ui" style={sampleStyle}>
                         ★
                         <input
                             type="text"
@@ -108,10 +97,10 @@ function FontSwatch() {
                             aria-label="Sample text input"
                             style={inputStyle}
                         />{" "}
-                    </span>
+                    </span> */}
                 </div>
             </article>
-        </>
+        </div>
     )
 }
 

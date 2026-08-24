@@ -10,6 +10,7 @@ import { logScenePixel } from "./utils/logScenePixel"
 import { SceneGui } from "./gui"
 
 export class ThreeSceneApp {
+    readonly container: HTMLElement
     private readonly renderer: THREE.WebGLRenderer
     private readonly scene: THREE.Scene
     private readonly camera: THREE.PerspectiveCamera
@@ -95,6 +96,7 @@ export class ThreeSceneApp {
 
         // ui
         // props
+        this.container = container
         this.aspectLayout = aspectLayout
         this.renderer = renderer
         this.scene = scene

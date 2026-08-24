@@ -1,0 +1,321 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+div {
+    display: block;
+    unicode-bidi: isolate;
+}
+span.pass {
+    background-color: #080;
+    border-radius: 1em;
+    color: #fff;
+}
+
+span.fail {
+    color: #c00;
+}
+article {
+    width: 700px;
+    display: inline;
+    float: left;
+    position: relative;
+    font-size: 1.125em;
+    outline: 0;
+    margin-bottom: 20px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+article h2 {
+    font-family: "Roboto", Georgia, Times, serif;
+    color: #bf1722;
+    font-size: 150%;
+    border-bottom: 1px solid;
+    margin: 0;
+    margin-bottom: 6px;
+    line-height: 1.25em;
+    font-weight: normal;
+}
+
+#maincontent h2 {
+    padding-top: 15px;
+}
+
+h2 {
+    clear: both;
+}
+
+article p,
+pre {
+    line-height: 1.5em;
+    padding-bottom: 1em;
+}
+
+main a:link,
+/* article a:link, */
+main a:visited,
+/* article a:visited, */
+
+aside a:link,
+aside a:visited {
+    color: #20399d;
+    -webkit-transition: background-color 0.25s linear;
+    transition: background-color 0.25s linear;
+}
+
+a:-webkit-any-link {
+    color: -webkit-link;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+
+
+
+#headcontainer {
+	background-image: url(pastels-light.jpg) !important;
+}
+#maincontent h2 {
+	padding-top:15px;
+}
+#normal, #big, #ui {
+	border: 1px solid #CCC;
+	float: right;
+	padding: 1em;
+	text-align: center;
+	width: 460px;
+}
+#uibox {
+	border: 2px solid grey;
+	display: block;
+	margin: auto;
+	padding: 2px;
+}
+#ui {
+	padding:5px 0 10px 0;
+	margin-bottom:20px;
+}
+#ui::first-letter {
+	font-weight: bold;
+	font-size: 1.5em;
+}
+#normal a, #big a {
+	text-decoration: none;
+}
+#normal a:hover,
+#normal a:focus,
+#big a:hover,
+#big a:focus {
+	text-decoration: underline;
+}
+#big {
+	font-size: 14pt;
+	font-weight: bold;
+}
+
+#ratioContainer {
+	padding-top: .6em;
+	text-align: center;
+}
+#ratio,
+#textBackRatio,
+#linkTextRatio,
+#linkBackRatio {
+	display: block;
+	font-size: 3em;
+}
+#textBackRatio,
+#linkTextRatio,
+#linkBackRatio {
+	display: inline-block;
+	min-width: 4em;
+}
+#ratioContainer > span {
+	border: 1px solid #CCC;
+	border-radius: 6px;
+	display: inline-block;
+	margin-bottom: 6px;
+	padding: 10px;
+	min-width: 7em;
+}
+#textBackRatioContainer > span,
+#linkTextRatioContainer > span,
+#linkBackRatioContainer > span {
+	border: 1px solid #CCC;
+	border-radius: 6px;
+	display: block;
+	margin-bottom: 10px;
+	padding: 10px;
+}
+#ratioContainer.pass > span,
+#textBackRatioContainer.pass > span,
+#linkTextRatioContainer.pass > span,
+#linkBackRatioContainer.pass > span {
+	border: 3px solid #080;
+	padding: 8px;
+}
+#permalink {
+	display: block;
+	border:none;
+}
+
+
+
+#resultsContainer {
+}
+
+#ratioContainer {
+    padding-top: 0.6em;
+    text-align: center;
+}
+#ratioContainer.pass > span,
+#textBackRatioContainer.pass > span,
+#linkTextRatioContainer.pass > span,
+#linkBackRatioContainer.pass > span {
+    border: 3px solid #080;
+    padding: 8px;
+}
+
+#ratioContainer > span {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    display: inline-block;
+    margin-bottom: 6px;
+    padding: 10px;
+    min-width: 7em;
+}
+
+#ratio,
+#textBackRatio,
+#linkTextRatio,
+#linkBackRatio {
+    display: block;
+    font-size: 3em;
+}
+
+#permalink {
+    display: block;
+    border: none;
+}
+
+.results {
+    float: left;
+}
+.results p {
+    padding-bottom: 2px;
+}
+.results span {
+    float: right;
+    font-weight: bold;
+    margin: 0 0.5em;
+    padding: 0 0.5em;
+    text-align: center;
+    transition: all 0.2s;
+    width: 2.2em;
+}
+
+#normal,
+#big,
+#ui {
+    border: 1px solid #ccc;
+    float: right;
+    padding: 1em;
+    text-align: center;
+    width: 460px;
+}
+
+#big {
+    font-size: 14pt;
+    font-weight: bold;
+}
+
+
+
+#headcontainer {
+	background-image: url(pastels-light.jpg) !important;
+}
+#maincontent h2 {
+	padding-top:15px;
+}
+#normal, #big, #ui {
+	border: 1px solid #CCC;
+	float: right;
+	padding: 1em;
+	text-align: center;
+	width: 460px;
+}
+#uibox {
+	border: 2px solid grey;
+	display: block;
+	margin: auto;
+	padding: 2px;
+}
+#ui {
+	padding:5px 0 10px 0;
+	margin-bottom:20px;
+}
+#ui::first-letter {
+	font-weight: bold;
+	font-size: 1.5em;
+}
+#normal a, #big a {
+	text-decoration: none;
+}
+#normal a:hover,
+#normal a:focus,
+#big a:hover,
+#big a:focus {
+	text-decoration: underline;
+}
+#big {
+	font-size: 14pt;
+	font-weight: bold;
+}
+
+#ratioContainer {
+	padding-top: .6em;
+	text-align: center;
+}
+#ratio,
+#textBackRatio,
+#linkTextRatio,
+#linkBackRatio {
+	display: block;
+	font-size: 3em;
+}
+#textBackRatio,
+#linkTextRatio,
+#linkBackRatio {
+	display: inline-block;
+	min-width: 4em;
+}
+#ratioContainer > span {
+	border: 1px solid #CCC;
+	border-radius: 6px;
+	display: inline-block;
+	margin-bottom: 6px;
+	padding: 10px;
+	min-width: 7em;
+}
+#textBackRatioContainer > span,
+#linkTextRatioContainer > span,
+#linkBackRatioContainer > span {
+	border: 1px solid #CCC;
+	border-radius: 6px;
+	display: block;
+	margin-bottom: 10px;
+	padding: 10px;
+}
+#ratioContainer.pass > span,
+#textBackRatioContainer.pass > span,
+#linkTextRatioContainer.pass > span,
+#linkBackRatioContainer.pass > span {
+	border: 3px solid #080;
+	padding: 8px;
+}
+#permalink {
+	display: block;
+	border:none;
+}

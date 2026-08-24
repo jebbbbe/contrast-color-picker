@@ -13,8 +13,7 @@ function App() {
 
         const app = new ThreeSceneApp(threeSceneMountRef.current)
         app.animate()
-		
-		;(globalThis as any).app = app
+        ;(globalThis as any).app = app
 
         return () => {
             app.dispose()
@@ -25,10 +24,10 @@ function App() {
         <>
             <div id="app" ref={threeSceneMountRef} />
 
-            {/* <div className="overlay"> */}
-                {/* <Header /> */}
-                {/* <FontSwatch /> */}
-            {/* </div> */}
+            <div className="overlay">
+                <Header />
+                <FontSwatch />
+            </div>
         </>
     )
 }

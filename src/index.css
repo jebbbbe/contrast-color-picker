@@ -38,15 +38,5 @@ body {
     flex-direction: column;
     gap: 0.75rem;
     padding: 1rem;
-    color: #fff;
-}
-
-#normal,
-#big,
-#ui {
-    border: 1px solid #ccc;
-    float: right;
-    padding: 1em;
-    text-align: center;
-    width: 460px;
+    /* color: #fff; */
 }

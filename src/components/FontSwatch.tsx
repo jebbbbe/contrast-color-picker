@@ -1,5 +1,4 @@
 import "./FontSwatch.css"
-import { useState } from "react"
 
 const textBank = [
     "The five boxing wizards jump quickly.",
@@ -8,22 +7,34 @@ const textBank = [
     "b, c, f, g, h, i, j, k, m, o, p, q, u, v, w, x, y, and z are letters.",
 ]
 
-function FontSwatch() {
+export type FontSwatchState = {
+    color: string
+    backgroundColor: string
+    normalTextPassAA: boolean
+    normalTextPassAAA: boolean
+    largeTextPassAA: boolean
+    largeTextPassAAA: boolean
+    darkModeEnabled: boolean
+    darkBackgroundColor: string
+}
+
+export const initialFontSwatchState: FontSwatchState = {
+    color: "#0000ff",
+    backgroundColor: "#ffffff",
+    normalTextPassAA: true,
+    normalTextPassAAA: false,
+    largeTextPassAA: true,
+    largeTextPassAAA: false,
+    darkModeEnabled: false,
+    darkBackgroundColor: "#000000",
+}
+
+type FontSwatchProps = {
+    swatch: FontSwatchState
+}
+
+function FontSwatch({ swatch }: FontSwatchProps) {
     const sampleText = textBank[0]
-
-    const [swatch, setSwatch] = useState({
-        color: "#0000ff",
-        backgroundColor: "#ffffff",
-
-        normalTextPassAA: true,
-        normalTextPassAAA: false,
-
-        largeTextPassAA: true,
-        largeTextPassAAA: false,
-
-        darkModeEnabled: false,
-        darkBackgroundColor: "#000000",
-    })
 
     return (
         <div className="fontSwatch">

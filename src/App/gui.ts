@@ -62,7 +62,7 @@ export class SceneGui {
     private readonly onClickColorController: Controller
 
     constructor(app: ThreeSceneApp) {
-        const { controls, ctx } = app
+        const { controls, ctx, callbackBridge } = app
         const { clipPlane, sdfColorCube, sdfGroup } = ctx
         const colorCube: SdfColorCube = sdfColorCube
         const colorCubeMaterial = colorCube.mesh.material

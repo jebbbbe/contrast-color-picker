@@ -4,6 +4,7 @@ import { SdfColorCube } from "./objects/SdfColorCube"
 import { ClipPlaneController, defaultClipPlaneZ } from "./objects/clipPlane"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
 import * as SDF from "./objects/materials/SdfMaterial.js"
+import CallbackBridge, { type ReactCallbacks } from "./CallbackBridge"
 import { AspectLayout } from "./utils/AspectLayout.js"
 import { getContrastRatio } from "./utils/contrast"
 import { logScenePixel } from "./utils/logScenePixel"
@@ -11,6 +12,7 @@ import { SceneGui } from "./gui"
 
 export class ThreeSceneApp {
     readonly container: HTMLElement
+    readonly callbackBridge: CallbackBridge
     private readonly renderer: THREE.WebGLRenderer
     private readonly scene: THREE.Scene
     private readonly camera: THREE.PerspectiveCamera
@@ -24,9 +26,13 @@ export class ThreeSceneApp {
     }
     private animationFrameId = 0
 
-    constructor(container: HTMLElement) {
+    constructor(
+        container: HTMLElement,
+        reactCallbacks: ReactCallbacks = {}
+    ) {
         // layout
         const aspectLayout = new AspectLayout("dynamic", container)
+        const callbackBridge = new CallbackBridge(reactCallbacks)
 
         // renderer
         const renderer = new THREE.WebGLRenderer({ antialias: true })
@@ -97,6 +103,7 @@ export class ThreeSceneApp {
         // ui
         // props
         this.container = container
+        this.callbackBridge = callbackBridge
         this.aspectLayout = aspectLayout
         this.renderer = renderer
         this.scene = scene
@@ -115,6 +122,10 @@ export class ThreeSceneApp {
         // listeners
         aspectLayout.addResizeListener(renderer, camera, this.handleResize)
         renderer.domElement.addEventListener("click", this.handleCanvasClick)
+        this.callbackBridge.setSwatch({
+            color: `#${sdfColorCube.mesh.material.targetColor.getHexString(THREE.SRGBColorSpace)}`,
+            backgroundColor: `#${sdfColorCube.markers.onClick.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`,
+        })
     }
 
     dispose(): void {
@@ -180,6 +191,10 @@ export class ThreeSceneApp {
 
         this.gui.setOnClickColor(hex)
         this.ctx.sdfColorCube.markers.onClick.update(true, hex)
+        this.callbackBridge.setSwatch({
+            color: targetColorMarkerHex,
+            backgroundColor: hex,
+        })
     }
 
     private disposeSceneResources(): void {

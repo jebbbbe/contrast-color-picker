@@ -5,6 +5,7 @@ import { ClipPlaneController, defaultClipPlaneZ } from "./objects/clipPlane"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
 import * as SDF from "./objects/materials/SdfMaterial.js"
 import CallbackBridge, { type ReactCallbacks } from "./CallbackBridge"
+import { RaycastHelper } from "./RaycastHelper"
 import { AspectLayout } from "./utils/AspectLayout.js"
 import { getContrastRatio } from "./utils/contrast"
 import { logScenePixel } from "./utils/logScenePixel"
@@ -19,6 +20,7 @@ export class ThreeSceneApp {
     private readonly aspectLayout: AspectLayout
     private readonly gui: SceneGui
     readonly controls: OrbitControls
+    private readonly raycastHelper: RaycastHelper
     readonly ctx: {
         clipPlane: ClipPlaneController
         sdfColorCube: SdfColorCube
@@ -99,6 +101,16 @@ export class ThreeSceneApp {
             clipPlane.outline
         )
 
+        const rayTargets = [
+            ...Object.values(sdfColorCube.markers),
+            sdfColorCube.mesh,
+        ]
+        const raycastHelper = new RaycastHelper(
+            camera,
+            rayTargets,
+            renderer.domElement
+        )
+
         // ui
         // props
         this.container = container
@@ -108,6 +120,7 @@ export class ThreeSceneApp {
         this.scene = scene
         this.camera = camera
         this.controls = controls
+        this.raycastHelper = raycastHelper
         this.ctx = {
             clipPlane,
             sdfColorCube,
@@ -164,14 +177,7 @@ export class ThreeSceneApp {
         )
         const targetColorMarkerHex = `#${this.ctx.sdfColorCube.markers.target.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`
 
-        console.log(hex)
-        console.log(
-            targetColorMarkerHex,
-            getContrastRatio(hex, targetColorMarkerHex)
-        )
-        console.log("#000000", getContrastRatio(hex, "#000000"))
-        console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
-
+        //exit if not in right search mode
         if (
             this.ctx.sdfColorCube.mesh.material.searchMode !==
             ColorCube.SearchTargetColor
@@ -179,14 +185,45 @@ export class ThreeSceneApp {
             return
         }
 
+        // get scene bk color
         const sceneBackgroundHex =
             this.scene.background instanceof THREE.Color
                 ? `#${this.scene.background.getHexString(THREE.SRGBColorSpace)}`
                 : null
 
+        // raycast
+        const hits = this.raycastHelper.castFromEvent(event, undefined, true)
+
+        const markers = Object.values(this.ctx.sdfColorCube.markers)
+
+        const markerHit = hits.find((hit) =>
+            markers.some((marker) => marker === hit.object.parent)
+        )
+
+        // market hit
+        if (markerHit) {
+            console.log(markerHit.object.parent)
+            return
+        }
+
+        // color cube not hit
+        if (!hits.some((hit) => hit.object === this.ctx.sdfColorCube.mesh)) {
+            return
+        }
+
+        // clicked background
         if (hex === sceneBackgroundHex) {
             return
         }
+
+        // successful hit:
+        console.log(hex)
+        console.log(
+            targetColorMarkerHex,
+            getContrastRatio(hex, targetColorMarkerHex)
+        )
+        console.log("#000000", getContrastRatio(hex, "#000000"))
+        console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
 
         this.gui.setOnClickColor(hex)
         this.ctx.sdfColorCube.markers.onClick.update(true, hex)

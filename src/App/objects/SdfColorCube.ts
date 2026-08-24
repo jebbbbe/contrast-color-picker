@@ -35,7 +35,10 @@ export class SdfColorCube extends THREE.Group {
             material.searchMode === ColorCube.SearchTargetColor,
             material.targetColor
         )
-        const onClickMarker = new Marker(false)
+        const onClickMarker = new Marker(
+            material.searchMode === ColorCube.SearchTargetColor,
+            0x000000
+        )
 
         this.mesh = mesh
         this.markers = {

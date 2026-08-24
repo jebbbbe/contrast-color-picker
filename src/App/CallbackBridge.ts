@@ -32,8 +32,8 @@ export class CallbackBridge {
         const contrastRatio = getContrastRatio(color, backgroundColor)
 
         this.callbacks.setSwatch({
-            color,
-            backgroundColor,
+            color: backgroundColor,
+            backgroundColor: color,
             normalTextPassAA: contrastRatio >= 4.5,
             normalTextPassAAA: contrastRatio >= 7,
             largeTextPassAA: contrastRatio >= 3,

@@ -1,10 +1,36 @@
 import * as THREE from "three"
 
-const markerSphereGeometry = new THREE.SphereGeometry(0.02, 16, 16)
+function createMarkerTexture(): THREE.CanvasTexture {
+    const canvas = document.createElement("canvas")
+    const size = 64
+    const context = canvas.getContext("2d")
+
+    canvas.width = size
+    canvas.height = size
+
+    if (!context) {
+        throw new Error("Unable to create marker texture")
+    }
+
+    context.clearRect(0, 0, size, size)
+    context.fillStyle = "white"
+    context.beginPath()
+    context.arc(size * 0.5, size * 0.5, size * 0.5, 0, Math.PI * 2)
+    context.fill()
+
+    const texture = new THREE.CanvasTexture(canvas)
+
+    texture.colorSpace = THREE.SRGBColorSpace
+
+    return texture
+}
+
+const markerTexture = createMarkerTexture()
+const markerScale = 0.03
 const markerPositionColor = new THREE.Color()
 const markerInverseColor = new THREE.Color()
 
-type Dot = THREE.Mesh<THREE.SphereGeometry, THREE.MeshBasicMaterial>
+type Dot = THREE.Sprite
 type MarkerData = {
     primary: Dot
     inverse: Dot
@@ -14,31 +40,33 @@ export class Marker extends THREE.Group {
     constructor(visible = false, color: THREE.ColorRepresentation = 0x000000) {
         super()
 
-        const primary: Dot = new THREE.Mesh(
-            markerSphereGeometry,
-            new THREE.MeshBasicMaterial({
+        const primary: Dot = new THREE.Sprite(
+            new THREE.SpriteMaterial({
+                map: markerTexture,
                 color: new THREE.Color(),
                 fog: false,
-                vertexColors: false,
-                transparent: false,
+                transparent: true,
                 depthTest: false,
+                depthWrite: false,
+                sizeAttenuation: false,
             })
         )
-        const inverse: Dot = new THREE.Mesh(
-            markerSphereGeometry,
-            new THREE.MeshBasicMaterial({
+        const inverse: Dot = new THREE.Sprite(
+            new THREE.SpriteMaterial({
+                map: markerTexture,
                 color: new THREE.Color(),
                 fog: false,
-                vertexColors: false,
-                transparent: false,
-                side: THREE.BackSide,
+                transparent: true,
                 depthTest: false,
+                depthWrite: false,
+                sizeAttenuation: false,
             })
         )
 
         inverse.renderOrder = 1
         primary.renderOrder = 2
-        inverse.scale.setScalar(1.2)
+        primary.scale.setScalar(markerScale)
+        inverse.scale.setScalar(markerScale * 1.25)
 
         const userData = this.userData as MarkerData
 

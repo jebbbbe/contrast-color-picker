@@ -26,10 +26,7 @@ export class ThreeSceneApp {
     }
     private animationFrameId = 0
 
-    constructor(
-        container: HTMLElement,
-        reactCallbacks: ReactCallbacks = {}
-    ) {
+    constructor(container: HTMLElement, reactCallbacks: ReactCallbacks = {}) {
         // layout
         const aspectLayout = new AspectLayout("dynamic", container)
         const callbackBridge = new CallbackBridge(reactCallbacks)
@@ -55,6 +52,8 @@ export class ThreeSceneApp {
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enableDamping = true
         controls.autoRotateSpeed = 2.5
+        controls.minDistance = 0.25
+        controls.maxDistance = 2.5
         controls.target.set(0, 0, 0)
         camera.lookAt(controls.target)
         controls.update()

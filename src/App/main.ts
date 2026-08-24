@@ -135,8 +135,8 @@ export class ThreeSceneApp {
         aspectLayout.addResizeListener(renderer, camera, this.handleResize)
         renderer.domElement.addEventListener("click", this.handleCanvasClick)
         this.callbackBridge.setSwatch({
-            color: `#${sdfColorCube.mesh.material.targetColor.getHexString(THREE.SRGBColorSpace)}`,
-            backgroundColor: `#${sdfColorCube.markers.onClick.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`,
+            color: `#${sdfColorCube.markers.onClick.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`,
+            backgroundColor: `#${sdfColorCube.mesh.material.targetColor.getHexString(THREE.SRGBColorSpace)}`,
         })
     }
 
@@ -228,8 +228,8 @@ export class ThreeSceneApp {
         this.gui.setOnClickColor(hex)
         this.ctx.sdfColorCube.markers.onClick.update(true, hex)
         this.callbackBridge.setSwatch({
-            color: targetColorMarkerHex,
-            backgroundColor: hex,
+            color: hex,
+            backgroundColor: targetColorMarkerHex,
         })
     }
 

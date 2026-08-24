@@ -137,12 +137,13 @@ export class SceneGui {
                     THREE.SRGBColorSpace
                 )
                 targetColorMarker.update(
-                    colorCubeMaterial.searchMode === ColorCube.SearchTargetColor,
+                    colorCubeMaterial.searchMode ===
+                        ColorCube.SearchTargetColor,
                     colorCubeMaterial.targetColor
                 )
                 callbackBridge.setSwatch({
-                    color: value,
-                    backgroundColor: onClickColorState.value,
+                    color: onClickColorState.value,
+                    backgroundColor: value,
                 })
             })
         this.onClickColorController = colorCubeFolder
@@ -155,8 +156,8 @@ export class SceneGui {
                 )
                 onClickMarker.update(onClickMarker.visible, onClickColor)
                 callbackBridge.setSwatch({
-                    color: targetColorState.value,
-                    backgroundColor: value,
+                    color: value,
+                    backgroundColor: targetColorState.value,
                 })
             })
 

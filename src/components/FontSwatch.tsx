@@ -1,4 +1,5 @@
 import "./FontSwatch.css"
+import { useState } from "react"
 
 const textBank = [
     "The five boxing wizards jump quickly.",
@@ -7,17 +8,22 @@ const textBank = [
     "b, c, f, g, h, i, j, k, m, o, p, q, u, v, w, x, y, and z are letters.",
 ]
 
-const sampleStyle = {
-    color: "rgb(0, 0, 255)",
-    backgroundColor: "rgb(255, 255, 255)",
-}
-
-const inputStyle = {
-    borderColor: "rgb(0, 0, 255)",
-}
-
 function FontSwatch() {
     const sampleText = textBank[0]
+
+    const [swatch, setSwatch] = useState({
+        color: "#0000ff",
+        backgroundColor: "#ffffff",
+
+        normalTextPassAA: true,
+        normalTextPassAAA: false,
+
+        largeTextPassAA: true,
+        largeTextPassAAA: false,
+
+        darkModeEnabled: false,
+        darkBackgroundColor: "#000000",
+    })
 
     return (
         <div className="fontSwatch">
@@ -46,36 +52,68 @@ function FontSwatch() {
                     <div className="results">
                         <p>
                             WCAG AA:{" "}
-                            <span id="normalAA" className="pass">
-                                Pass
+                            <span
+                                id="normalAA"
+                                className={
+                                    swatch.normalTextPassAA ? "pass" : "fail"
+                                }
+                            >
+                                {swatch.normalTextPassAA ? "Pass" : "Fail"}
                             </span>
                         </p>
                         <p>
                             WCAG AAA:{" "}
-                            <span id="normalAAA" className="fail">
-                                Fail
+                            <span
+                                id="normalAAA"
+                                className={
+                                    swatch.normalTextPassAAA ? "pass" : "fail"
+                                }
+                            >
+                                {swatch.normalTextPassAAA ? "Pass" : "Fail"}
                             </span>
                         </p>
                     </div>
-                    <span id="normal" style={sampleStyle}>
+                    <span
+                        id="normal"
+                        style={{
+                            color: swatch.color,
+                            backgroundColor: swatch.backgroundColor,
+                        }}
+                    >
                         {sampleText}
                     </span>
                     <h2>Large Text</h2>
                     <div className="results">
                         <p>
                             WCAG AA:{" "}
-                            <span id="bigAA" className="pass">
-                                Pass
+                            <span
+                                id="bigAA"
+                                className={
+                                    swatch.largeTextPassAA ? "pass" : "fail"
+                                }
+                            >
+                                {swatch.largeTextPassAA ? "Pass" : "Fail"}
                             </span>
                         </p>
                         <p>
                             WCAG AAA:{" "}
-                            <span id="bigAAA" className="pass">
-                                Pass
+                            <span
+                                id="bigAAA"
+                                className={
+                                    swatch.largeTextPassAAA ? "pass" : "fail"
+                                }
+                            >
+                                {swatch.largeTextPassAAA ? "Pass" : "Fail"}
                             </span>
                         </p>
                     </div>
-                    <span id="big" style={sampleStyle}>
+                    <span
+                        id="big"
+                        style={{
+                            color: swatch.color,
+                            backgroundColor: swatch.backgroundColor,
+                        }}
+                    >
                         {sampleText}
                     </span>
                     {/* <h2>Graphical Objects and User Interface Components</h2>

@@ -1,5 +1,7 @@
 import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
+import { TransformControls } from "three/examples/jsm/controls/TransformControls.js"
+import { Marker } from "./objects/Marker"
 import { SdfColorCube } from "./objects/SdfColorCube"
 import { ClipPlaneController, defaultClipPlaneZ } from "./objects/clipPlane"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
@@ -21,6 +23,7 @@ export class ThreeSceneApp {
     private readonly gui: SceneGui
     readonly controls: OrbitControls
     private readonly raycastHelper: RaycastHelper
+    private readonly transformControls: TransformControls
     readonly ctx: {
         clipPlane: ClipPlaneController
         sdfColorCube: SdfColorCube
@@ -60,6 +63,22 @@ export class ThreeSceneApp {
         camera.lookAt(controls.target)
         controls.update()
 
+        // transform controls
+        const transformControls = new TransformControls(
+            camera,
+            renderer.domElement
+        )
+        transformControls.addEventListener("change", () => {
+            if (transformControls.object instanceof Marker) {
+                transformControls.object.updatePosition(
+                    transformControls.object.position
+                )
+            }
+        })
+        transformControls.addEventListener("dragging-changed", (event) => {
+            controls.enabled = !event.value
+        })
+
         // lights
         // const ambientLight = new THREE.AmbientLight(0xffffff, 1.2)
         // const directionalLight = new THREE.DirectionalLight(0xffffff, 2)
@@ -98,7 +117,8 @@ export class ThreeSceneApp {
             // directionalLight,
             sdfColorCube,
             sdfGroup,
-            clipPlane.outline
+            clipPlane.outline,
+            transformControls.getHelper()
         )
 
         const rayTargets = [
@@ -121,6 +141,7 @@ export class ThreeSceneApp {
         this.camera = camera
         this.controls = controls
         this.raycastHelper = raycastHelper
+        this.transformControls = transformControls
         this.ctx = {
             clipPlane,
             sdfColorCube,
@@ -133,7 +154,7 @@ export class ThreeSceneApp {
 
         // listeners
         aspectLayout.addResizeListener(renderer, camera, this.handleResize)
-        renderer.domElement.addEventListener("click", this.handleCanvasClick)
+        renderer.domElement.addEventListener("pointerdown", this.handleCanvasClick)
         this.callbackBridge.setSwatch({
             color: `#${sdfColorCube.markers.onClick.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`,
             backgroundColor: `#${sdfColorCube.mesh.material.targetColor.getHexString(THREE.SRGBColorSpace)}`,
@@ -144,11 +165,12 @@ export class ThreeSceneApp {
         globalThis.cancelAnimationFrame(this.animationFrameId)
         this.aspectLayout.removeResizeListener()
         this.controls.dispose()
+        this.transformControls.dispose()
         this.gui.destroy()
         this.disposeSceneResources()
         this.renderer.dispose()
         this.renderer.domElement.removeEventListener(
-            "click",
+            "pointerdown",
             this.handleCanvasClick
         )
         this.renderer.domElement.remove()
@@ -167,6 +189,50 @@ export class ThreeSceneApp {
     }
 
     private readonly handleCanvasClick = (event: MouseEvent): void => {
+        //exit if not in right search mode
+        if (
+            this.ctx.sdfColorCube.mesh.material.searchMode !==
+            ColorCube.SearchTargetColor
+        ) {
+            return
+        }
+
+        // raycast
+        const hits = this.raycastHelper.castFromEvent(event, undefined, true)
+
+        const markers = Object.values(this.ctx.sdfColorCube.markers)
+
+        const markerHit = hits.find((hit) =>
+            markers.some(
+                (marker) =>
+                    marker === hit.object || marker === hit.object.parent
+            )
+        )
+
+        if (!markerHit) {
+            this.transformControls.detach()
+        }
+
+        // market hit
+        if (markerHit) {
+            const marker = markers.find(
+                (candidate) =>
+                    candidate === markerHit.object ||
+                    candidate === markerHit.object.parent
+            )
+
+            if (marker) {
+                this.transformControls.attach(marker)
+            }
+
+            return
+        }
+
+        // color cube not hit
+        if (!hits.some((hit) => hit.object === this.ctx.sdfColorCube.mesh)) {
+            return
+        }
+
         const hex = logScenePixel(
             this.renderer,
             this.scene,
@@ -177,39 +243,11 @@ export class ThreeSceneApp {
         )
         const targetColorMarkerHex = `#${this.ctx.sdfColorCube.markers.target.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`
 
-        //exit if not in right search mode
-        if (
-            this.ctx.sdfColorCube.mesh.material.searchMode !==
-            ColorCube.SearchTargetColor
-        ) {
-            return
-        }
-
         // get scene bk color
         const sceneBackgroundHex =
             this.scene.background instanceof THREE.Color
                 ? `#${this.scene.background.getHexString(THREE.SRGBColorSpace)}`
                 : null
-
-        // raycast
-        const hits = this.raycastHelper.castFromEvent(event, undefined, true)
-
-        const markers = Object.values(this.ctx.sdfColorCube.markers)
-
-        const markerHit = hits.find((hit) =>
-            markers.some((marker) => marker === hit.object.parent)
-        )
-
-        // market hit
-        if (markerHit) {
-            console.log(markerHit.object.parent)
-            return
-        }
-
-        // color cube not hit
-        if (!hits.some((hit) => hit.object === this.ctx.sdfColorCube.mesh)) {
-            return
-        }
 
         // clicked background
         if (hex === sceneBackgroundHex) {
@@ -226,7 +264,7 @@ export class ThreeSceneApp {
         console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
 
         this.gui.setOnClickColor(hex)
-        this.ctx.sdfColorCube.markers.onClick.update(true, hex)
+        this.ctx.sdfColorCube.markers.onClick.updateColor(true, hex)
         this.callbackBridge.setSwatch({
             color: hex,
             backgroundColor: targetColorMarkerHex,

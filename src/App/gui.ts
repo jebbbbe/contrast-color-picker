@@ -136,7 +136,7 @@ export class SceneGui {
                     Number.parseInt(value.slice(1), 16),
                     THREE.SRGBColorSpace
                 )
-                targetColorMarker.update(
+                targetColorMarker.updateColor(
                     colorCubeMaterial.searchMode ===
                         ColorCube.SearchTargetColor,
                     colorCubeMaterial.targetColor
@@ -154,7 +154,7 @@ export class SceneGui {
                     Number.parseInt(value.slice(1), 16),
                     THREE.SRGBColorSpace
                 )
-                onClickMarker.update(onClickMarker.visible, onClickColor)
+                onClickMarker.updateColor(onClickMarker.visible, onClickColor)
                 callbackBridge.setSwatch({
                     color: value,
                     backgroundColor: targetColorState.value,
@@ -279,13 +279,13 @@ export class SceneGui {
         syncTargetColorState(colorCubeMaterial.searchMode)
         searchModeController.onChange((value: number) => {
             syncTargetColorState(value)
-            targetColorMarker.update(
+            targetColorMarker.updateColor(
                 value === ColorCube.SearchTargetColor,
                 colorCubeMaterial.targetColor
             )
 
             if (value !== ColorCube.SearchTargetColor) {
-                onClickMarker.update(false, onClickPrimary.material.color)
+                onClickMarker.updateColor(false, onClickPrimary.material.color)
             }
         })
 

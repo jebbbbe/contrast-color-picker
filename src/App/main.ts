@@ -53,7 +53,7 @@ export class ThreeSceneApp {
         const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
         camera.position.set(-0.75, 0.25, 1.75)
 
-        // controls
+		// controls
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enableDamping = true
         controls.autoRotateSpeed = 2.5
@@ -68,6 +68,10 @@ export class ThreeSceneApp {
             camera,
             renderer.domElement
         )
+        const transformControlsHelper = transformControls.getHelper()
+        transformControls.setMode("translate")
+        transformControls.setColors(0xff0000, 0x00ff00, 0x0000ff, 0xffff00)
+        // callback for move
         transformControls.addEventListener("change", () => {
             if (transformControls.object instanceof Marker) {
                 transformControls.object.updatePosition(
@@ -75,6 +79,7 @@ export class ThreeSceneApp {
                 )
             }
         })
+        // disable orbit controls
         transformControls.addEventListener("dragging-changed", (event) => {
             controls.enabled = !event.value
         })
@@ -118,7 +123,7 @@ export class ThreeSceneApp {
             sdfColorCube,
             sdfGroup,
             clipPlane.outline,
-            transformControls.getHelper()
+            transformControlsHelper
         )
 
         const rayTargets = [
@@ -131,7 +136,6 @@ export class ThreeSceneApp {
             renderer.domElement
         )
 
-        // ui
         // props
         this.container = container
         this.callbackBridge = callbackBridge
@@ -148,17 +152,20 @@ export class ThreeSceneApp {
             sdfGroup,
         }
 
+        // ui
         const gui = new SceneGui(this)
-
         this.gui = gui
-
-        // listeners
-        aspectLayout.addResizeListener(renderer, camera, this.handleResize)
-        renderer.domElement.addEventListener("pointerdown", this.handleCanvasClick)
         this.callbackBridge.setSwatch({
             color: `#${sdfColorCube.markers.onClick.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`,
             backgroundColor: `#${sdfColorCube.mesh.material.targetColor.getHexString(THREE.SRGBColorSpace)}`,
         })
+
+        // listeners
+        aspectLayout.addResizeListener(renderer, camera, this.handleResize)
+        renderer.domElement.addEventListener(
+            "pointerdown",
+            this.handleCanvasClick
+        )
     }
 
     dispose(): void {
@@ -189,6 +196,9 @@ export class ThreeSceneApp {
     }
 
     private readonly handleCanvasClick = (event: MouseEvent): void => {
+        // Let the gizmo consume the pointerdown that starts a transform drag.
+        if (this.transformControls.dragging) return
+
         //exit if not in right search mode
         if (
             this.ctx.sdfColorCube.mesh.material.searchMode !==
@@ -250,9 +260,7 @@ export class ThreeSceneApp {
                 : null
 
         // clicked background
-        if (hex === sceneBackgroundHex) {
-            return
-        }
+        if (hex === sceneBackgroundHex) return
 
         // successful hit:
         console.log(hex)

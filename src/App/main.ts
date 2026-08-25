@@ -3,9 +3,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js"
 import { Marker } from "./objects/Marker"
 import { SdfColorCube } from "./objects/SdfColorCube"
-import { ClipPlaneController, defaultClipPlaneZ } from "./objects/clipPlane"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
-import * as SDF from "./objects/materials/SdfMaterial.js"
 import CallbackBridge, { type ReactCallbacks } from "./CallbackBridge"
 import { RaycastHelper } from "./RaycastHelper"
 import { AspectLayout } from "./utils/AspectLayout.js"
@@ -25,9 +23,7 @@ export class ThreeSceneApp {
     private readonly raycastHelper: RaycastHelper
     private readonly transformControls: TransformControls
     readonly ctx: {
-        clipPlane: ClipPlaneController
         sdfColorCube: SdfColorCube
-        sdfGroup: THREE.Group
     }
     private animationFrameId = 0
 
@@ -101,38 +97,11 @@ export class ThreeSceneApp {
         // content
         const sdfColorCube = new SdfColorCube()
 
-        const sdfGroup = new THREE.Group()
-        const sdfMesh = new THREE.Mesh(
-            new THREE.BoxGeometry(1, 1, 1),
-            new SDF.SdfMaterial({
-                // lightPosition: directionalLight.position,
-                lightPosition: new THREE.Vector3(4, 6, 8),
-                color: 0xffffff,
-                targetOutput: SDF.SdfTargetOutputLit,
-                shape: SDF.SdfShapeCutHollowSphere,
-                // side:THREE.DoubleSide,
-            })
-        )
-        const sdfWireframe = new THREE.LineSegments(
-            new THREE.EdgesGeometry(sdfMesh.geometry),
-            new THREE.LineBasicMaterial({ color: 0x9ca3af })
-        )
-        sdfGroup.add(sdfMesh, sdfWireframe)
-        sdfGroup.scale.set(1, 1, 1)
-        sdfGroup.rotation.set(0, 0, 0)
-        sdfGroup.position.set(2, 0, 2)
-        sdfGroup.visible = false
-
-        const clipPlane = new ClipPlaneController(renderer)
-        clipPlane.position = defaultClipPlaneZ
-
         scene.add(
             // ambientLight,
             // directionalLight,
             // grid,
             sdfColorCube,
-            sdfGroup,
-            clipPlane.outline,
             transformControlsHelper
         )
 
@@ -157,9 +126,7 @@ export class ThreeSceneApp {
         this.raycastHelper = raycastHelper
         this.transformControls = transformControls
         this.ctx = {
-            clipPlane,
             sdfColorCube,
-            sdfGroup,
         }
 
         // ui

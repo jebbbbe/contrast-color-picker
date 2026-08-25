@@ -4,26 +4,6 @@ import * as THREE from "three"
 import type { ThreeSceneApp } from "./main"
 import type { SdfColorCube } from "./objects/SdfColorCube"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
-import * as SDF from "./objects/materials/SdfMaterial"
-
-const sdfMaterialTargetOutputTitles = {
-    Color: SDF.SdfTargetOutputColor,
-    Lit: SDF.SdfTargetOutputLit,
-    Normal: SDF.SdfTargetOutputNormal,
-    Steps: SDF.SdfTargetOutputSteps,
-    "World Position": SDF.SdfTargetOutputWorldPosition,
-} as const
-
-const sdfMaterialShapeTitles = {
-    Sphere: SDF.SdfShapeSphere,
-    Box: SDF.SdfShapeBox,
-    "Round Box": SDF.SdfShapeRoundBox,
-    Cone: SDF.SdfShapeCone,
-    "Solid Angle": SDF.SdfShapeSolidAngle,
-    "Cut Hollow Sphere": SDF.SdfShapeCutHollowSphere,
-    Octahedron: SDF.SdfShapeOctahedron,
-    Triangle: SDF.SdfShapeTriangle,
-} as const
 
 const sdfColorTargetOutputTitles = {
     Color: ColorCube.TargetOutputColor,
@@ -63,15 +43,12 @@ export class SceneGui {
 
     constructor(app: ThreeSceneApp) {
         const { controls, ctx, callbackBridge } = app
-        const { clipPlane, sdfColorCube, sdfGroup } = ctx
+        const { sdfColorCube } = ctx
         const colorCube: SdfColorCube = sdfColorCube
         const colorCubeMaterial = colorCube.mesh.material
         const onClickMarker = colorCube.markers.onClick
         const onClickPrimary = onClickMarker.userData.primary
         const targetColorMarker = colorCube.markers.target
-        const sdfMaterial = (
-            sdfGroup.children[0] as unknown as { material: SDF.SdfMaterial }
-        ).material
         const contrastPresetState: { value: "" | number } = { value: "" }
         const onClickColor = onClickPrimary.material.color.clone()
         const onClickColorState: { value: string } = {
@@ -87,21 +64,8 @@ export class SceneGui {
         })
         this.onClickColorState = onClickColorState
 
-        const debugFolder = this.gui.addFolder("Debug")
+        const debugFolder = this.gui.addFolder("Debug").close()
         const colorCubeFolder = this.gui.addFolder("Color Cube")
-        const sdfFolder = this.gui.addFolder("SDF Material")
-        const clipPlaneFolder = this.gui.addFolder("Clip Plane")
-
-        sdfFolder.add(sdfMaterial, "size", 0.05, 2.0, 0.01).name("Size")
-        sdfFolder.add(sdfGroup, "visible").name("Visible")
-
-        sdfFolder
-            .add(sdfMaterial, "shape", sdfMaterialShapeTitles)
-            .name("Shape")
-        sdfFolder
-            .add(sdfMaterial, "targetOutput", sdfMaterialTargetOutputTitles)
-            .name("Target Output")
-        sdfFolder.add(sdfMaterial, "clipToBounds").name("Clip To Bounds")
 
         debugFolder
             .add(colorCubeMaterial, "targetOutput", sdfColorTargetOutputTitles)
@@ -138,11 +102,17 @@ export class SceneGui {
                         onClickColorState.value = previousTargetColor
 
                         colorCubeMaterial.targetColor.setHex(
-                            Number.parseInt(targetColorState.value.slice(1), 16),
+                            Number.parseInt(
+                                targetColorState.value.slice(1),
+                                16
+                            ),
                             THREE.SRGBColorSpace
                         )
                         onClickColor.setHex(
-                            Number.parseInt(onClickColorState.value.slice(1), 16),
+                            Number.parseInt(
+                                onClickColorState.value.slice(1),
+                                16
+                            ),
                             THREE.SRGBColorSpace
                         )
 
@@ -151,7 +121,10 @@ export class SceneGui {
                                 ColorCube.SearchTargetColor,
                             colorCubeMaterial.targetColor
                         )
-                        onClickMarker.updateColor(onClickMarker.visible, onClickColor)
+                        onClickMarker.updateColor(
+                            onClickMarker.visible,
+                            onClickColor
+                        )
                         targetColorController.updateDisplay()
                         this.onClickColorController.updateDisplay()
                         callbackBridge.setSwatch({
@@ -325,14 +298,6 @@ export class SceneGui {
                 onClickMarker.updateColor(false, onClickPrimary.material.color)
             }
         })
-
-        sdfFolder.close()
-        clipPlaneFolder.add(clipPlane, "enabled").name("Enabled")
-        clipPlaneFolder
-            .add(clipPlane, "position", -5.0, 3.0, 0.01)
-            .name("Clip Plane Z")
-
-        clipPlaneFolder.close()
     }
 
     destroy(): void {

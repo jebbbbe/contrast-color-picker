@@ -10,7 +10,7 @@ import {
 } from "three"
 
 import frag from "./glsl/ColorCubeMaterial.frag.glsl?raw"
-import vert from "./glsl/SdfMaterial.vert.glsl?raw"
+import vert from "./glsl/ColorCubeMaterial.vert.glsl?raw"
 import * as noop from "./glsl/chunk/registerChunks"
 
 import type { ColorRepresentation, ShaderMaterialParameters } from "three"

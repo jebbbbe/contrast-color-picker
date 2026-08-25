@@ -53,7 +53,7 @@ export class ThreeSceneApp {
         const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
         camera.position.set(-0.75, 0.25, 1.75)
 
-		// controls
+        // controls
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enableDamping = true
         controls.autoRotateSpeed = 2.5
@@ -71,13 +71,19 @@ export class ThreeSceneApp {
         const transformControlsHelper = transformControls.getHelper()
         transformControls.setMode("translate")
         transformControls.setColors(0xff0000, 0x00ff00, 0x0000ff, 0xffff00)
+        //@ts-ignore
+        transformControls.minX = -0.5
+        transformControls.maxX = 0.5
+        transformControls.minY = -0.5
+        transformControls.maxY = 0.5
+        transformControls.minZ = -0.5
+        transformControls.maxZ = 0.5
         // callback for move
         transformControls.addEventListener("change", () => {
-            if (transformControls.object instanceof Marker) {
-                transformControls.object.updatePosition(
-                    transformControls.object.position
-                )
-            }
+            const object = transformControls.object
+            if (!(object instanceof Marker)) return
+            // we can direclty modify object.position here to constrain
+            object.updatePosition(object.position)
         })
         // disable orbit controls
         transformControls.addEventListener("dragging-changed", (event) => {
@@ -88,6 +94,9 @@ export class ThreeSceneApp {
         // const ambientLight = new THREE.AmbientLight(0xffffff, 1.2)
         // const directionalLight = new THREE.DirectionalLight(0xffffff, 2)
         // directionalLight.position.set(4, 6, 8)
+
+        //helpers
+        // const grid = new THREE.GridHelper()
 
         // content
         const sdfColorCube = new SdfColorCube()
@@ -120,6 +129,7 @@ export class ThreeSceneApp {
         scene.add(
             // ambientLight,
             // directionalLight,
+            // grid,
             sdfColorCube,
             sdfGroup,
             clipPlane.outline,

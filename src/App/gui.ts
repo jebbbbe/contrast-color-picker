@@ -128,6 +128,41 @@ export class SceneGui {
         const contrastRatioController = colorCubeFolder
             .add(colorCubeMaterial, "contrastRatio", 1.0, 21.0, 0.001)
             .name("Contrast Ratio")
+        const swapColorsController = colorCubeFolder
+            .add(
+                {
+                    swapColors: (): void => {
+                        const previousTargetColor = targetColorState.value
+
+                        targetColorState.value = onClickColorState.value
+                        onClickColorState.value = previousTargetColor
+
+                        colorCubeMaterial.targetColor.setHex(
+                            Number.parseInt(targetColorState.value.slice(1), 16),
+                            THREE.SRGBColorSpace
+                        )
+                        onClickColor.setHex(
+                            Number.parseInt(onClickColorState.value.slice(1), 16),
+                            THREE.SRGBColorSpace
+                        )
+
+                        targetColorMarker.updateColor(
+                            colorCubeMaterial.searchMode ===
+                                ColorCube.SearchTargetColor,
+                            colorCubeMaterial.targetColor
+                        )
+                        onClickMarker.updateColor(onClickMarker.visible, onClickColor)
+                        targetColorController.updateDisplay()
+                        this.onClickColorController.updateDisplay()
+                        callbackBridge.setSwatch({
+                            color: onClickColorState.value,
+                            backgroundColor: targetColorState.value,
+                        })
+                    },
+                },
+                "swapColors"
+            )
+            .name("Swap")
         const targetColorController = colorCubeFolder
             .addColor(targetColorState, "value")
             .name("Target Color")
@@ -268,11 +303,13 @@ export class SceneGui {
         const syncTargetColorState = (value: number): void => {
             if (value === ColorCube.SearchTargetColor) {
                 targetColorController.enable()
+                swapColorsController.enable()
                 this.onClickColorController.enable()
                 return
             }
 
             targetColorController.disable()
+            swapColorsController.disable()
             this.onClickColorController.disable()
         }
 

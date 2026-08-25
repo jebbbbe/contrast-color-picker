@@ -2,7 +2,7 @@ import GUI, { type Controller } from "lil-gui"
 import * as THREE from "three"
 
 import type { ThreeSceneApp } from "./main"
-import type { SdfColorCube } from "./objects/SdfColorCube"
+import type { ColorCubeVolume } from "./objects/ColorCubeVolume"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
 
 const sdfColorTargetOutputTitles = {
@@ -43,8 +43,7 @@ export class SceneGui {
 
     constructor(app: ThreeSceneApp) {
         const { controls, ctx, callbackBridge } = app
-        const { sdfColorCube } = ctx
-        const colorCube: SdfColorCube = sdfColorCube
+        const { colorCube } = ctx
         const colorCubeMaterial = colorCube.mesh.material
         const onClickMarker = colorCube.markers.onClick
         const onClickPrimary = onClickMarker.userData.primary

@@ -2,7 +2,7 @@ import * as THREE from "three"
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js"
 import { Marker } from "./objects/Marker"
-import { SdfColorCube } from "./objects/SdfColorCube"
+import { ColorCubeVolume } from "./objects/ColorCubeVolume"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
 import CallbackBridge, { type ReactCallbacks } from "./CallbackBridge"
 import { RaycastHelper } from "./RaycastHelper"
@@ -23,7 +23,7 @@ export class ThreeSceneApp {
     private readonly raycastHelper: RaycastHelper
     private readonly transformControls: TransformControls
     readonly ctx: {
-        sdfColorCube: SdfColorCube
+        colorCube: ColorCubeVolume
     }
     private animationFrameId = 0
 
@@ -95,19 +95,19 @@ export class ThreeSceneApp {
         // const grid = new THREE.GridHelper()
 
         // content
-        const sdfColorCube = new SdfColorCube()
+        const colorCube = new ColorCubeVolume()
 
         scene.add(
             // ambientLight,
             // directionalLight,
             // grid,
-            sdfColorCube,
+            colorCube,
             transformControlsHelper
         )
 
         const rayTargets = [
-            ...Object.values(sdfColorCube.markers),
-            sdfColorCube.mesh,
+            ...Object.values(colorCube.markers),
+            colorCube.mesh,
         ]
         const raycastHelper = new RaycastHelper(
             camera,
@@ -126,15 +126,15 @@ export class ThreeSceneApp {
         this.raycastHelper = raycastHelper
         this.transformControls = transformControls
         this.ctx = {
-            sdfColorCube,
+            colorCube,
         }
 
         // ui
         const gui = new SceneGui(this)
         this.gui = gui
         this.callbackBridge.setSwatch({
-            color: `#${sdfColorCube.markers.onClick.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`,
-            backgroundColor: `#${sdfColorCube.mesh.material.targetColor.getHexString(THREE.SRGBColorSpace)}`,
+            color: `#${colorCube.markers.onClick.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`,
+            backgroundColor: `#${colorCube.mesh.material.targetColor.getHexString(THREE.SRGBColorSpace)}`,
         })
 
         // listeners
@@ -178,7 +178,7 @@ export class ThreeSceneApp {
 
         //exit if not in right search mode
         if (
-            this.ctx.sdfColorCube.mesh.material.searchMode !==
+            this.ctx.colorCube.mesh.material.searchMode !==
             ColorCube.SearchTargetColor
         ) {
             return
@@ -187,7 +187,7 @@ export class ThreeSceneApp {
         // raycast
         const hits = this.raycastHelper.castFromEvent(event, undefined, true)
 
-        const markers = Object.values(this.ctx.sdfColorCube.markers)
+        const markers = Object.values(this.ctx.colorCube.markers)
 
         const markerHit = hits.find((hit) =>
             markers.some(
@@ -216,7 +216,7 @@ export class ThreeSceneApp {
         }
 
         // color cube not hit
-        if (!hits.some((hit) => hit.object === this.ctx.sdfColorCube.mesh)) {
+        if (!hits.some((hit) => hit.object === this.ctx.colorCube.mesh)) {
             return
         }
 
@@ -228,7 +228,7 @@ export class ThreeSceneApp {
             event.clientX,
             event.clientY
         )
-        const targetColorMarkerHex = `#${this.ctx.sdfColorCube.markers.target.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`
+        const targetColorMarkerHex = `#${this.ctx.colorCube.markers.target.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`
 
         // get scene bk color
         const sceneBackgroundHex =
@@ -249,7 +249,7 @@ export class ThreeSceneApp {
         console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
 
         this.gui.setOnClickColor(hex)
-        this.ctx.sdfColorCube.markers.onClick.updateColor(true, hex)
+        this.ctx.colorCube.markers.onClick.updateColor(true, hex)
         this.callbackBridge.setSwatch({
             color: hex,
             backgroundColor: targetColorMarkerHex,

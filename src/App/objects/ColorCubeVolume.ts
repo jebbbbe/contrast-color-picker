@@ -14,7 +14,7 @@ const transformSpaceMatrices = {
     custom:       new THREE.Matrix3(),
 }
 
-export class SdfColorCube extends THREE.Group {
+export class ColorCubeVolume extends THREE.Group {
     readonly mesh: THREE.Mesh<THREE.BoxGeometry, ColorCube.ColorCubeMaterial>
     readonly markers: {
         onClick: Marker
@@ -82,4 +82,4 @@ export class SdfColorCube extends THREE.Group {
     }
 }
 
-export default SdfColorCube
+export default ColorCubeVolume

@@ -95,6 +95,26 @@ export class Marker extends THREE.Group {
         this.position.set(r - 0.5, g - 0.5, b - 0.5)
     }
 
+    getColor(): THREE.Color {
+        const { primary } = this.userData as MarkerData
+
+        return primary.material.color
+    }
+
+    getHex(): string {
+        return `#${this.getColor().getHexString(THREE.SRGBColorSpace)}`
+    }
+
+    swap(marker: Marker): void {
+        const color = this.getColor().clone()
+        const visible = this.visible
+
+        this.updateColor(marker.getColor())
+        this.visible = marker.visible
+        marker.updateColor(color)
+        marker.visible = visible
+    }
+
     updatePosition(position: THREE.Vector3): void {
         const { primary, inverse } = this.userData as MarkerData
 

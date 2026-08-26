@@ -11,6 +11,7 @@ import { getContrastRatio } from "./utils/contrast"
 import { logScenePixel } from "./utils/logScenePixel"
 import { SceneGui } from "./gui"
 
+const sceneBackgroundHex = "#dee4ef"
 export class ThreeSceneApp {
     readonly container: HTMLElement
     readonly callbackBridge: CallbackBridge
@@ -43,7 +44,7 @@ export class ThreeSceneApp {
 
         // scene
         const scene = new THREE.Scene()
-        scene.background = new THREE.Color("#dee4ef")
+        scene.background = new THREE.Color(sceneBackgroundHex)
 
         // camera
         const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
@@ -130,8 +131,8 @@ export class ThreeSceneApp {
         const gui = new SceneGui(this)
         this.gui = gui
         this.callbackBridge.setSwatch({
-            color: `#${colorCube.markers.onClick.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`,
-            backgroundColor: `#${colorCube.mesh.material.targetColor1.getHexString(THREE.SRGBColorSpace)}`,
+            color: colorCube.markers.sample1.getHex(),
+            backgroundColor: colorCube.markers.target.getHex(),
         })
 
         // listeners
@@ -225,34 +226,25 @@ export class ThreeSceneApp {
             event.clientX,
             event.clientY
         )
-        const targetColorMarkerHex = `#${this.ctx.colorCube.markers.target.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`
-
-        // get scene bk color
-        const sceneBackgroundHex =
-            this.scene.background instanceof THREE.Color
-                ? `#${this.scene.background.getHexString(THREE.SRGBColorSpace)}`
-                : null
+        const targetMarkerHex = this.ctx.colorCube.markers.target.getHex()
 
         // clicked background
         if (hex === sceneBackgroundHex) return
 
         // successful hit:
         console.log(hex)
-        console.log(
-            targetColorMarkerHex,
-            getContrastRatio(hex, targetColorMarkerHex)
-        )
+        console.log(targetMarkerHex, getContrastRatio(hex, targetMarkerHex))
         console.log("#000000", getContrastRatio(hex, "#000000"))
         console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
 
         this.gui.setOnClickColor(hex)
-        this.ctx.colorCube.markers.onClick.visible = true
-        this.ctx.colorCube.markers.onClick.updateColor(hex)
+        this.ctx.colorCube.markers.sample1.visible = true
+        this.ctx.colorCube.markers.sample1.updateColor(hex)
         this.callbackBridge.setSwatch({
             color: hex,
-            backgroundColor: targetColorMarkerHex,
+            backgroundColor: targetMarkerHex,
         })
-        // this.transformControls.attach(this.ctx.colorCube.markers.onClick)
+        // this.transformControls.attach(this.ctx.colorCube.markers.sample1)
     }
 
     private disposeSceneResources(): void {

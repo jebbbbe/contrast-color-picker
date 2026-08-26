@@ -42,6 +42,7 @@ type SceneGuiState = {
     targetColor: string
     blackPoint: string
     whitePoint: string
+    updateSwatchInverse: boolean
 }
 
 export class SceneGui {
@@ -51,17 +52,16 @@ export class SceneGui {
     constructor(app: ThreeSceneApp) {
         const { controls, ctx, callbackBridge } = app
         const { colorCube } = ctx
+        const { markers } = colorCube
         const colorCubeMaterial = colorCube.mesh.material
-        const onClickMarker = colorCube.markers.onClick
-        const onClickPrimary = onClickMarker.userData.primary
-        const targetColorMarker = colorCube.markers.target
-        const onClickColor = onClickPrimary.material.color.clone()
+
         const state: SceneGuiState = {
             contrastPreset: "",
-            onClickColor: `#${onClickPrimary.material.color.getHexString(THREE.SRGBColorSpace)}`,
-            targetColor: `#${colorCubeMaterial.targetColor1.getHexString(THREE.SRGBColorSpace)}`,
+            onClickColor: markers.sample1.getHex(),
+            targetColor: markers.target.getHex(),
             blackPoint: "#000000",
             whitePoint: "#ffffff",
+            updateSwatchInverse: false,
         }
 
         this.gui = new GUI({
@@ -70,17 +70,7 @@ export class SceneGui {
         })
         this.state = state
 
-        let updateSwatchInverse = false
-
-        const colorCubeActions = {
-            swapColors,
-        }
-
-        const debugActions = {
-            randomizeCustomTransformSpaceMatrix,
-            randomizeCustomTransformSpaceMatrixSummation,
-        }
-
+		
         const debugFolder = this.gui.addFolder("Debug").close()
         debugFolder
             .add(colorCubeMaterial, "targetOutput", sdfColorTargetOutputTitles)
@@ -93,10 +83,10 @@ export class SceneGui {
             .name("Quantize Search")
         debugFolder.add(controls, "autoRotate").name("Rotate Camera")
         debugFolder
-            .add(debugActions, "randomizeCustomTransformSpaceMatrix")
+            .add({ fn: randomizeCustomTransformSpaceMatrix }, "fn")
             .name("Randomize Custom Matrix")
         debugFolder
-            .add(debugActions, "randomizeCustomTransformSpaceMatrixSummation")
+            .add({ fn: randomizeCustomTransformSpaceMatrixSummation }, "fn")
             .name("Randomize Summation Matrix")
 
         const colorCubeFolder = this.gui
@@ -125,7 +115,7 @@ export class SceneGui {
             .listen()
             .onChange(onContrastRatioChange)
         const swapColorsController = colorCubeFolder
-            .add(colorCubeActions, "swapColors")
+            .add({ fn: swapColors }, "fn")
             .name("Swap")
             .onChange(updateSwatch)
         const targetColorController = colorCubeFolder
@@ -160,7 +150,7 @@ export class SceneGui {
                 color: state.onClickColor,
                 backgroundColor: state.targetColor,
             }
-            if (updateSwatchInverse) {
+            if (state.updateSwatchInverse) {
                 ;[update.color, update.backgroundColor] = [
                     update.backgroundColor,
                     update.color,
@@ -174,10 +164,6 @@ export class SceneGui {
                 getHex(value),
                 THREE.SRGBColorSpace
             )
-        }
-
-        function updateOnClickColorMaterial(value: string): void {
-            onClickColor.setHex(getHex(value), THREE.SRGBColorSpace)
         }
 
         function updateWhitePointMaterial(value: string): void {
@@ -200,13 +186,13 @@ export class SceneGui {
         }
 
         function updateTargetColorMarker(): void {
-            targetColorMarker.visible =
+            markers.target.visible =
                 colorCubeMaterial.searchMode === ColorCube.SearchTargetColor
-            targetColorMarker.updateColor(colorCubeMaterial.targetColor1)
+            markers.target.updateColor(colorCubeMaterial.targetColor1)
         }
 
         function updateOnClickMarker(): void {
-            onClickMarker.updateColor(onClickColor)
+            markers.sample1.updateColor(state.onClickColor)
         }
 
         function onTargetColorChange(value: string): void {
@@ -218,8 +204,7 @@ export class SceneGui {
             updateSwatch()
         }
 
-        function onOnClickColorChange(value: string): void {
-            updateOnClickColorMaterial(value)
+        function onOnClickColorChange(): void {
             updateOnClickMarker()
             updateSwatch()
         }
@@ -355,12 +340,12 @@ export class SceneGui {
             updateTargetColorMarker()
 
             if (value !== ColorCube.SearchTargetColor) {
-                onClickMarker.visible = false
+                markers.sample1.visible = false
             }
         }
 
         function swapColors() {
-            updateSwatchInverse = !updateSwatchInverse
+            state.updateSwatchInverse = !state.updateSwatchInverse
         }
 
         syncContrastPresetState(colorCubeMaterial.contrastRatio)

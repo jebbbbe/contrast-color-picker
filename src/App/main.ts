@@ -105,10 +105,7 @@ export class ThreeSceneApp {
             transformControlsHelper
         )
 
-        const rayTargets = [
-            ...Object.values(colorCube.markers),
-            colorCube.mesh,
-        ]
+        const rayTargets = [...Object.values(colorCube.markers), colorCube.mesh]
         const raycastHelper = new RaycastHelper(
             camera,
             rayTargets,
@@ -254,6 +251,7 @@ export class ThreeSceneApp {
             color: hex,
             backgroundColor: targetColorMarkerHex,
         })
+        this.transformControls.attach(this.ctx.colorCube.markers.onClick)
     }
 
     private disposeSceneResources(): void {

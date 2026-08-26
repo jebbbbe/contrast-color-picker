@@ -35,6 +35,15 @@ type FontSwatchProps = {
 
 function FontSwatch({ swatch }: FontSwatchProps) {
     const sampleText = textBank[0]
+    const sampleStyle = swatch.darkModeEnabled
+        ? {
+              color: swatch.color,
+              background: `linear-gradient(to right, ${swatch.backgroundColor} 0 50%, ${swatch.darkBackgroundColor} 50% 100%)`,
+          }
+        : {
+              color: swatch.color,
+              backgroundColor: swatch.backgroundColor,
+          }
 
     return (
         <div className="fontSwatch">
@@ -86,10 +95,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                     </div>
                     <span
                         id="normal"
-                        style={{
-                            color: swatch.color,
-                            backgroundColor: swatch.backgroundColor,
-                        }}
+                        style={sampleStyle}
                     >
                         {sampleText}
                     </span>
@@ -120,10 +126,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                     </div>
                     <span
                         id="big"
-                        style={{
-                            color: swatch.color,
-                            backgroundColor: swatch.backgroundColor,
-                        }}
+                        style={sampleStyle}
                     >
                         {sampleText}
                     </span>

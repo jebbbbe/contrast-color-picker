@@ -83,17 +83,31 @@ export default ColorCubeVolume
 /*
 
 export const SearchNone = 0
-nothing
+2 markers
+hide 3rd marker
 
-export const SearchOppositeColor = 1
-target click sample only...
-1 color Marker
 
-export const SearchTargetColor = 2
-2 color Markers
+export const SearchOppositeColor 
+2 markers
+hide 3rd marker
+swamp swaps both colors and font sample
+clicking sets 1 marker, sets otehr marker to the opposite color
+
+export const SearchTargetColor - FONT
+2 markers
+hide 3rd marker
+materail.target color = background color
+click changes font color
+
+export const SearchTargetColor = BACKGROUND
+2 markers
+hide 3rd marker
+materail.target color = font color
+click changes background color
+
 
 export const SearchBlackAndWhite = 3
-3 color Markers
-
+3 markers
+click changes font color
 
 */

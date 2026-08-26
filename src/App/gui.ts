@@ -62,10 +62,18 @@ export class SceneGui {
             container: app.container,
         })
         this.onClickColorState = onClickColorState
+        const sceneGui = this
+
+        const colorCubeActions = {
+            swapColors,
+        }
+
+        const debugActions = {
+            randomizeCustomTransformSpaceMatrix,
+            randomizeCustomTransformSpaceMatrixSummation,
+        }
 
         const debugFolder = this.gui.addFolder("Debug").close()
-        const colorCubeFolder = this.gui.addFolder("Color Cube")
-
         debugFolder
             .add(colorCubeMaterial, "targetOutput", sdfColorTargetOutputTitles)
             .name("Cube Output")
@@ -76,127 +84,113 @@ export class SceneGui {
             .add(colorCubeMaterial, "quantizeSearch")
             .name("Quantize Search")
         debugFolder.add(controls, "autoRotate").name("Rotate Camera")
-        const searchModeController = colorCubeFolder
+        debugFolder
+            .add(debugActions, "randomizeCustomTransformSpaceMatrix")
+            .name("Randomize Custom Matrix")
+        debugFolder
+            .add(debugActions, "randomizeCustomTransformSpaceMatrixSummation")
+            .name("Randomize Summation Matrix")
+
+        const colorCubeFolder = this.gui
+
+        colorCubeFolder
             .add(colorCubeMaterial, "searchMode", sdfColorSearchTitles)
             .name("Search Mode")
+            .onChange(onSearchModeChange)
         const outputSpaceController = colorCubeFolder
             .add(colorCubeMaterial, "transformMode", sdfColorTransformTitles)
             .name("Output Space")
         const transformSpaceController = colorCubeFolder
             .add(colorCube, "transformSpaceMode", sdfColorTransformTitles)
             .name("Transform Space")
+            .onChange(onTransformSpaceChange)
         const contrastPresetController = colorCubeFolder
             .add(contrastPresetState, "value", sdfColorContrastPresetValues)
             .name("WCAG Contrast")
+            .onChange(onContrastPresetChange)
         const contrastRatioController = colorCubeFolder
             .add(colorCubeMaterial, "contrastRatio", 1.0, 21.0, 0.001)
             .name("Contrast Ratio")
+            .onChange(onContrastRatioChange)
         const swapColorsController = colorCubeFolder
-            .add(
-                {
-                    swapColors: (): void => {
-                        const previousTargetColor = targetColorState.value
-
-                        targetColorState.value = onClickColorState.value
-                        onClickColorState.value = previousTargetColor
-
-                        colorCubeMaterial.targetColor.setHex(
-                            Number.parseInt(
-                                targetColorState.value.slice(1),
-                                16
-                            ),
-                            THREE.SRGBColorSpace
-                        )
-                        onClickColor.setHex(
-                            Number.parseInt(
-                                onClickColorState.value.slice(1),
-                                16
-                            ),
-                            THREE.SRGBColorSpace
-                        )
-
-                        targetColorMarker.updateColor(
-                            colorCubeMaterial.searchMode ===
-                                ColorCube.SearchTargetColor,
-                            colorCubeMaterial.targetColor
-                        )
-                        onClickMarker.updateColor(
-                            onClickMarker.visible,
-                            onClickColor
-                        )
-                        targetColorController.updateDisplay()
-                        this.onClickColorController.updateDisplay()
-                        callbackBridge.setSwatch({
-                            color: onClickColorState.value,
-                            backgroundColor: targetColorState.value,
-                        })
-                    },
-                },
-                "swapColors"
-            )
+            .add(colorCubeActions, "swapColors")
             .name("Swap")
         const targetColorController = colorCubeFolder
             .addColor(targetColorState, "value")
             .name("Target Color")
-            .onChange((value: string) => {
-                colorCubeMaterial.targetColor.setHex(
-                    Number.parseInt(value.slice(1), 16),
-                    THREE.SRGBColorSpace
-                )
-                targetColorMarker.updateColor(
-                    colorCubeMaterial.searchMode ===
-                        ColorCube.SearchTargetColor,
-                    colorCubeMaterial.targetColor
-                )
-                callbackBridge.setSwatch({
-                    color: onClickColorState.value,
-                    backgroundColor: value,
-                })
-            })
+            .onChange(onTargetColorChange)
         this.onClickColorController = colorCubeFolder
             .addColor(onClickColorState, "value")
             .name("Secondary Color")
-            .onChange((value: string) => {
-                onClickColor.setHex(
-                    Number.parseInt(value.slice(1), 16),
-                    THREE.SRGBColorSpace
-                )
-                onClickMarker.updateColor(onClickMarker.visible, onClickColor)
-                callbackBridge.setSwatch({
-                    color: value,
-                    backgroundColor: targetColorState.value,
-                })
+            .onChange(onOnClickColorChange)
+
+        function getHex(value: string): number {
+            return Number.parseInt(value.slice(1), 16)
+        }
+
+        function updateSwatch(): void {
+            callbackBridge.setSwatch({
+                color: onClickColorState.value,
+                backgroundColor: targetColorState.value,
             })
+        }
 
-        const syncContrastPresetState = (value: number): void => {
-            if (value === 3 || value === 4.5 || value === 7) {
-                contrastPresetState.value = value
-            } else {
-                contrastPresetState.value = ""
-            }
+        function updateTargetColorMaterial(value: string): void {
+            colorCubeMaterial.targetColor.setHex(
+                getHex(value),
+                THREE.SRGBColorSpace
+            )
+        }
 
+        function updateOnClickColorMaterial(value: string): void {
+            onClickColor.setHex(getHex(value), THREE.SRGBColorSpace)
+        }
+
+        function updateTargetColorMarker(): void {
+            targetColorMarker.updateColor(
+                colorCubeMaterial.searchMode === ColorCube.SearchTargetColor,
+                colorCubeMaterial.targetColor
+            )
+        }
+
+        function updateOnClickMarker(): void {
+            onClickMarker.updateColor(onClickMarker.visible, onClickColor)
+        }
+
+        function onTargetColorChange(value: string): void {
+            updateTargetColorMaterial(value)
+            updateTargetColorMarker()
+            updateSwatch()
+        }
+
+        function onOnClickColorChange(value: string): void {
+            updateOnClickColorMaterial(value)
+            updateOnClickMarker()
+            updateSwatch()
+        }
+
+        function syncContrastPresetState(value: number): void {
+            contrastPresetState.value =
+                value === 3 || value === 4.5 || value === 7 ? value : ""
             contrastPresetController.updateDisplay()
         }
 
-        contrastPresetController.onChange((value: "" | number) => {
+        function onContrastPresetChange(value: "" | number): void {
             if (value === "") {
                 syncContrastPresetState(colorCubeMaterial.contrastRatio)
-                contrastPresetController.updateDisplay()
                 return
             }
 
             colorCubeMaterial.contrastRatio = value
             contrastRatioController.updateDisplay()
-        })
-        contrastRatioController.onChange(() => {
+        }
+
+        function onContrastRatioChange(): void {
             syncContrastPresetState(colorCubeMaterial.contrastRatio)
-        })
-        syncContrastPresetState(colorCubeMaterial.contrastRatio)
+        }
 
-        const syncOutputSpaceState = (value: number): void => {
-            const isDefault = value === ColorCube.TransformDefault
-
-            if (isDefault) {
+        function syncOutputSpaceState(value: number): void {
+            if (value === ColorCube.TransformDefault) {
                 outputSpaceController.enable()
                 return
             }
@@ -206,97 +200,101 @@ export class SceneGui {
             outputSpaceController.disable()
         }
 
-        transformSpaceController.onChange((value: number) => {
+        function onTransformSpaceChange(value: number): void {
             syncOutputSpaceState(value)
-        })
-        syncOutputSpaceState(colorCube.transformSpaceMode)
+        }
 
-        debugFolder
-            .add(
-                {
-                    randomizeCustomTransformSpaceMatrix: (): void => {
-                        colorCube.customTransformSpaceMatrix.set(
-                            Math.random(),
-                            Math.random(),
-                            Math.random(),
-                            Math.random(),
-                            Math.random(),
-                            Math.random(),
-                            Math.random(),
-                            Math.random(),
-                            Math.random()
-                        )
-                        colorCube.transformSpaceMode = ColorCube.TransformCustom
-                        transformSpaceController.updateDisplay()
-                        syncOutputSpaceState(colorCube.transformSpaceMode)
-                    },
-                },
-                "randomizeCustomTransformSpaceMatrix"
+        function syncTransformSpaceState(): void {
+            transformSpaceController.updateDisplay()
+            syncOutputSpaceState(colorCube.transformSpaceMode)
+        }
+
+        function randomizeCustomTransformSpaceMatrix(): void {
+            colorCube.customTransformSpaceMatrix.set(
+                Math.random(),
+                Math.random(),
+                Math.random(),
+                Math.random(),
+                Math.random(),
+                Math.random(),
+                Math.random(),
+                Math.random(),
+                Math.random()
             )
-            .name("Randomize Custom Matrix")
-        debugFolder
-            .add(
-                {
-                    randomizeCustomTransformSpaceMatrixSummation: (): void => {
-                        const mat = colorCube.customTransformSpaceMatrix
-                        let e0 = Math.random()
-                        let e1 = Math.random()
-                        let e2 = Math.random()
-                        let e3 = Math.random()
-                        let e4 = Math.random()
-                        let e5 = Math.random()
-                        let e6 = Math.random()
-                        let e7 = Math.random()
-                        let e8 = Math.random()
-                        const s1 = e0 + e1 + e2
-                        const s2 = e3 + e4 + e5
-                        const s3 = e6 + e7 + e8
+            colorCube.transformSpaceMode = ColorCube.TransformCustom
+            syncTransformSpaceState()
+        }
 
-                        e0 = e0 / s1
-                        e1 = e1 / s1
-                        e2 = e2 / s1
-                        e3 = e3 / s2
-                        e4 = e4 / s2
-                        e5 = e5 / s2
-                        e6 = e6 / s3
-                        e7 = e7 / s3
-                        e8 = e8 / s3
+        function randomizeCustomTransformSpaceMatrixSummation(): void {
+            const mat = colorCube.customTransformSpaceMatrix
+            let e0 = Math.random()
+            let e1 = Math.random()
+            let e2 = Math.random()
+            let e3 = Math.random()
+            let e4 = Math.random()
+            let e5 = Math.random()
+            let e6 = Math.random()
+            let e7 = Math.random()
+            let e8 = Math.random()
+            const s1 = e0 + e1 + e2
+            const s2 = e3 + e4 + e5
+            const s3 = e6 + e7 + e8
 
-                        mat.set(e0, e1, e2, e3, e4, e5, e6, e7, e8)
-                        colorCube.transformSpaceMode = ColorCube.TransformCustom
-                        transformSpaceController.updateDisplay()
-                        syncOutputSpaceState(colorCube.transformSpaceMode)
-                    },
-                },
-                "randomizeCustomTransformSpaceMatrixSummation"
-            )
-            .name("Randomize Summation Matrix")
+            e0 = e0 / s1
+            e1 = e1 / s1
+            e2 = e2 / s1
+            e3 = e3 / s2
+            e4 = e4 / s2
+            e5 = e5 / s2
+            e6 = e6 / s3
+            e7 = e7 / s3
+            e8 = e8 / s3
 
-        const syncTargetColorState = (value: number): void => {
+            mat.set(e0, e1, e2, e3, e4, e5, e6, e7, e8)
+            colorCube.transformSpaceMode = ColorCube.TransformCustom
+            syncTransformSpaceState()
+        }
+
+        function syncTargetColorState(value: number): void {
             if (value === ColorCube.SearchTargetColor) {
                 targetColorController.enable()
                 swapColorsController.enable()
-                this.onClickColorController.enable()
+                sceneGui.onClickColorController.enable()
                 return
             }
 
             targetColorController.disable()
             swapColorsController.disable()
-            this.onClickColorController.disable()
+            sceneGui.onClickColorController.disable()
         }
 
-        syncTargetColorState(colorCubeMaterial.searchMode)
-        searchModeController.onChange((value: number) => {
+        function onSearchModeChange(value: number): void {
             syncTargetColorState(value)
-            targetColorMarker.updateColor(
-                value === ColorCube.SearchTargetColor,
-                colorCubeMaterial.targetColor
-            )
+            updateTargetColorMarker()
 
             if (value !== ColorCube.SearchTargetColor) {
                 onClickMarker.updateColor(false, onClickPrimary.material.color)
             }
-        })
+        }
+
+        function swapColors(): void {
+            const previousTargetColor = targetColorState.value
+
+            targetColorState.value = onClickColorState.value
+            onClickColorState.value = previousTargetColor
+
+            updateTargetColorMaterial(targetColorState.value)
+            updateOnClickColorMaterial(onClickColorState.value)
+            updateTargetColorMarker()
+            updateOnClickMarker()
+            targetColorController.updateDisplay()
+            sceneGui.onClickColorController.updateDisplay()
+            updateSwatch()
+        }
+
+        syncContrastPresetState(colorCubeMaterial.contrastRatio)
+        syncOutputSpaceState(colorCube.transformSpaceMode)
+        syncTargetColorState(colorCubeMaterial.searchMode)
     }
 
     destroy(): void {

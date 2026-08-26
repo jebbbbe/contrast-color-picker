@@ -73,14 +73,14 @@ export class Marker extends THREE.Group {
         userData.primary = primary
         userData.inverse = inverse
         this.add(inverse, primary)
+        this.visible = visible
 
-        this.updateColor(visible, color)
+        this.updateColor(color)
     }
 
-    updateColor(visible: boolean, color: THREE.ColorRepresentation): void {
+    updateColor(color: THREE.ColorRepresentation): void {
         const { primary, inverse } = this.userData as MarkerData
 
-        this.visible = visible
         primary.material.color.set(color)
         primary.material.color.getRGB(markerInverseColor, THREE.SRGBColorSpace)
         inverse.material.color.setRGB(
@@ -89,10 +89,6 @@ export class Marker extends THREE.Group {
             1 - markerInverseColor.b,
             THREE.SRGBColorSpace
         )
-
-        if (!visible) {
-            return
-        }
 
         const { r, g, b } = markerPositionColor.set(color).convertLinearToSRGB()
 

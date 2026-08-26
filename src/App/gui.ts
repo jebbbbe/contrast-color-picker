@@ -127,21 +127,25 @@ export class SceneGui {
             .name("Swap")
         const targetColorController = colorCubeFolder
             .addColor(state, "targetColor")
-            .name("Target Color")
+            // .name("Target Color")
+            .name("")
             .listen()
             .onChange(onTargetColorChange)
-        const onClickColorController = colorCubeFolder
+			const onClickColorController = colorCubeFolder
             .addColor(state, "onClickColor")
-            .name("Secondary Color")
+            // .name("Secondary Color")
+            .name("")
             .listen()
             .onChange(onOnClickColorChange)
-        const blackPointController = colorCubeFolder
+			const blackPointController = colorCubeFolder
             .addColor(state, "blackPoint")
-            .name("Black Point")
+            // .name("Black Point")
+            .name("")
             .onChange(onBlackPointChange)
-        const whitePointController = colorCubeFolder
+			const whitePointController = colorCubeFolder
             .addColor(state, "whitePoint")
-            .name("White Point")
+            // .name("White Point")
+            .name("")
             .onChange(onWhitePointChange)
 
         function getHex(value: string): number {
@@ -186,14 +190,15 @@ export class SceneGui {
         }
 
         function updateTargetColorMarker(): void {
+            targetColorMarker.visible =
+                colorCubeMaterial.searchMode === ColorCube.SearchTargetColor
             targetColorMarker.updateColor(
-                colorCubeMaterial.searchMode === ColorCube.SearchTargetColor,
                 colorCubeMaterial.targetColor1
             )
         }
 
         function updateOnClickMarker(): void {
-            onClickMarker.updateColor(onClickMarker.visible, onClickColor)
+            onClickMarker.updateColor(onClickColor)
         }
 
         function onTargetColorChange(value: string): void {
@@ -342,7 +347,7 @@ export class SceneGui {
             updateTargetColorMarker()
 
             if (value !== ColorCube.SearchTargetColor) {
-                onClickMarker.updateColor(false, onClickPrimary.material.color)
+                onClickMarker.visible = false
             }
         }
 

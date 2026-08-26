@@ -246,7 +246,8 @@ export class ThreeSceneApp {
         console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
 
         this.gui.setOnClickColor(hex)
-        this.ctx.colorCube.markers.onClick.updateColor(true, hex)
+        this.ctx.colorCube.markers.onClick.visible = true
+        this.ctx.colorCube.markers.onClick.updateColor(hex)
         this.callbackBridge.setSwatch({
             color: hex,
             backgroundColor: targetColorMarkerHex,

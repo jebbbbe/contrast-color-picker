@@ -37,9 +37,9 @@ const sdfColorContrastPresetValues = ["", 3, 4.5, 7] as const
 type SceneGuiState = {
     searchMode: number
     contrastPreset: "" | number
-    targetColor: string
-    sample1Color: string
-    sample2Color: string
+    color0: string
+    color1: string
+    color2: string
     updateSwatchInverse: boolean
 }
 
@@ -56,9 +56,9 @@ export class SceneGui {
         const state: SceneGuiState = {
             searchMode: colorCubeMaterial.searchMode,
             contrastPreset: "",
-            targetColor: markers.target.getHex(),
-            sample1Color: markers.sample1.getHex(),
-            sample2Color: markers.sample2.getHex(),
+            color0: markers.target.getHex(),
+            color1: markers.sample1.getHex(),
+            color2: markers.sample2.getHex(),
             updateSwatchInverse: false,
         }
 
@@ -117,24 +117,24 @@ export class SceneGui {
             .name("Swap")
             .onChange(updateSwatch)
         const color0Controller = colorCubeFolder
-            .addColor(state, "targetColor")
+            .addColor(state, "color0")
             .name("")
             .listen()
             .onChange(onTargetColorChange)
         const color1Controller = colorCubeFolder
-            .addColor(state, "sample1Color")
+            .addColor(state, "color1")
             .name("")
             .listen()
             .onChange(onSample1ColorChange)
         const color2Controller = colorCubeFolder
-            .addColor(state, "sample2Color")
+            .addColor(state, "color2")
             .name("")
             .onChange(onSample2ColorChange)
 
         function updateSwatch(): void {
             const update = {
-                color: state.sample1Color,
-                backgroundColor: state.targetColor,
+                color: state.color1,
+                backgroundColor: state.color0,
             }
             if (state.updateSwatchInverse) {
                 ;[update.color, update.backgroundColor] = [
@@ -152,18 +152,18 @@ export class SceneGui {
         }
 
         function onSample1ColorChange(): void {
-            markers.sample1.updateColor(state.sample1Color)
+            markers.sample1.updateColor(state.color1)
             updateSwatch()
         }
 
         function onSample1ColorChangeBlackAndWhite(): void {
-            markers.sample1.updateColor(state.sample1Color)
-            colorCubeMaterial.targetColor1 = state.sample1Color
+            markers.sample1.updateColor(state.color1)
+            colorCubeMaterial.targetColor1 = state.color1
             updateSwatch()
         }
 
         function onSample2ColorChange(value: string): void {
-            markers.sample2.updateColor(state.sample2Color)
+            markers.sample2.updateColor(state.color2)
             colorCubeMaterial.targetColor2 = value
         }
 
@@ -261,31 +261,36 @@ export class SceneGui {
                     color0Controller.enable()
                     color1Controller.enable()
                     color2Controller.disable()
-                    colorCubeMaterial.targetColor1 = state.targetColor
+                    colorCube.activeMarker = markers.sample1
+                    colorCubeMaterial.targetColor1 = state.color0
                     markers.target.visible = true
+                    markers.sample1.visible = true
                     markers.target.updateColor(colorCubeMaterial.targetColor1)
                     break
                 case ColorCube.SearchBlackAndWhite:
                     color1Controller.onChange(onSample1ColorChangeBlackAndWhite)
                     color2Controller.onChange(onSample2ColorChange)
-                    color0Controller.disable()
+                    color0Controller.enable()
                     color1Controller.enable()
                     color2Controller.enable()
-                    colorCubeMaterial.targetColor1 = state.sample1Color
-                    colorCubeMaterial.targetColor2 = state.sample2Color
-                    markers.target.visible = false
+                    colorCube.activeMarker = markers.target
+                    colorCubeMaterial.targetColor1 = state.color1
+                    colorCubeMaterial.targetColor2 = state.color2
+                    markers.target.visible = true
                     markers.target.updateColor(colorCubeMaterial.targetColor1)
-                    markers.sample1.visible = false
+                    markers.sample1.visible = true
+                    markers.sample2.visible = true
                     break
                 case ColorCube.SearchOppositeColor:
                 case ColorCube.SearchNone:
                 default:
-                    color0Controller.disable()
+                    color0Controller.enable()
                     color1Controller.disable()
                     color2Controller.disable()
-                    markers.target.visible = false
-                    markers.target.updateColor(colorCubeMaterial.targetColor1)
+                    colorCube.activeMarker = markers.target
+                    markers.target.visible = true
                     markers.sample1.visible = false
+                    markers.sample2.visible = false
                     break
             }
         }
@@ -303,8 +308,8 @@ export class SceneGui {
         this.gui.destroy()
     }
 
-    setSample1Color(value: string): void {
-        this.state.sample1Color = value
+    setColor1(value: string): void {
+        this.state.color1 = value
     }
 }
 

@@ -175,12 +175,14 @@ export class ThreeSceneApp {
         if (this.transformControls.dragging) return
 
         //exit if not in right search mode
+		/*
         if (
             this.ctx.colorCube.mesh.material.searchMode !==
             ColorCube.SearchTargetColor
         ) {
             return
         }
+		*/
 
         // raycast
         const hits = this.raycastHelper.castFromEvent(event, undefined, true)
@@ -237,14 +239,13 @@ export class ThreeSceneApp {
         console.log("#000000", getContrastRatio(hex, "#000000"))
         console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
 
-        this.gui.setSample1Color(hex)
-        this.ctx.colorCube.markers.sample1.visible = true
+        // this.ctx.colorCube.markers.sample1.updateColor(hex)
         this.ctx.colorCube.markers.sample1.updateColor(hex)
+        this.gui.setColor1(hex)
         this.callbackBridge.setSwatch({
             color: hex,
             backgroundColor: targetMarkerHex,
         })
-        // this.transformControls.attach(this.ctx.colorCube.markers.sample1)
     }
 
     private disposeSceneResources(): void {

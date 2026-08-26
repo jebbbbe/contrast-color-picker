@@ -36,10 +36,17 @@ const sdfColorSearchTitles = {
 
 const sdfColorContrastPresetValues = ["", 3, 4.5, 7] as const
 
+type SceneGuiState = {
+    contrastPreset: "" | number
+    onClickColor: string
+    targetColor: string
+    blackPoint: string
+    whitePoint: string
+}
+
 export class SceneGui {
     readonly gui: GUI
-    private readonly onClickColorState: { value: string }
-    private readonly onClickColorController: Controller
+    private readonly state: SceneGuiState
 
     constructor(app: ThreeSceneApp) {
         const { controls, ctx, callbackBridge } = app
@@ -48,27 +55,20 @@ export class SceneGui {
         const onClickMarker = colorCube.markers.onClick
         const onClickPrimary = onClickMarker.userData.primary
         const targetColorMarker = colorCube.markers.target
-        const contrastPresetState: { value: "" | number } = { value: "" }
         const onClickColor = onClickPrimary.material.color.clone()
-        const onClickColorState: { value: string } = {
-            value: `#${onClickPrimary.material.color.getHexString(THREE.SRGBColorSpace)}`,
-        }
-        const targetColorState: { value: string } = {
-            value: `#${colorCubeMaterial.targetColor1.getHexString(THREE.SRGBColorSpace)}`,
-        }
-        const blackPointState: { value: string } = {
-            value: "#000000",
-        }
-        const whitePointState: { value: string } = {
-            value: "#ffffff",
+        const state: SceneGuiState = {
+            contrastPreset: "",
+            onClickColor: `#${onClickPrimary.material.color.getHexString(THREE.SRGBColorSpace)}`,
+            targetColor: `#${colorCubeMaterial.targetColor1.getHexString(THREE.SRGBColorSpace)}`,
+            blackPoint: "#000000",
+            whitePoint: "#ffffff",
         }
 
         this.gui = new GUI({
             title: "Scene",
             container: app.container,
         })
-        this.onClickColorState = onClickColorState
-        const sceneGui = this
+        this.state = state
 
         const colorCubeActions = {
             swapColors,
@@ -106,35 +106,41 @@ export class SceneGui {
         const outputSpaceController = colorCubeFolder
             .add(colorCubeMaterial, "transformMode", sdfColorTransformTitles)
             .name("Output Space")
-        const transformSpaceController = colorCubeFolder
+            .listen()
+        colorCubeFolder
             .add(colorCube, "transformSpaceMode", sdfColorTransformTitles)
             .name("Transform Space")
+            .listen()
             .onChange(onTransformSpaceChange)
-        const contrastPresetController = colorCubeFolder
-            .add(contrastPresetState, "value", sdfColorContrastPresetValues)
+        colorCubeFolder
+            .add(state, "contrastPreset", sdfColorContrastPresetValues)
             .name("WCAG Contrast")
+            .listen()
             .onChange(onContrastPresetChange)
-        const contrastRatioController = colorCubeFolder
+        colorCubeFolder
             .add(colorCubeMaterial, "contrastRatio", 1.0, 21.0, 0.001)
             .name("Contrast Ratio")
+            .listen()
             .onChange(onContrastRatioChange)
         const swapColorsController = colorCubeFolder
             .add(colorCubeActions, "swapColors")
             .name("Swap")
         const targetColorController = colorCubeFolder
-            .addColor(targetColorState, "value")
+            .addColor(state, "targetColor")
             .name("Target Color")
+            .listen()
             .onChange(onTargetColorChange)
-        this.onClickColorController = colorCubeFolder
-            .addColor(onClickColorState, "value")
+        const onClickColorController = colorCubeFolder
+            .addColor(state, "onClickColor")
             .name("Secondary Color")
+            .listen()
             .onChange(onOnClickColorChange)
         const blackPointController = colorCubeFolder
-            .addColor(blackPointState, "value")
+            .addColor(state, "blackPoint")
             .name("Black Point")
             .onChange(onBlackPointChange)
         const whitePointController = colorCubeFolder
-            .addColor(whitePointState, "value")
+            .addColor(state, "whitePoint")
             .name("White Point")
             .onChange(onWhitePointChange)
 
@@ -144,8 +150,8 @@ export class SceneGui {
 
         function updateSwatch(): void {
             callbackBridge.setSwatch({
-                color: onClickColorState.value,
-                backgroundColor: targetColorState.value,
+                color: state.onClickColor,
+                backgroundColor: state.targetColor,
             })
         }
 
@@ -169,13 +175,13 @@ export class SceneGui {
 
         function syncSearchColorsToMaterial(searchMode: number): void {
             if (searchMode === ColorCube.SearchTargetColor) {
-                updateTargetColorMaterial(targetColorState.value)
+                updateTargetColorMaterial(state.targetColor)
                 return
             }
 
             if (searchMode === ColorCube.SearchBlackAndWhite) {
-                updateTargetColorMaterial(blackPointState.value)
-                updateWhitePointMaterial(whitePointState.value)
+                updateTargetColorMaterial(state.blackPoint)
+                updateWhitePointMaterial(state.whitePoint)
             }
         }
 
@@ -206,31 +212,35 @@ export class SceneGui {
         }
 
         function onBlackPointChange(value: string): void {
-            if (colorCubeMaterial.searchMode === ColorCube.SearchBlackAndWhite) {
+            if (
+                colorCubeMaterial.searchMode === ColorCube.SearchBlackAndWhite
+            ) {
                 updateTargetColorMaterial(value)
             }
         }
 
         function onWhitePointChange(value: string): void {
-            if (colorCubeMaterial.searchMode === ColorCube.SearchBlackAndWhite) {
+            if (
+                colorCubeMaterial.searchMode === ColorCube.SearchBlackAndWhite
+            ) {
                 updateWhitePointMaterial(value)
             }
         }
 
         function syncContrastPresetState(value: number): void {
-            contrastPresetState.value =
+            state.contrastPreset =
                 value === 3 || value === 4.5 || value === 7 ? value : ""
-            contrastPresetController.updateDisplay()
         }
 
-        function onContrastPresetChange(value: "" | number): void {
+        function onContrastPresetChange(
+            value: SceneGuiState["contrastPreset"]
+        ): void {
             if (value === "") {
                 syncContrastPresetState(colorCubeMaterial.contrastRatio)
                 return
             }
 
             colorCubeMaterial.contrastRatio = value
-            contrastRatioController.updateDisplay()
         }
 
         function onContrastRatioChange(): void {
@@ -244,7 +254,6 @@ export class SceneGui {
             }
 
             colorCubeMaterial.transformMode = ColorCube.TransformDefault
-            outputSpaceController.updateDisplay()
             outputSpaceController.disable()
         }
 
@@ -253,7 +262,6 @@ export class SceneGui {
         }
 
         function syncTransformSpaceState(): void {
-            transformSpaceController.updateDisplay()
             syncOutputSpaceState(colorCube.transformSpaceMode)
         }
 
@@ -312,10 +320,10 @@ export class SceneGui {
 
             if (value === ColorCube.SearchTargetColor) {
                 swapColorsController.enable()
-                sceneGui.onClickColorController.enable()
+                onClickColorController.enable()
             } else {
                 swapColorsController.disable()
-                sceneGui.onClickColorController.disable()
+                onClickColorController.disable()
             }
 
             if (value === ColorCube.SearchBlackAndWhite) {
@@ -339,17 +347,15 @@ export class SceneGui {
         }
 
         function swapColors(): void {
-            const previousTargetColor = targetColorState.value
+            const previousTargetColor = state.targetColor
 
-            targetColorState.value = onClickColorState.value
-            onClickColorState.value = previousTargetColor
+            state.targetColor = state.onClickColor
+            state.onClickColor = previousTargetColor
 
-            updateTargetColorMaterial(targetColorState.value)
-            updateOnClickColorMaterial(onClickColorState.value)
+            updateTargetColorMaterial(state.targetColor)
+            updateOnClickColorMaterial(state.onClickColor)
             updateTargetColorMarker()
             updateOnClickMarker()
-            targetColorController.updateDisplay()
-            sceneGui.onClickColorController.updateDisplay()
             updateSwatch()
         }
 
@@ -364,8 +370,7 @@ export class SceneGui {
     }
 
     setOnClickColor(value: string): void {
-        this.onClickColorState.value = value
-        this.onClickColorController.updateDisplay()
+        this.state.onClickColor = value
     }
 }
 

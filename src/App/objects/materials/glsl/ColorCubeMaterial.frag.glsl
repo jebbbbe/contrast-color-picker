@@ -3,7 +3,8 @@ uniform mat4 projectionMatrix;
 uniform float contrastRatio;
 uniform uint raycastMode;
 uniform uint searchMode;
-uniform vec3 targetColor;
+uniform vec3 targetColor1;
+uniform vec3 targetColor2;
 uniform uint targetOutput;
 uniform uint transformMode;
 uniform mat3 transformSpaceMatrix;
@@ -74,11 +75,13 @@ bool passesSearchFilter(vec3 sRGBsample) {
     } else if (searchMode == SEARCH_OPPOSITE_COLOR) {
         return meetsContrastThreshold(sRGBsample, getOppositeLinearColor(sRGBsample));
     } else if (searchMode == SEARCH_TARGET_COLOR) {
-        vec3 sRGBtarget = linearToSRGB(targetColor);
+        vec3 sRGBtarget = linearToSRGB(targetColor1);
         return meetsContrastThreshold(sRGBsample, sRGBtarget);
     } else if (searchMode == SEARCH_BLACK_AND_WHITE) {
-        return meetsContrastThreshold(sRGBsample, vec3(0.0)) &&
-            meetsContrastThreshold(sRGBsample, vec3(1.0));
+        vec3 sRGBtarget1 = linearToSRGB(targetColor1);
+        vec3 sRGBtarget2 = linearToSRGB(targetColor2);
+        return meetsContrastThreshold(sRGBsample, sRGBtarget1) &&
+            meetsContrastThreshold(sRGBsample, sRGBtarget2);
     } else {
         return true;
     }
@@ -268,14 +271,28 @@ vec4 raycastBracketedSearch(
 }
 
 float getBlackAndWhiteMinLuminance() {
-    return (contrastRatio - 1.0) / 20.0;
+    float targetColor1Lum = getLuminanceFromSRGB(linearToSRGB(targetColor1));
+    float targetColor2Lum = getLuminanceFromSRGB(linearToSRGB(targetColor2));
+    float darkPointLum = min(targetColor1Lum, targetColor2Lum);
+    return contrastRatio * (darkPointLum + 0.05) - 0.05;
 }
 
 float getBlackAndWhiteMaxLuminance() {
-    return 1.05 / contrastRatio - 0.05;
+    float targetColor1Lum = getLuminanceFromSRGB(linearToSRGB(targetColor1));
+    float targetColor2Lum = getLuminanceFromSRGB(linearToSRGB(targetColor2));
+    float lightPointLum = max(targetColor1Lum, targetColor2Lum);
+    return (lightPointLum + 0.05) / contrastRatio - 0.05;
+}
+
+bool hasBlackAndWhiteMiddleBand() {
+    return getBlackAndWhiteMinLuminance() <= getBlackAndWhiteMaxLuminance();
 }
 
 int classifyBlackAndWhiteSample(vec3 sRGBsample) {
+    if (!hasBlackAndWhiteMiddleBand()) {
+        return sampleHits(sRGBsample) ? 0 : -1;
+    }
+
     float lum = getLuminanceFromSRGB(sRGBsample);
     float minLum = getBlackAndWhiteMinLuminance();
     float maxLum = getBlackAndWhiteMaxLuminance();
@@ -394,7 +411,7 @@ vec4 raycastBracketedSearch2(
 }
 
 int classifyBracketed3Sample(vec3 sampleColor) {
-    if (searchMode == SEARCH_BLACK_AND_WHITE) {
+    if (searchMode == SEARCH_BLACK_AND_WHITE && hasBlackAndWhiteMiddleBand()) {
         return classifyBlackAndWhiteSample(sampleColor);
     }
 
@@ -409,7 +426,11 @@ vec4 refineBracketed3Hit(
     int missClass,
     inout float stepsTaken
 ) {
-    if (searchMode == SEARCH_BLACK_AND_WHITE && missClass != 0) {
+    if (
+        searchMode == SEARCH_BLACK_AND_WHITE &&
+        hasBlackAndWhiteMiddleBand() &&
+        missClass != 0
+    ) {
         return refineBlackAndWhiteBoundaryHit(
             rayOrigin,
             rayDirection,

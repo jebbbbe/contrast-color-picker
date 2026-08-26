@@ -54,7 +54,13 @@ export class SceneGui {
             value: `#${onClickPrimary.material.color.getHexString(THREE.SRGBColorSpace)}`,
         }
         const targetColorState: { value: string } = {
-            value: `#${colorCubeMaterial.targetColor.getHexString(THREE.SRGBColorSpace)}`,
+            value: `#${colorCubeMaterial.targetColor1.getHexString(THREE.SRGBColorSpace)}`,
+        }
+        const blackPointState: { value: string } = {
+            value: "#000000",
+        }
+        const whitePointState: { value: string } = {
+            value: "#ffffff",
         }
 
         this.gui = new GUI({
@@ -123,6 +129,14 @@ export class SceneGui {
             .addColor(onClickColorState, "value")
             .name("Secondary Color")
             .onChange(onOnClickColorChange)
+        const blackPointController = colorCubeFolder
+            .addColor(blackPointState, "value")
+            .name("Black Point")
+            .onChange(onBlackPointChange)
+        const whitePointController = colorCubeFolder
+            .addColor(whitePointState, "value")
+            .name("White Point")
+            .onChange(onWhitePointChange)
 
         function getHex(value: string): number {
             return Number.parseInt(value.slice(1), 16)
@@ -136,7 +150,7 @@ export class SceneGui {
         }
 
         function updateTargetColorMaterial(value: string): void {
-            colorCubeMaterial.targetColor.setHex(
+            colorCubeMaterial.targetColor1.setHex(
                 getHex(value),
                 THREE.SRGBColorSpace
             )
@@ -146,10 +160,29 @@ export class SceneGui {
             onClickColor.setHex(getHex(value), THREE.SRGBColorSpace)
         }
 
+        function updateWhitePointMaterial(value: string): void {
+            colorCubeMaterial.targetColor2.setHex(
+                getHex(value),
+                THREE.SRGBColorSpace
+            )
+        }
+
+        function syncSearchColorsToMaterial(searchMode: number): void {
+            if (searchMode === ColorCube.SearchTargetColor) {
+                updateTargetColorMaterial(targetColorState.value)
+                return
+            }
+
+            if (searchMode === ColorCube.SearchBlackAndWhite) {
+                updateTargetColorMaterial(blackPointState.value)
+                updateWhitePointMaterial(whitePointState.value)
+            }
+        }
+
         function updateTargetColorMarker(): void {
             targetColorMarker.updateColor(
                 colorCubeMaterial.searchMode === ColorCube.SearchTargetColor,
-                colorCubeMaterial.targetColor
+                colorCubeMaterial.targetColor1
             )
         }
 
@@ -158,7 +191,10 @@ export class SceneGui {
         }
 
         function onTargetColorChange(value: string): void {
-            updateTargetColorMaterial(value)
+            if (colorCubeMaterial.searchMode === ColorCube.SearchTargetColor) {
+                updateTargetColorMaterial(value)
+            }
+
             updateTargetColorMarker()
             updateSwatch()
         }
@@ -167,6 +203,18 @@ export class SceneGui {
             updateOnClickColorMaterial(value)
             updateOnClickMarker()
             updateSwatch()
+        }
+
+        function onBlackPointChange(value: string): void {
+            if (colorCubeMaterial.searchMode === ColorCube.SearchBlackAndWhite) {
+                updateTargetColorMaterial(value)
+            }
+        }
+
+        function onWhitePointChange(value: string): void {
+            if (colorCubeMaterial.searchMode === ColorCube.SearchBlackAndWhite) {
+                updateWhitePointMaterial(value)
+            }
         }
 
         function syncContrastPresetState(value: number): void {
@@ -258,18 +306,31 @@ export class SceneGui {
         function syncTargetColorState(value: number): void {
             if (value === ColorCube.SearchTargetColor) {
                 targetColorController.enable()
+            } else {
+                targetColorController.disable()
+            }
+
+            if (value === ColorCube.SearchTargetColor) {
                 swapColorsController.enable()
                 sceneGui.onClickColorController.enable()
+            } else {
+                swapColorsController.disable()
+                sceneGui.onClickColorController.disable()
+            }
+
+            if (value === ColorCube.SearchBlackAndWhite) {
+                blackPointController.enable()
+                whitePointController.enable()
                 return
             }
 
-            targetColorController.disable()
-            swapColorsController.disable()
-            sceneGui.onClickColorController.disable()
+            blackPointController.disable()
+            whitePointController.disable()
         }
 
         function onSearchModeChange(value: number): void {
             syncTargetColorState(value)
+            syncSearchColorsToMaterial(value)
             updateTargetColorMarker()
 
             if (value !== ColorCube.SearchTargetColor) {
@@ -295,6 +356,7 @@ export class SceneGui {
         syncContrastPresetState(colorCubeMaterial.contrastRatio)
         syncOutputSpaceState(colorCube.transformSpaceMode)
         syncTargetColorState(colorCubeMaterial.searchMode)
+        syncSearchColorsToMaterial(colorCubeMaterial.searchMode)
     }
 
     destroy(): void {

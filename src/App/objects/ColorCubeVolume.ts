@@ -33,7 +33,7 @@ export class ColorCubeVolume extends THREE.Group {
         const wireframe = new ColorCubeEdges(geometry)
         const targetColorMarker = new Marker(
             material.searchMode === ColorCube.SearchTargetColor,
-            material.targetColor
+            material.targetColor1
         )
         const onClickMarker = new Marker(
             material.searchMode === ColorCube.SearchTargetColor,
@@ -83,3 +83,21 @@ export class ColorCubeVolume extends THREE.Group {
 }
 
 export default ColorCubeVolume
+
+/*
+
+export const SearchNone = 0
+nothing
+
+export const SearchOppositeColor = 1
+target click sample only...
+1 color Marker
+
+export const SearchTargetColor = 2
+2 color Markers
+
+export const SearchBlackAndWhite = 3
+3 color Markers
+
+
+*/

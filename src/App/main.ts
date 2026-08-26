@@ -134,7 +134,7 @@ export class ThreeSceneApp {
         this.gui = gui
         this.callbackBridge.setSwatch({
             color: `#${colorCube.markers.onClick.userData.primary.material.color.getHexString(THREE.SRGBColorSpace)}`,
-            backgroundColor: `#${colorCube.mesh.material.targetColor.getHexString(THREE.SRGBColorSpace)}`,
+            backgroundColor: `#${colorCube.mesh.material.targetColor1.getHexString(THREE.SRGBColorSpace)}`,
         })
 
         // listeners

@@ -252,7 +252,7 @@ export class ThreeSceneApp {
             color: hex,
             backgroundColor: targetColorMarkerHex,
         })
-        this.transformControls.attach(this.ctx.colorCube.markers.onClick)
+        // this.transformControls.attach(this.ctx.colorCube.markers.onClick)
     }
 
     private disposeSceneResources(): void {

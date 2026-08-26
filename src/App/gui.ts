@@ -70,6 +70,8 @@ export class SceneGui {
         })
         this.state = state
 
+        let updateSwatchInverse = false
+
         const colorCubeActions = {
             swapColors,
         }
@@ -125,24 +127,25 @@ export class SceneGui {
         const swapColorsController = colorCubeFolder
             .add(colorCubeActions, "swapColors")
             .name("Swap")
+            .onChange(updateSwatch)
         const targetColorController = colorCubeFolder
             .addColor(state, "targetColor")
             // .name("Target Color")
             .name("")
             .listen()
             .onChange(onTargetColorChange)
-			const onClickColorController = colorCubeFolder
+        const onClickColorController = colorCubeFolder
             .addColor(state, "onClickColor")
             // .name("Secondary Color")
             .name("")
             .listen()
             .onChange(onOnClickColorChange)
-			const blackPointController = colorCubeFolder
+        const blackPointController = colorCubeFolder
             .addColor(state, "blackPoint")
             // .name("Black Point")
             .name("")
             .onChange(onBlackPointChange)
-			const whitePointController = colorCubeFolder
+        const whitePointController = colorCubeFolder
             .addColor(state, "whitePoint")
             // .name("White Point")
             .name("")
@@ -153,10 +156,17 @@ export class SceneGui {
         }
 
         function updateSwatch(): void {
-            callbackBridge.setSwatch({
+            const update = {
                 color: state.onClickColor,
                 backgroundColor: state.targetColor,
-            })
+            }
+            if (updateSwatchInverse) {
+                ;[update.color, update.backgroundColor] = [
+                    update.backgroundColor,
+                    update.color,
+                ]
+            }
+            callbackBridge.setSwatch(update)
         }
 
         function updateTargetColorMaterial(value: string): void {
@@ -192,9 +202,7 @@ export class SceneGui {
         function updateTargetColorMarker(): void {
             targetColorMarker.visible =
                 colorCubeMaterial.searchMode === ColorCube.SearchTargetColor
-            targetColorMarker.updateColor(
-                colorCubeMaterial.targetColor1
-            )
+            targetColorMarker.updateColor(colorCubeMaterial.targetColor1)
         }
 
         function updateOnClickMarker(): void {
@@ -351,17 +359,8 @@ export class SceneGui {
             }
         }
 
-        function swapColors(): void {
-            const previousTargetColor = state.targetColor
-
-            state.targetColor = state.onClickColor
-            state.onClickColor = previousTargetColor
-
-            updateTargetColorMaterial(state.targetColor)
-            updateOnClickColorMaterial(state.onClickColor)
-            updateTargetColorMarker()
-            updateOnClickMarker()
-            updateSwatch()
+        function swapColors() {
+            updateSwatchInverse = !updateSwatchInverse
         }
 
         syncContrastPresetState(colorCubeMaterial.contrastRatio)

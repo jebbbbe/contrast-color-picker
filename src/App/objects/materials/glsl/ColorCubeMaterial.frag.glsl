@@ -3,8 +3,9 @@ uniform mat4 projectionMatrix;
 uniform float contrastRatio;
 uniform uint raycastMode;
 uniform uint searchMode;
-uniform vec3 targetColor1;
-uniform vec3 targetColor2;
+uniform vec3 targetColor;
+uniform vec3 whitePoint;
+uniform vec3 blackPoint;
 uniform uint targetOutput;
 uniform uint transformMode;
 uniform mat3 transformSpaceMatrix;
@@ -75,13 +76,13 @@ bool passesSearchFilter(vec3 sRGBsample) {
     } else if (searchMode == SEARCH_OPPOSITE_COLOR) {
         return meetsContrastThreshold(sRGBsample, getOppositeLinearColor(sRGBsample));
     } else if (searchMode == SEARCH_TARGET_COLOR) {
-        vec3 sRGBtarget = linearToSRGB(targetColor1);
+        vec3 sRGBtarget = linearToSRGB(targetColor);
         return meetsContrastThreshold(sRGBsample, sRGBtarget);
     } else if (searchMode == SEARCH_BLACK_AND_WHITE) {
-        vec3 sRGBtarget1 = linearToSRGB(targetColor1);
-        vec3 sRGBtarget2 = linearToSRGB(targetColor2);
-        return meetsContrastThreshold(sRGBsample, sRGBtarget1) &&
-            meetsContrastThreshold(sRGBsample, sRGBtarget2);
+        vec3 sRGBwhitePoint = linearToSRGB(whitePoint);
+        vec3 sRGBblackPoint = linearToSRGB(blackPoint);
+        return meetsContrastThreshold(sRGBsample, sRGBwhitePoint) &&
+            meetsContrastThreshold(sRGBsample, sRGBblackPoint);
     } else {
         return true;
     }
@@ -271,16 +272,18 @@ vec4 raycastBracketedSearch(
 }
 
 float getBlackAndWhiteMinLuminance() {
-    float targetColor1Lum = getLuminanceFromSRGB(linearToSRGB(targetColor1));
-    float targetColor2Lum = getLuminanceFromSRGB(linearToSRGB(targetColor2));
-    float darkPointLum = min(targetColor1Lum, targetColor2Lum);
+    float darkPointLum = min(
+        getLuminanceFromSRGB(linearToSRGB(whitePoint)),
+        getLuminanceFromSRGB(linearToSRGB(blackPoint))
+    );
     return contrastRatio * (darkPointLum + 0.05) - 0.05;
 }
 
 float getBlackAndWhiteMaxLuminance() {
-    float targetColor1Lum = getLuminanceFromSRGB(linearToSRGB(targetColor1));
-    float targetColor2Lum = getLuminanceFromSRGB(linearToSRGB(targetColor2));
-    float lightPointLum = max(targetColor1Lum, targetColor2Lum);
+    float lightPointLum = max(
+        getLuminanceFromSRGB(linearToSRGB(whitePoint)),
+        getLuminanceFromSRGB(linearToSRGB(blackPoint))
+    );
     return (lightPointLum + 0.05) / contrastRatio - 0.05;
 }
 

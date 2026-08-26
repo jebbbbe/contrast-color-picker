@@ -151,8 +151,8 @@ export class SceneGui {
         }
 
         function onTargetColorChange(value: string): void {
-            colorCubeMaterial.targetColor1 = value
-            markers.target.updateColor(colorCubeMaterial.targetColor1)
+            colorCubeMaterial.targetColor = value
+            markers.target.updateColor(colorCubeMaterial.targetColor)
             updateSwatch()
         }
 
@@ -163,13 +163,13 @@ export class SceneGui {
 
         function onSample1ColorChangeBlackAndWhite(): void {
             markers.sample1.updateColor(state.color1)
-            colorCubeMaterial.targetColor1 = state.color1
+            colorCubeMaterial.whitePoint = state.color1
             updateSwatch()
         }
 
         function onSample2ColorChange(value: string): void {
             markers.sample2.updateColor(state.color2)
-            colorCubeMaterial.targetColor2 = value
+            colorCubeMaterial.blackPoint = value
         }
 
         function syncContrastPresetState(value: number): void {
@@ -267,10 +267,10 @@ export class SceneGui {
                     color1Controller.onChange(onSample1ColorChange)
                     color2Controller.disable()
                     colorCube.activeMarker = markers.sample1
-                    colorCubeMaterial.targetColor1 = state.color0
+                    colorCubeMaterial.targetColor = state.color0
                     markers.target.visible = true
                     markers.sample1.visible = true
-                    markers.target.updateColor(colorCubeMaterial.targetColor1)
+                    markers.target.updateColor(colorCubeMaterial.targetColor)
                     break
                 case ColorCube.SearchBlackAndWhite:
                     color0Controller.enable()
@@ -279,10 +279,11 @@ export class SceneGui {
                     color2Controller.onChange(onSample2ColorChange)
                     color2Controller.enable()
                     colorCube.activeMarker = markers.target
-                    colorCubeMaterial.targetColor1 = state.color1
-                    colorCubeMaterial.targetColor2 = state.color2
+                    colorCubeMaterial.targetColor = state.color0
+                    colorCubeMaterial.whitePoint = state.color1
+                    colorCubeMaterial.blackPoint = state.color2
                     markers.target.visible = true
-                    markers.target.updateColor(colorCubeMaterial.targetColor1)
+                    markers.target.updateColor(colorCubeMaterial.targetColor)
                     markers.sample1.visible = true
                     markers.sample2.visible = true
                     break

@@ -37,7 +37,7 @@ export class ColorCubeVolume extends THREE.Group {
 
         const visible = material.searchMode === ColorCube.SearchTargetColor
         this.markers = {
-            target: new Marker(visible, material.targetColor1),
+            target: new Marker(visible, material.targetColor),
             sample1: new Marker(visible, 0x000000),
             sample2: new Marker(false, 0xffffff),
         }

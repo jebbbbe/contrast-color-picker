@@ -41,8 +41,9 @@ export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
     quantizeSearch?: boolean
     raycastMode?: number
     searchMode?: number
-    targetColor1?: ColorRepresentation
-    targetColor2?: ColorRepresentation
+    targetColor?: ColorRepresentation
+    whitePoint?: ColorRepresentation
+    blackPoint?: ColorRepresentation
     targetOutput?: number
     transformMode?: number
     transformSpaceMatrix?: Matrix3
@@ -51,8 +52,9 @@ export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
     contrastRatio: { value: 4.5 },
     raycastMode: { value: RaycastBracketed3 },
     searchMode: { value: SearchTargetColor },
-    targetColor1: { value: new Color("#ffffff") },
-    targetColor2: { value: new Color("#000000") },
+    targetColor: { value: new Color("#ffffff") },
+    whitePoint: { value: new Color("#ffffff") },
+    blackPoint: { value: new Color("#000000") },
     targetOutput: { value: TargetOutputColor },
     transformMode: { value: TransformDefault },
     transformSpaceMatrix: { value: new Matrix3() },
@@ -126,20 +128,28 @@ export class ColorCubeMaterial extends ShaderMaterial {
         this.uniforms.searchMode.value = Math.max(0, Math.floor(value))
     }
 
-    get targetColor1(): Color {
-        return this.uniforms.targetColor1.value
+    get targetColor(): Color {
+        return this.uniforms.targetColor.value
     }
 
-    set targetColor1(value: ColorRepresentation) {
-        this.uniforms.targetColor1.value.set(value)
+    set targetColor(value: ColorRepresentation) {
+        this.uniforms.targetColor.value.set(value)
     }
 
-    get targetColor2(): Color {
-        return this.uniforms.targetColor2.value
+    get whitePoint(): Color {
+        return this.uniforms.whitePoint.value
     }
 
-    set targetColor2(value: ColorRepresentation) {
-        this.uniforms.targetColor2.value.set(value)
+    set whitePoint(value: ColorRepresentation) {
+        this.uniforms.whitePoint.value.set(value)
+    }
+
+    get blackPoint(): Color {
+        return this.uniforms.blackPoint.value
+    }
+
+    set blackPoint(value: ColorRepresentation) {
+        this.uniforms.blackPoint.value.set(value)
     }
 
     get transformMode(): number {

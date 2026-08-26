@@ -175,7 +175,8 @@ export class ThreeSceneApp {
         if (this.transformControls.dragging) return
 
         //exit if not in right search mode
-		/*
+        const mode = this.ctx.colorCube.mesh.material.searchMode
+        /*
         if (
             this.ctx.colorCube.mesh.material.searchMode !==
             ColorCube.SearchTargetColor
@@ -183,6 +184,7 @@ export class ThreeSceneApp {
             return
         }
 		*/
+        if (mode === ColorCube.SearchNone) return
 
         // raycast
         const hits = this.raycastHelper.castFromEvent(event, undefined, true)

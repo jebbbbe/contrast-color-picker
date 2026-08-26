@@ -62,6 +62,8 @@ export class SceneGui {
             updateSwatchInverse: false,
         }
 
+        console.log(state)
+
         this.gui = new GUI({
             title: "Scene",
             container: app.container,
@@ -135,6 +137,9 @@ export class SceneGui {
             const update = {
                 color: state.color1,
                 backgroundColor: state.color0,
+                darkModeEnabled:
+                    state.searchMode === ColorCube.SearchBlackAndWhite,
+                darkBackgroundColor: state.color2,
             }
             if (state.updateSwatchInverse) {
                 ;[update.color, update.backgroundColor] = [
@@ -256,10 +261,10 @@ export class SceneGui {
 
             switch (searchMode) {
                 case ColorCube.SearchTargetColor:
-                    color0Controller.onChange(onTargetColorChange)
-                    color1Controller.onChange(onSample1ColorChange)
                     color0Controller.enable()
+                    color0Controller.onChange(onTargetColorChange)
                     color1Controller.enable()
+                    color1Controller.onChange(onSample1ColorChange)
                     color2Controller.disable()
                     colorCube.activeMarker = markers.sample1
                     colorCubeMaterial.targetColor1 = state.color0
@@ -268,10 +273,10 @@ export class SceneGui {
                     markers.target.updateColor(colorCubeMaterial.targetColor1)
                     break
                 case ColorCube.SearchBlackAndWhite:
-                    color1Controller.onChange(onSample1ColorChangeBlackAndWhite)
-                    color2Controller.onChange(onSample2ColorChange)
                     color0Controller.enable()
+                    color1Controller.onChange(onSample1ColorChangeBlackAndWhite)
                     color1Controller.enable()
+                    color2Controller.onChange(onSample2ColorChange)
                     color2Controller.enable()
                     colorCube.activeMarker = markers.target
                     colorCubeMaterial.targetColor1 = state.color1
@@ -284,11 +289,10 @@ export class SceneGui {
                 case ColorCube.SearchOppositeColor:
                 case ColorCube.SearchNone:
                 default:
-                    color0Controller.enable()
+                    color0Controller.disable()
                     color1Controller.disable()
                     color2Controller.disable()
-                    colorCube.activeMarker = markers.target
-                    markers.target.visible = true
+                    markers.target.visible = false
                     markers.sample1.visible = false
                     markers.sample2.visible = false
                     break

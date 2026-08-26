@@ -237,7 +237,7 @@ export class ThreeSceneApp {
         console.log("#000000", getContrastRatio(hex, "#000000"))
         console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
 
-        this.gui.setOnClickColor(hex)
+        this.gui.setSample1Color(hex)
         this.ctx.colorCube.markers.sample1.visible = true
         this.ctx.colorCube.markers.sample1.updateColor(hex)
         this.callbackBridge.setSwatch({

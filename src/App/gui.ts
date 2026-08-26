@@ -1,8 +1,6 @@
-import GUI, { type Controller } from "lil-gui"
+import GUI from "lil-gui"
 import * as THREE from "three"
-
 import type { ThreeSceneApp } from "./main"
-import type { ColorCubeVolume } from "./objects/ColorCubeVolume"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
 
 const sdfColorTargetOutputTitles = {
@@ -37,11 +35,11 @@ const sdfColorSearchTitles = {
 const sdfColorContrastPresetValues = ["", 3, 4.5, 7] as const
 
 type SceneGuiState = {
+    searchMode: number
     contrastPreset: "" | number
-    onClickColor: string
     targetColor: string
-    blackPoint: string
-    whitePoint: string
+    sample1Color: string
+    sample2Color: string
     updateSwatchInverse: boolean
 }
 
@@ -56,11 +54,11 @@ export class SceneGui {
         const colorCubeMaterial = colorCube.mesh.material
 
         const state: SceneGuiState = {
+            searchMode: colorCubeMaterial.searchMode,
             contrastPreset: "",
-            onClickColor: markers.sample1.getHex(),
             targetColor: markers.target.getHex(),
-            blackPoint: "#000000",
-            whitePoint: "#ffffff",
+            sample1Color: markers.sample1.getHex(),
+            sample2Color: markers.sample2.getHex(),
             updateSwatchInverse: false,
         }
 
@@ -70,7 +68,6 @@ export class SceneGui {
         })
         this.state = state
 
-		
         const debugFolder = this.gui.addFolder("Debug").close()
         debugFolder
             .add(colorCubeMaterial, "targetOutput", sdfColorTargetOutputTitles)
@@ -92,8 +89,9 @@ export class SceneGui {
         const colorCubeFolder = this.gui
 
         colorCubeFolder
-            .add(colorCubeMaterial, "searchMode", sdfColorSearchTitles)
+            .add(state, "searchMode", sdfColorSearchTitles)
             .name("Search Mode")
+            .listen()
             .onChange(onSearchModeChange)
         const outputSpaceController = colorCubeFolder
             .add(colorCubeMaterial, "transformMode", sdfColorTransformTitles)
@@ -114,40 +112,28 @@ export class SceneGui {
             .name("Contrast Ratio")
             .listen()
             .onChange(onContrastRatioChange)
-        const swapColorsController = colorCubeFolder
+        colorCubeFolder
             .add({ fn: swapColors }, "fn")
             .name("Swap")
             .onChange(updateSwatch)
-        const targetColorController = colorCubeFolder
+        const color0Controller = colorCubeFolder
             .addColor(state, "targetColor")
-            // .name("Target Color")
             .name("")
             .listen()
             .onChange(onTargetColorChange)
-        const onClickColorController = colorCubeFolder
-            .addColor(state, "onClickColor")
-            // .name("Secondary Color")
+        const color1Controller = colorCubeFolder
+            .addColor(state, "sample1Color")
             .name("")
             .listen()
-            .onChange(onOnClickColorChange)
-        const blackPointController = colorCubeFolder
-            .addColor(state, "blackPoint")
-            // .name("Black Point")
+            .onChange(onSample1ColorChange)
+        const color2Controller = colorCubeFolder
+            .addColor(state, "sample2Color")
             .name("")
-            .onChange(onBlackPointChange)
-        const whitePointController = colorCubeFolder
-            .addColor(state, "whitePoint")
-            // .name("White Point")
-            .name("")
-            .onChange(onWhitePointChange)
-
-        function getHex(value: string): number {
-            return Number.parseInt(value.slice(1), 16)
-        }
+            .onChange(onSample2ColorChange)
 
         function updateSwatch(): void {
             const update = {
-                color: state.onClickColor,
+                color: state.sample1Color,
                 backgroundColor: state.targetColor,
             }
             if (state.updateSwatchInverse) {
@@ -159,70 +145,26 @@ export class SceneGui {
             callbackBridge.setSwatch(update)
         }
 
-        function updateTargetColorMaterial(value: string): void {
-            colorCubeMaterial.targetColor1.setHex(
-                getHex(value),
-                THREE.SRGBColorSpace
-            )
-        }
-
-        function updateWhitePointMaterial(value: string): void {
-            colorCubeMaterial.targetColor2.setHex(
-                getHex(value),
-                THREE.SRGBColorSpace
-            )
-        }
-
-        function syncSearchColorsToMaterial(searchMode: number): void {
-            if (searchMode === ColorCube.SearchTargetColor) {
-                updateTargetColorMaterial(state.targetColor)
-                return
-            }
-
-            if (searchMode === ColorCube.SearchBlackAndWhite) {
-                updateTargetColorMaterial(state.blackPoint)
-                updateWhitePointMaterial(state.whitePoint)
-            }
-        }
-
-        function updateTargetColorMarker(): void {
-            markers.target.visible =
-                colorCubeMaterial.searchMode === ColorCube.SearchTargetColor
-            markers.target.updateColor(colorCubeMaterial.targetColor1)
-        }
-
-        function updateOnClickMarker(): void {
-            markers.sample1.updateColor(state.onClickColor)
-        }
-
         function onTargetColorChange(value: string): void {
-            if (colorCubeMaterial.searchMode === ColorCube.SearchTargetColor) {
-                updateTargetColorMaterial(value)
-            }
-
-            updateTargetColorMarker()
+            colorCubeMaterial.targetColor1 = value
+            markers.target.updateColor(colorCubeMaterial.targetColor1)
             updateSwatch()
         }
 
-        function onOnClickColorChange(): void {
-            updateOnClickMarker()
+        function onSample1ColorChange(): void {
+            markers.sample1.updateColor(state.sample1Color)
             updateSwatch()
         }
 
-        function onBlackPointChange(value: string): void {
-            if (
-                colorCubeMaterial.searchMode === ColorCube.SearchBlackAndWhite
-            ) {
-                updateTargetColorMaterial(value)
-            }
+        function onSample1ColorChangeBlackAndWhite(): void {
+            markers.sample1.updateColor(state.sample1Color)
+            colorCubeMaterial.targetColor1 = state.sample1Color
+            updateSwatch()
         }
 
-        function onWhitePointChange(value: string): void {
-            if (
-                colorCubeMaterial.searchMode === ColorCube.SearchBlackAndWhite
-            ) {
-                updateWhitePointMaterial(value)
-            }
+        function onSample2ColorChange(value: string): void {
+            markers.sample2.updateColor(state.sample2Color)
+            colorCubeMaterial.targetColor2 = value
         }
 
         function syncContrastPresetState(value: number): void {
@@ -309,38 +251,42 @@ export class SceneGui {
             syncTransformSpaceState()
         }
 
-        function syncTargetColorState(value: number): void {
-            if (value === ColorCube.SearchTargetColor) {
-                targetColorController.enable()
-            } else {
-                targetColorController.disable()
-            }
+        function onSearchModeChange(searchMode: number): void {
+            colorCubeMaterial.searchMode = searchMode
 
-            if (value === ColorCube.SearchTargetColor) {
-                swapColorsController.enable()
-                onClickColorController.enable()
-            } else {
-                swapColorsController.disable()
-                onClickColorController.disable()
-            }
-
-            if (value === ColorCube.SearchBlackAndWhite) {
-                blackPointController.enable()
-                whitePointController.enable()
-                return
-            }
-
-            blackPointController.disable()
-            whitePointController.disable()
-        }
-
-        function onSearchModeChange(value: number): void {
-            syncTargetColorState(value)
-            syncSearchColorsToMaterial(value)
-            updateTargetColorMarker()
-
-            if (value !== ColorCube.SearchTargetColor) {
-                markers.sample1.visible = false
+            switch (searchMode) {
+                case ColorCube.SearchTargetColor:
+                    color0Controller.onChange(onTargetColorChange)
+                    color1Controller.onChange(onSample1ColorChange)
+                    color0Controller.enable()
+                    color1Controller.enable()
+                    color2Controller.disable()
+                    colorCubeMaterial.targetColor1 = state.targetColor
+                    markers.target.visible = true
+                    markers.target.updateColor(colorCubeMaterial.targetColor1)
+                    break
+                case ColorCube.SearchBlackAndWhite:
+                    color1Controller.onChange(onSample1ColorChangeBlackAndWhite)
+                    color2Controller.onChange(onSample2ColorChange)
+                    color0Controller.disable()
+                    color1Controller.enable()
+                    color2Controller.enable()
+                    colorCubeMaterial.targetColor1 = state.sample1Color
+                    colorCubeMaterial.targetColor2 = state.sample2Color
+                    markers.target.visible = false
+                    markers.target.updateColor(colorCubeMaterial.targetColor1)
+                    markers.sample1.visible = false
+                    break
+                case ColorCube.SearchOppositeColor:
+                case ColorCube.SearchNone:
+                default:
+                    color0Controller.disable()
+                    color1Controller.disable()
+                    color2Controller.disable()
+                    markers.target.visible = false
+                    markers.target.updateColor(colorCubeMaterial.targetColor1)
+                    markers.sample1.visible = false
+                    break
             }
         }
 
@@ -350,16 +296,15 @@ export class SceneGui {
 
         syncContrastPresetState(colorCubeMaterial.contrastRatio)
         syncOutputSpaceState(colorCube.transformSpaceMode)
-        syncTargetColorState(colorCubeMaterial.searchMode)
-        syncSearchColorsToMaterial(colorCubeMaterial.searchMode)
+        onSearchModeChange(state.searchMode)
     }
 
     destroy(): void {
         this.gui.destroy()
     }
 
-    setOnClickColor(value: string): void {
-        this.state.onClickColor = value
+    setSample1Color(value: string): void {
+        this.state.sample1Color = value
     }
 }
 

@@ -13,7 +13,7 @@
     },
     "dependencies": {
         "lil-gui": "^0.20.0",
-        "three": "^0.183.0",
-        "threetools": "github:jebbbbe/ThreeTools"
+        "three": "^0.124.0",
+        "threetools": "github:jebbbbe/ThreeTools#76cdb3c5eb383ad4741e2fec8d4fe35c2140b527"
     }
 }

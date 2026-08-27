@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import * as ThreeTools from "threetools";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { sdfRenderMaterial } from "./material"
+import { SdfRenderMaterial } from "./objects/materials/SdfRenderMaterial.js"
 import { addGui } from "./libraries/ui.js"
 import { outputTargets, densityFunctions, transformModes, solutions } from "./libraries/constants.js"
 
@@ -92,7 +92,7 @@ function init() {
 
     const geometry = new THREE.PlaneBufferGeometry(2, 2);
 
-    sdfMaterial = materials[0] = new sdfRenderMaterial({
+    sdfMaterial = materials[0] = new SdfRenderMaterial({
         backgroundColor: new THREE.Color(M.var.backgroundColor),
         backgroundOpacity: M.var.backgroundOpacity,
         mixBackground:true,

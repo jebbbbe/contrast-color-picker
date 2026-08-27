@@ -68,24 +68,6 @@ export class SceneGui {
         })
         this.state = state
 
-        const debugFolder = this.gui.addFolder("Debug").close()
-        debugFolder
-            .add(colorCubeMaterial, "targetOutput", sdfColorTargetOutputTitles)
-            .name("Cube Output")
-        debugFolder
-            .add(colorCubeMaterial, "raycastMode", sdfColorRaycastTitles)
-            .name("Raycast Mode")
-        debugFolder
-            .add(colorCubeMaterial, "quantizeSearch")
-            .name("Quantize Search")
-        debugFolder.add(controls, "autoRotate").name("Rotate Camera")
-        debugFolder
-            .add({ fn: randomizeCustomTransformSpaceMatrix }, "fn")
-            .name("Randomize Custom Matrix")
-        debugFolder
-            .add({ fn: randomizeCustomTransformSpaceMatrixSummation }, "fn")
-            .name("Randomize Summation Matrix")
-
         const colorCubeFolder = this.gui
 
         colorCubeFolder
@@ -93,15 +75,6 @@ export class SceneGui {
             .name("Search Mode")
             .listen()
             .onChange(onSearchModeChange)
-        const outputSpaceController = colorCubeFolder
-            .add(colorCubeMaterial, "transformMode", sdfColorTransformTitles)
-            .name("Output Space")
-            .listen()
-        colorCubeFolder
-            .add(colorCube, "transformSpaceMode", sdfColorTransformTitles)
-            .name("Transform Space")
-            .listen()
-            .onChange(onTransformSpaceChange)
         colorCubeFolder
             .add(state, "contrastPreset", sdfColorContrastPresetValues)
             .name("WCAG Contrast")
@@ -124,7 +97,34 @@ export class SceneGui {
         const darkModeController = colorCubeFolder
             .addColor(state, "darkModeColor")
             .name("Dark Mode")
-			.listen()
+            .listen()
+
+        const debugFolder = this.gui.addFolder("Advanced").close()
+        debugFolder
+            .add(colorCubeMaterial, "targetOutput", sdfColorTargetOutputTitles)
+            .name("Cube Output")
+        debugFolder
+            .add(colorCubeMaterial, "raycastMode", sdfColorRaycastTitles)
+            .name("Raycast Mode")
+        debugFolder
+            .add(colorCubeMaterial, "quantizeSearch")
+            .name("Quantize Search")
+        debugFolder.add(controls, "autoRotate").name("Rotate Camera")
+        debugFolder
+            .add({ fn: randomizeCustomTransformSpaceMatrix }, "fn")
+            .name("Randomize Custom Matrix")
+        debugFolder
+            .add({ fn: randomizeCustomTransformSpaceMatrixSummation }, "fn")
+            .name("Randomize Summation Matrix")
+        const outputSpaceController = debugFolder
+            .add(colorCubeMaterial, "transformMode", sdfColorTransformTitles)
+            .name("Output Space")
+            .listen()
+        debugFolder
+            .add(colorCube, "transformSpaceMode", sdfColorTransformTitles)
+            .name("Transform Space")
+            .listen()
+            .onChange(onTransformSpaceChange)
 
         function updateSwatch(): void {
             callbackBridge.setSwatch({

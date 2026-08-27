@@ -1,7 +1,6 @@
 import GUI from "lil-gui"
 import type { ThreeSceneApp } from "./main"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
-import { update } from "three/examples/jsm/libs/tween.module.js"
 
 const sdfColorTargetOutputTitles = {
     Color: ColorCube.TargetOutputColor,
@@ -125,6 +124,7 @@ export class SceneGui {
         const darkModeController = colorCubeFolder
             .addColor(state, "darkModeColor")
             .name("Dark Mode")
+			.listen()
 
         function updateSwatch(): void {
             callbackBridge.setSwatch({
@@ -150,15 +150,9 @@ export class SceneGui {
             updateSwatch()
         }
 
-        function onBackgroundColorChangeBlackAndWhite(): void {
-            markers.background.updateColor(state.backgroundColor)
-            colorCubeMaterial.whitePoint = state.backgroundColor
-            updateSwatch()
-        }
-
-        function onDarkModeColorChange(value: string): void {
+        function onDarkModeColorChange(): void {
             markers.darkmode.updateColor(state.darkModeColor)
-            colorCubeMaterial.blackPoint = value
+            updateSwatch()
         }
 
         function syncContrastPresetState(value: number): void {
@@ -312,10 +306,18 @@ export class SceneGui {
                     backgroundController.enable()
                     darkModeController.enable()
 
-                    backgroundController.onChange(
-                        onBackgroundColorChangeBlackAndWhite
-                    )
-                    darkModeController.onChange(onDarkModeColorChange)
+                    fontController.onChange(() => {
+                        onFontColorChange()
+                        colorCubeMaterial.targetColor = state.fontColor
+                    })
+                    backgroundController.onChange(() => {
+                        onBackgroundColorChange()
+                        colorCubeMaterial.whitePoint = state.backgroundColor
+                    })
+                    darkModeController.onChange(() => {
+                        onDarkModeColorChange()
+                        colorCubeMaterial.blackPoint = state.darkModeColor
+                    })
 
                     colorCubeMaterial.targetColor = state.fontColor
                     colorCubeMaterial.whitePoint = state.backgroundColor

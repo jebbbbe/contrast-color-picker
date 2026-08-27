@@ -6,6 +6,8 @@ const textBank = [
     "The quick brown fox jumps over the lazy dog.",
     "b, c, f, g, h, i, j, k, m, o, p, q, u, v, w, x, y, and z are letters.",
 ]
+// const sampleText = textBank[0]
+const sampleText = textBank[Math.floor(Math.random() * textBank.length)]
 
 export type FontSwatchState = {
     color: string
@@ -22,9 +24,9 @@ export const initialFontSwatchState: FontSwatchState = {
     color: "#000000",
     backgroundColor: "#ffffff",
     normalTextPassAA: true,
-    normalTextPassAAA: false,
+    normalTextPassAAA: true,
     largeTextPassAA: true,
-    largeTextPassAAA: false,
+    largeTextPassAAA: true,
     darkModeEnabled: false,
     darkBackgroundColor: "#000000",
 }
@@ -34,7 +36,6 @@ type FontSwatchProps = {
 }
 
 function FontSwatch({ swatch }: FontSwatchProps) {
-    const sampleText = textBank[0]
     const sampleStyle = swatch.darkModeEnabled
         ? {
               color: swatch.color,
@@ -93,10 +94,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             </span>
                         </p>
                     </div>
-                    <span
-                        id="normal"
-                        style={sampleStyle}
-                    >
+                    <span id="normal" style={sampleStyle}>
                         {sampleText}
                     </span>
                     <h2>Large Text</h2>
@@ -124,10 +122,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             </span>
                         </p>
                     </div>
-                    <span
-                        id="big"
-                        style={sampleStyle}
-                    >
+                    <span id="big" style={sampleStyle}>
                         {sampleText}
                     </span>
                     {/* <h2>Graphical Objects and User Interface Components</h2>

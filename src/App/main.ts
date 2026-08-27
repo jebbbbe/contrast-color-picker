@@ -326,7 +326,7 @@ export class ThreeSceneApp {
             this.ctx.colorCube.markers.font.updateColor(hitHex)
             this.gui.setFontColor(hitHex)
             this.callbackBridge.setSwatch({
-                color: fontHex,
+                color: hitHex,
                 backgroundColor: bkHex,
                 darkModeEnabled: true,
                 darkBackgroundColor: dmHex,

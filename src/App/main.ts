@@ -7,7 +7,7 @@ import * as ColorCube from "./objects/materials/ColorCubeMaterial"
 import CallbackBridge, { type ReactCallbacks } from "./CallbackBridge"
 import { RaycastHelper } from "./RaycastHelper"
 import { AspectLayout } from "./utils/AspectLayout.js"
-import { getContrastRatio } from "./utils/contrast"
+import { getContrastRatio, getOppositeHexColor } from "./utils/contrast"
 import { logScenePixel } from "./utils/logScenePixel"
 import { SceneGui } from "./gui"
 
@@ -175,13 +175,15 @@ export class ThreeSceneApp {
         if (this.transformControls.dragging) return
 
         //exit if not in right search mode
-        const mode = this.ctx.colorCube.mesh.material.searchMode
+        const mode = this.gui.state.searchMode
         if (mode === ColorCube.SearchNone) return
 
         // raycast
         const hits = this.raycastHelper.castFromEvent(event, undefined, true)
 
-        const markers = Object.values(this.ctx.colorCube.markers)
+        const markers = Object.values(this.ctx.colorCube.markers).filter(
+            (marker) => marker.visible
+        )
 
         const markerHit = hits.find((hit) =>
             markers.some(
@@ -250,6 +252,17 @@ export class ThreeSceneApp {
             this.callbackBridge.setSwatch({
                 color: fontHex,
                 backgroundColor: hitHex,
+            })
+            return
+        } else if (mode === ColorCube.SearchOppositeColor) {
+            const oppositeHex = getOppositeHexColor(hitHex)
+            this.gui.setFontColor(hitHex)
+            this.ctx.colorCube.markers.font.updateColor(hitHex)
+            this.gui.setBackgroundColor(oppositeHex)
+            this.ctx.colorCube.markers.background.updateColor(oppositeHex)
+            this.callbackBridge.setSwatch({
+                color: hitHex,
+                backgroundColor: oppositeHex,
             })
             return
         }

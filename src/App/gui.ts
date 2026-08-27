@@ -45,7 +45,7 @@ type SceneGuiState = {
 
 export class SceneGui {
     readonly gui: GUI
-    private readonly state: SceneGuiState
+    readonly state: SceneGuiState
 
     constructor(app: ThreeSceneApp) {
         const { controls, ctx, callbackBridge } = app
@@ -253,9 +253,14 @@ export class SceneGui {
             switch (searchMode) {
                 case ColorCube.SearchOppositeColor:
                     console.log("SearchOppositeColor")
+
                     fontController.enable()
                     backgroundController.enable()
                     darkModeController.disable()
+
+                    fontController.onChange(onFontColorChange)
+                    backgroundController.onChange(onBackgroundColorChange)
+
                     markers.font.visible = true
                     markers.background.visible = true
                     markers.darkmode.visible = false
@@ -302,6 +307,7 @@ export class SceneGui {
                     break
                 case ColorCube.SearchBlackAndWhite:
                     console.log("SearchBlackAndWhite")
+
                     fontController.enable()
                     backgroundController.enable()
                     darkModeController.enable()
@@ -314,6 +320,7 @@ export class SceneGui {
                     colorCubeMaterial.targetColor = state.fontColor
                     colorCubeMaterial.whitePoint = state.backgroundColor
                     colorCubeMaterial.blackPoint = state.darkModeColor
+
                     markers.font.visible = true
                     markers.background.visible = true
                     markers.darkmode.visible = true
@@ -321,9 +328,11 @@ export class SceneGui {
                 case ColorCube.SearchNone:
                 default:
                     console.log("SearchNone")
+
                     fontController.disable()
                     backgroundController.disable()
                     darkModeController.disable()
+
                     markers.font.visible = false
                     markers.background.visible = false
                     markers.darkmode.visible = false

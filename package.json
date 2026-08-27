@@ -1,19 +1,34 @@
 {
     "name": "sdf-renderer",
     "private": true,
-    "version": "0.0.0",
+    "version": "0.3.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
-        "build": "vite build --emptyOutDir",
+        "dev": "vite --host --port 5500",
+        "build": "tsc -b && vite build",
+        "lint": "eslint .",
         "preview": "vite preview"
     },
-    "devDependencies": {
-        "vite": "^6.0.0"
-    },
     "dependencies": {
-        "lil-gui": "^0.20.0",
-        "three": "^0.124.0",
-        "threetools": "github:jebbbbe/ThreeTools#76cdb3c5eb383ad4741e2fec8d4fe35c2140b527"
+        "lil-gui": "^0.21.0",
+        "react": "^19.2.5",
+        "react-dom": "^19.2.5",
+        "three": "0.183.0"
+    },
+    "devDependencies": {
+        "@eslint/js": "^10.0.1",
+        "@types/react": "^19.2.14",
+        "@types/react-dom": "^19.2.3",
+        "@types/three": "0.183.0",
+        "@vitejs/plugin-react": "^6.0.1",
+        "eslint": "^10.2.1",
+        "eslint-plugin-react-hooks": "^7.1.1",
+        "eslint-plugin-react-refresh": "^0.5.2",
+        "globals": "^17.5.0",
+        "prettier": "^3.8.3",
+        "tsx": "^4.20.6",
+        "typescript": "~6.0.2",
+        "typescript-eslint": "^8.58.2",
+        "vite": "^8.0.10"
     }
 }

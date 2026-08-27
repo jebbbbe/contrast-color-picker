@@ -1,0 +1,164 @@
+.fontSwatch {
+    width: 100%;
+}
+
+.fontSwatch,
+.fontSwatch * {
+    box-sizing: border-box;
+}
+
+.fontSwatch .pass {
+    background-color: #080;
+    border-radius: 1em;
+    color: #fff;
+}
+
+.fontSwatch .fail {
+    color: #c00;
+}
+
+.fontSwatch #maincontent {
+    display: flow-root;
+    width: min(700px, 100%);
+    max-width: 100%;
+    margin: 0 0 20px;
+    position: relative;
+    font-size: 1.125em;
+    outline: 0;
+}
+
+.fontSwatch #resultsContainer {
+    display: flow-root;
+    width: 100%;
+}
+
+.fontSwatch article h2 {
+    clear: both;
+    margin: 0 0 6px;
+    padding-top: 15px;
+    border-bottom: 1px solid;
+    color: #bf1722;
+    font-family: "Roboto", Georgia, Times, serif;
+    font-size: 150%;
+    font-weight: normal;
+    line-height: 1.25em;
+}
+
+.fontSwatch article p,
+.fontSwatch pre {
+    margin: 0;
+    padding-bottom: 1em;
+    line-height: 1.5em;
+}
+
+.fontSwatch a {
+    color: #20399d;
+    text-decoration: underline;
+    transition: background-color 0.25s linear;
+}
+
+.fontSwatch #ratioContainer {
+    padding-top: 0.6em;
+    text-align: center;
+}
+
+.fontSwatch #ratioContainer.pass > span,
+.fontSwatch #textBackRatioContainer.pass > span,
+.fontSwatch #linkTextRatioContainer.pass > span,
+.fontSwatch #linkBackRatioContainer.pass > span {
+    border: 3px solid #080;
+    padding: 8px;
+}
+
+.fontSwatch #ratioContainer > span {
+    display: inline-block;
+    min-width: 7em;
+    margin-bottom: 6px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.fontSwatch #ratio,
+.fontSwatch #textBackRatio,
+.fontSwatch #linkTextRatio,
+.fontSwatch #linkBackRatio {
+    display: block;
+    font-size: 3em;
+}
+
+.fontSwatch #textBackRatio,
+.fontSwatch #linkTextRatio,
+.fontSwatch #linkBackRatio {
+    display: inline-block;
+    min-width: 4em;
+}
+
+.fontSwatch #permalink {
+    display: block;
+    border: none;
+}
+
+.fontSwatch .results {
+    float: left;
+}
+
+.fontSwatch .results p {
+    padding-bottom: 2px;
+}
+
+.fontSwatch .results span {
+    box-sizing: content-box;
+    float: right;
+    width: 2.2em;
+    margin: 0 0.5em;
+    padding: 0 0.5em;
+    font-weight: bold;
+    text-align: center;
+    transition: all 0.2s;
+}
+
+.fontSwatch #normal,
+.fontSwatch #big,
+.fontSwatch #ui {
+    float: right;
+    width: min(460px, 100%);
+    max-width: 100%;
+    padding: 1em;
+    border: 1px solid #ccc;
+    text-align: center;
+}
+
+.fontSwatch #big {
+    font-size: 14pt;
+    font-weight: bold;
+}
+
+.fontSwatch #ui {
+    margin-bottom: 20px;
+    padding: 5px 0 10px;
+}
+
+.fontSwatch #ui::first-letter {
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.fontSwatch #uibox {
+    display: block;
+    margin: auto;
+    padding: 2px;
+    border: 2px solid grey;
+}
+
+.fontSwatch #normal a,
+.fontSwatch #big a {
+    text-decoration: none;
+}
+
+.fontSwatch #normal a:hover,
+.fontSwatch #normal a:focus,
+.fontSwatch #big a:hover,
+.fontSwatch #big a:focus {
+    text-decoration: underline;
+}

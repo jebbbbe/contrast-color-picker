@@ -1,9 +1,43 @@
-import { defineConfig } from "vite";
+import { fileURLToPath } from "node:url"
+import { defineConfig } from "vite"
+import react from "@vitejs/plugin-react"
+
+function fullReloadOnChange() {
+    return {
+        name: "full-reload-on-change",
+        handleHotUpdate({ server }) {
+            server.ws.send({ type: "full-reload" })
+            return []
+        },
+    }
+}
 
 export default defineConfig({
-    root: "src", // Set the root directory to `src`
-    publicDir: "../public", // Point to the public directory relative to the project root
+    plugins: [react(), fullReloadOnChange()],
+    resolve: {
+        alias: {
+            "@types": fileURLToPath(new URL("./src/types.ts", import.meta.url)),
+        },
+    },
     build: {
-        outDir: "../build" // Ensure the output is still in `dist`
-    }
-});
+        rolldownOptions: {
+            output: {
+                codeSplitting: {
+                    includeDependenciesRecursively: false,
+                    groups: [
+                        {
+                            name: "three",
+                            priority: 2,
+                            test: /node_modules[\\/]three[\\/]/,
+                        },
+                        {
+                            name: "app",
+                            priority: 1,
+                            test: /[\\/]src[\\/]App[\\/]/,
+                        },
+                    ],
+                },
+            },
+        },
+    },
+})

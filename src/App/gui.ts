@@ -1,6 +1,7 @@
 import GUI from "lil-gui"
 import type { ThreeSceneApp } from "./main"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
+import { update } from "three/examples/jsm/libs/tween.module.js"
 
 const sdfColorTargetOutputTitles = {
     Color: ColorCube.TargetOutputColor,
@@ -55,9 +56,9 @@ export class SceneGui {
         const state: SceneGuiState = {
             searchMode: colorCubeMaterial.searchMode,
             contrastPreset: "",
-            fontColor: markers.target.getHex(),
-            backgroundColor: markers.sample1.getHex(),
-            darkModeColor: markers.sample2.getHex(),
+            fontColor: markers.font.getHex(),
+            backgroundColor: markers.background.getHex(),
+            darkModeColor: markers.darkmode.getHex(),
         }
 
         console.log(state)
@@ -112,24 +113,18 @@ export class SceneGui {
             .name("Contrast Ratio")
             .listen()
             .onChange(onContrastRatioChange)
-        colorCubeFolder
-            .add({ fn: swapColors }, "fn")
-            .name("Swap")
-            .onChange(updateSwatch)
+        colorCubeFolder.add({ fn: swapColors }, "fn").name("Swap")
         const fontController = colorCubeFolder
             .addColor(state, "fontColor")
             .name("Font")
             .listen()
-            .onChange(onTargetColorChange)
         const backgroundController = colorCubeFolder
             .addColor(state, "backgroundColor")
             .name("Background")
             .listen()
-            .onChange(onSample1ColorChange)
         const darkModeController = colorCubeFolder
             .addColor(state, "darkModeColor")
             .name("Dark Mode")
-            .onChange(onSample2ColorChange)
 
         function updateSwatch(): void {
             callbackBridge.setSwatch({
@@ -141,25 +136,28 @@ export class SceneGui {
             })
         }
 
-        function onTargetColorChange(value: string): void {
+        function updateColorCubeTargetColor(value: string) {
             colorCubeMaterial.targetColor = value
-            markers.target.updateColor(colorCubeMaterial.targetColor)
+        }
+
+        function onFontColorChange(): void {
+            markers.font.updateColor(state.fontColor)
             updateSwatch()
         }
 
-        function onSample1ColorChange(): void {
-            markers.sample1.updateColor(state.backgroundColor)
+        function onBackgroundColorChange(): void {
+            markers.background.updateColor(state.backgroundColor)
             updateSwatch()
         }
 
-        function onSample1ColorChangeBlackAndWhite(): void {
-            markers.sample1.updateColor(state.backgroundColor)
+        function onBackgroundColorChangeBlackAndWhite(): void {
+            markers.background.updateColor(state.backgroundColor)
             colorCubeMaterial.whitePoint = state.backgroundColor
             updateSwatch()
         }
 
-        function onSample2ColorChange(value: string): void {
-            markers.sample2.updateColor(state.darkModeColor)
+        function onDarkModeColorChange(value: string): void {
+            markers.darkmode.updateColor(state.darkModeColor)
             colorCubeMaterial.blackPoint = value
         }
 
@@ -248,7 +246,9 @@ export class SceneGui {
         }
 
         function onSearchModeChange(searchMode: number): void {
-            colorCubeMaterial.searchMode = searchMode
+            let nextMode = searchMode
+            if (searchMode == 4) nextMode -= 2
+            colorCubeMaterial.searchMode = nextMode
 
             switch (searchMode) {
                 case ColorCube.SearchOppositeColor:
@@ -256,24 +256,29 @@ export class SceneGui {
                     fontController.enable()
                     backgroundController.enable()
                     darkModeController.disable()
-                    markers.target.visible = true
-                    markers.sample1.visible = true
-                    markers.sample2.visible = false
+                    markers.font.visible = true
+                    markers.background.visible = true
+                    markers.darkmode.visible = false
                     break
-                case ColorCube.SearchTargetColor:
                 case 4:
+                    console.error("NOPE")
+                case ColorCube.SearchTargetColor:
                     console.log("SearchTargetColor")
+
                     fontController.enable()
                     backgroundController.enable()
                     darkModeController.disable()
-                    fontController.onChange(onTargetColorChange)
-                    backgroundController.onChange(onSample1ColorChange)
-                    colorCube.activeMarker = markers.sample1
-                    colorCubeMaterial.targetColor = state.fontColor
-                    markers.target.visible = true
-                    markers.sample1.visible = true
-                    markers.sample2.visible = false
-                    markers.target.updateColor(colorCubeMaterial.targetColor)
+
+                    fontController.onChange(onFontColorChange)
+                    backgroundController.onChange(() => {
+                        onBackgroundColorChange()
+                        updateColorCubeTargetColor(state.backgroundColor)
+                    })	
+
+                    markers.font.visible = true
+                    markers.background.visible = true
+                    markers.darkmode.visible = false
+
                     break
                 case ColorCube.SearchBlackAndWhite:
                     console.log("SearchBlackAndWhite")
@@ -282,18 +287,16 @@ export class SceneGui {
                     darkModeController.enable()
 
                     backgroundController.onChange(
-                        onSample1ColorChangeBlackAndWhite
+                        onBackgroundColorChangeBlackAndWhite
                     )
-                    darkModeController.onChange(onSample2ColorChange)
+                    darkModeController.onChange(onDarkModeColorChange)
 
-                    colorCube.activeMarker = markers.target
                     colorCubeMaterial.targetColor = state.fontColor
                     colorCubeMaterial.whitePoint = state.backgroundColor
                     colorCubeMaterial.blackPoint = state.darkModeColor
-                    markers.target.visible = true
-                    markers.sample1.visible = true
-                    markers.sample2.visible = true
-                    markers.target.updateColor(colorCubeMaterial.targetColor)
+                    markers.font.visible = true
+                    markers.background.visible = true
+                    markers.darkmode.visible = true
                     break
                 case ColorCube.SearchNone:
                 default:
@@ -301,19 +304,20 @@ export class SceneGui {
                     fontController.disable()
                     backgroundController.disable()
                     darkModeController.disable()
-                    markers.target.visible = false
-                    markers.sample1.visible = false
-                    markers.sample2.visible = false
+                    markers.font.visible = false
+                    markers.background.visible = false
+                    markers.darkmode.visible = false
                     break
             }
         }
 
         function swapColors() {
-            markers.target.swap(markers.sample1)
+            markers.font.swap(markers.background)
             const fv = fontController.getValue()
             const bv = backgroundController.getValue()
             fontController.setValue(bv)
             backgroundController.setValue(fv)
+            updateSwatch()
         }
 
         syncContrastPresetState(colorCubeMaterial.contrastRatio)

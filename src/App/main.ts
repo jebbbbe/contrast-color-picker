@@ -135,8 +135,8 @@ export class ThreeSceneApp {
         const gui = new SceneGui(this)
         this.gui = gui
         this.callbackBridge.setSwatch({
-            color: colorCube.markers.sample1.getHex(),
-            backgroundColor: colorCube.markers.target.getHex(),
+            color: colorCube.markers.background.getHex(),
+            backgroundColor: colorCube.markers.font.getHex(),
         })
 
         // listeners
@@ -180,14 +180,6 @@ export class ThreeSceneApp {
 
         //exit if not in right search mode
         const mode = this.ctx.colorCube.mesh.material.searchMode
-        /*
-        if (
-            this.ctx.colorCube.mesh.material.searchMode !==
-            ColorCube.SearchTargetColor
-        ) {
-            return
-        }
-		*/
         if (mode === ColorCube.SearchNone) return
 
         // raycast
@@ -226,7 +218,7 @@ export class ThreeSceneApp {
             return
         }
 
-        const hex = logScenePixel(
+        const hitHex = logScenePixel(
             this.renderer,
             this.scene,
             this.camera,
@@ -234,29 +226,29 @@ export class ThreeSceneApp {
             event.clientX,
             event.clientY
         )
-        const targetMarkerHex = this.ctx.colorCube.markers.target.getHex()
 
         // clicked background
-        if (hex === sceneBackgroundHex) return
+        if (hitHex === sceneBackgroundHex) return
 
         // successful hit:
-        console.log(hex)
-        console.log(targetMarkerHex, getContrastRatio(hex, targetMarkerHex))
-        console.log("#000000", getContrastRatio(hex, "#000000"))
-        console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
+        const fontHex = this.ctx.colorCube.markers.font.getHex()
+        const bkHex = this.ctx.colorCube.markers.background.getHex()
+        const dmHex = this.ctx.colorCube.markers.darkmode.getHex()
+        console.log(hitHex)
+        console.log(fontHex, getContrastRatio(hitHex, fontHex))
+        console.log(dmHex, getContrastRatio(hitHex, dmHex))
+        console.log(bkHex, getContrastRatio(hitHex, bkHex))
 
         if (mode === ColorCube.SearchTargetColor) {
-            this.gui.setFontColor(hex)
+            this.gui.setFontColor(hitHex)
         } else if (mode === 4) {
-            this.gui.setBackgroundColor(hex)
+            this.gui.setBackgroundColor(hitHex)
         }
-
-		
-        this.ctx.colorCube.markers.sample1.updateColor(hex)
+        this.ctx.colorCube.markers.background.updateColor(hitHex)
 
         this.callbackBridge.setSwatch({
-            color: hex,
-            backgroundColor: targetMarkerHex,
+            color: hitHex,
+            backgroundColor: fontHex,
         })
     }
 

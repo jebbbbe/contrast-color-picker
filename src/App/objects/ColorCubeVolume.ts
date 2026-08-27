@@ -19,9 +19,9 @@ export class ColorCubeVolume extends THREE.Group {
     readonly wireframe: ColorCubeEdges
     activeMarker: Marker | undefined
     readonly markers: {
-        target: Marker
-        sample1: Marker
-        sample2: Marker
+        font: Marker
+        background: Marker
+        darkmode: Marker
     }
 
     private readonly transformSpaceMatrices = transformSpaceMatrices
@@ -36,15 +36,15 @@ export class ColorCubeVolume extends THREE.Group {
 
         const geometry = new THREE.BoxGeometry(1, 1, 1)
         const material = new ColorCube.ColorCubeMaterial()
-		
+
         material.targetColor = bkColor
         this.mesh = new THREE.Mesh(geometry, material)
         this.wireframe = new ColorCubeEdges(geometry)
 
         this.markers = {
-            target: new Marker(true, fontColor),
-            sample1: new Marker(true, bkColor),
-            sample2: new Marker(false, dmColor),
+            font: new Marker(true, fontColor),
+            background: new Marker(true, bkColor),
+            darkmode: new Marker(false, dmColor),
         }
         this.transformSpaceMode = ColorCube.TransformDefault
         this.add(this.mesh, this.wireframe, ...Object.values(this.markers))

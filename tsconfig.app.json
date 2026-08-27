@@ -24,7 +24,6 @@
         // "noUnusedLocals": true,
         // "noUnusedParameters": true,
         "erasableSyntaxOnly": true,
-        "noFallthroughCasesInSwitch": true
     },
     "include": ["src/**/*.ts", "src/**/*.tsx"],
     "exclude": ["src/components/**/*", "src/types.ts"]

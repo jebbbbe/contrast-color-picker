@@ -230,6 +230,7 @@ export class ThreeSceneApp {
         const fontHex = this.ctx.colorCube.markers.font.getHex()
         const bkHex = this.ctx.colorCube.markers.background.getHex()
         const dmHex = this.ctx.colorCube.markers.darkmode.getHex()
+        console.log("")
         console.log(hitHex)
         console.log(fontHex, getContrastRatio(hitHex, fontHex))
         console.log(dmHex, getContrastRatio(hitHex, dmHex))
@@ -237,15 +238,21 @@ export class ThreeSceneApp {
 
         if (mode === ColorCube.SearchTargetColor) {
             this.gui.setFontColor(hitHex)
+            this.ctx.colorCube.markers.font.updateColor(hitHex)
+            this.callbackBridge.setSwatch({
+                color: hitHex,
+                backgroundColor: bkHex,
+            })
+            return
         } else if (mode === 4) {
             this.gui.setBackgroundColor(hitHex)
+            this.ctx.colorCube.markers.background.updateColor(hitHex)
+            this.callbackBridge.setSwatch({
+                color: fontHex,
+                backgroundColor: hitHex,
+            })
+            return
         }
-        this.ctx.colorCube.markers.background.updateColor(hitHex)
-
-        this.callbackBridge.setSwatch({
-            color: hitHex,
-            backgroundColor: fontHex,
-        })
     }
 
     private disposeSceneResources(): void {

@@ -261,9 +261,27 @@ export class SceneGui {
                     markers.darkmode.visible = false
                     break
                 case 4:
-                    console.error("NOPE")
+                    console.log("SearchTargetColor BACKGROUND")
+
+                    fontController.enable()
+                    backgroundController.enable()
+                    darkModeController.disable()
+
+                    fontController.onChange(() => {
+                        onFontColorChange()
+                        updateColorCubeTargetColor(state.fontColor)
+                    })
+                    backgroundController.onChange(onBackgroundColorChange)
+
+                    markers.font.visible = true
+                    markers.background.visible = true
+                    markers.darkmode.visible = false
+
+                    updateColorCubeTargetColor(state.fontColor)
+
+                    break
                 case ColorCube.SearchTargetColor:
-                    console.log("SearchTargetColor")
+                    console.log("SearchTargetColor FONT")
 
                     fontController.enable()
                     backgroundController.enable()
@@ -273,11 +291,13 @@ export class SceneGui {
                     backgroundController.onChange(() => {
                         onBackgroundColorChange()
                         updateColorCubeTargetColor(state.backgroundColor)
-                    })	
+                    })
 
                     markers.font.visible = true
                     markers.background.visible = true
                     markers.darkmode.visible = false
+
+                    updateColorCubeTargetColor(state.backgroundColor)
 
                     break
                 case ColorCube.SearchBlackAndWhite:
@@ -323,7 +343,7 @@ export class SceneGui {
         syncContrastPresetState(colorCubeMaterial.contrastRatio)
         syncOutputSpaceState(colorCube.transformSpaceMode)
         onSearchModeChange(state.searchMode)
-		updateSwatch()
+        updateSwatch()
     }
 
     destroy(): void {

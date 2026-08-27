@@ -30,7 +30,7 @@ const sdfColorSearchTitles = {
     "Opposite Color": ColorCube.SearchOppositeColor,
     "Font Color": ColorCube.SearchTargetColor,
     "Background Color": 4,
-    "Black + White": ColorCube.SearchBlackAndWhite,
+    "Dark Mode": ColorCube.SearchBlackAndWhite,
 } as const
 
 const sdfColorContrastPresetValues = ["", 3, 4.5, 7] as const

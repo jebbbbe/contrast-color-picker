@@ -235,8 +235,8 @@ export class ThreeSceneApp {
         console.log("")
         console.log(hitHex)
         console.log(fontHex, getContrastRatio(hitHex, fontHex))
-        console.log(dmHex, getContrastRatio(hitHex, dmHex))
         console.log(bkHex, getContrastRatio(hitHex, bkHex))
+        console.log(dmHex, getContrastRatio(hitHex, dmHex))
 
         if (mode === ColorCube.SearchTargetColor) {
             this.gui.setFontColor(hitHex)
@@ -245,7 +245,6 @@ export class ThreeSceneApp {
                 color: hitHex,
                 backgroundColor: bkHex,
             })
-            return
         } else if (mode === 4) {
             this.gui.setBackgroundColor(hitHex)
             this.ctx.colorCube.markers.background.updateColor(hitHex)
@@ -253,7 +252,6 @@ export class ThreeSceneApp {
                 color: fontHex,
                 backgroundColor: hitHex,
             })
-            return
         } else if (mode === ColorCube.SearchOppositeColor) {
             const oppositeHex = getOppositeHexColor(hitHex)
             this.gui.setFontColor(hitHex)
@@ -264,7 +262,15 @@ export class ThreeSceneApp {
                 color: hitHex,
                 backgroundColor: oppositeHex,
             })
-            return
+        } else if (mode === ColorCube.SearchBlackAndWhite) {
+            this.gui.setFontColor(hitHex)
+            this.ctx.colorCube.markers.font.updateColor(hitHex)
+            this.callbackBridge.setSwatch({
+                color: fontHex,
+                backgroundColor: bkHex,
+                darkModeEnabled: true,
+                darkBackgroundColor: dmHex,
+            })
         }
     }
 

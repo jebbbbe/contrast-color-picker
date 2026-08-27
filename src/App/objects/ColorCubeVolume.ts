@@ -27,19 +27,24 @@ export class ColorCubeVolume extends THREE.Group {
     private readonly transformSpaceMatrices = transformSpaceMatrices
     private transformSpaceModeValue = ColorCube.TransformDefault
 
-    constructor() {
+    constructor(
+        fontColor: THREE.ColorRepresentation,
+        bkColor: THREE.ColorRepresentation,
+        dmColor: THREE.ColorRepresentation
+    ) {
         super()
 
         const geometry = new THREE.BoxGeometry(1, 1, 1)
         const material = new ColorCube.ColorCubeMaterial()
+		
+        material.targetColor = bkColor
         this.mesh = new THREE.Mesh(geometry, material)
         this.wireframe = new ColorCubeEdges(geometry)
 
-        const visible = material.searchMode === ColorCube.SearchTargetColor
         this.markers = {
-            target: new Marker(visible, material.targetColor),
-            sample1: new Marker(visible, 0x000000),
-            sample2: new Marker(false, 0xffffff),
+            target: new Marker(true, fontColor),
+            sample1: new Marker(true, bkColor),
+            sample2: new Marker(false, dmColor),
         }
         this.transformSpaceMode = ColorCube.TransformDefault
         this.add(this.mesh, this.wireframe, ...Object.values(this.markers))

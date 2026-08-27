@@ -96,7 +96,11 @@ export class ThreeSceneApp {
         // const grid = new THREE.GridHelper()
 
         // content
-        const colorCube = new ColorCubeVolume()
+        const colorCube = new ColorCubeVolume(
+            0x000000, // font
+            0xffffff, // bk
+            0x000000 // darkmode
+        )
 
         scene.add(
             // ambientLight,
@@ -241,9 +245,15 @@ export class ThreeSceneApp {
         console.log("#000000", getContrastRatio(hex, "#000000"))
         console.log("#ffffff", getContrastRatio(hex, "#ffffff"))
 
-        // this.ctx.colorCube.markers.sample1.updateColor(hex)
+        if (mode === ColorCube.SearchTargetColor) {
+            this.gui.setFontColor(hex)
+        } else if (mode === 4) {
+            this.gui.setBackgroundColor(hex)
+        }
+
+		
         this.ctx.colorCube.markers.sample1.updateColor(hex)
-        this.gui.setColor1(hex)
+
         this.callbackBridge.setSwatch({
             color: hex,
             backgroundColor: targetMarkerHex,

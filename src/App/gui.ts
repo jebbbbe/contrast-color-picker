@@ -338,6 +338,7 @@ export class SceneGui {
                     markers.darkmode.visible = false
                     break
             }
+            updateSwatch()
         }
 
         function swapColors() {

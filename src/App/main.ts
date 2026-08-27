@@ -80,7 +80,67 @@ export class ThreeSceneApp {
             const object = transformControls.object
             if (!(object instanceof Marker)) return
             // we can direclty modify object.position here to constrain
+
+            const mode = this.gui.state.searchMode
+            if (mode === ColorCube.SearchNone) return
+            const material = this.ctx.colorCube.mesh.material
+            const markers = this.ctx.colorCube.markers
+            const fontHex = this.ctx.colorCube.markers.font.getHex()
+            const bkHex = this.ctx.colorCube.markers.background.getHex()
+            const dmHex = this.ctx.colorCube.markers.darkmode.getHex()
+
+            // marker update
             object.updatePosition(object.position)
+
+            // ui update
+            if (mode === ColorCube.SearchTargetColor) {
+                this.gui.setFontColor(fontHex)
+                this.gui.setBackgroundColor(bkHex)
+                this.callbackBridge.setSwatch({
+                    color: fontHex,
+                    backgroundColor: bkHex,
+                })
+                material.targetColor = bkHex
+            } else if (mode === 4) {
+                this.gui.setFontColor(fontHex)
+                this.gui.setBackgroundColor(bkHex)
+                this.callbackBridge.setSwatch({
+                    color: fontHex,
+                    backgroundColor: bkHex,
+                })
+                material.targetColor = fontHex
+            } else if (mode === ColorCube.SearchOppositeColor) {
+                let objectHex = object.getHex() // assume font
+                let oppositeHex = getOppositeHexColor(objectHex)
+                let oppositeObject = markers.background
+                if (object !== markers.font) {
+                    ;[objectHex, oppositeHex] = [oppositeHex, objectHex]
+                    oppositeObject = markers.font
+                    oppositeObject.updateColor(objectHex)
+                } else {
+                    oppositeObject.updateColor(oppositeHex)
+                }
+                this.gui.setFontColor(objectHex)
+                this.gui.setBackgroundColor(oppositeHex)
+                this.callbackBridge.setSwatch({
+                    color: objectHex,
+                    backgroundColor: oppositeHex,
+                })
+                material.targetColor = objectHex
+            } else if (mode === ColorCube.SearchBlackAndWhite) {
+                this.gui.setFontColor(fontHex)
+                this.gui.setBackgroundColor(bkHex)
+                this.gui.setDarkModeColor(dmHex)
+                this.callbackBridge.setSwatch({
+                    color: fontHex,
+                    backgroundColor: bkHex,
+                    darkModeEnabled: true,
+                    darkBackgroundColor: dmHex,
+                })
+                material.targetColor = fontHex
+                material.whitePoint = bkHex
+                material.blackPoint = dmHex
+            }
         })
         // disable orbit controls
         transformControls.addEventListener("dragging-changed", (event) => {
@@ -239,32 +299,32 @@ export class ThreeSceneApp {
         console.log(dmHex, getContrastRatio(hitHex, dmHex))
 
         if (mode === ColorCube.SearchTargetColor) {
-            this.gui.setFontColor(hitHex)
             this.ctx.colorCube.markers.font.updateColor(hitHex)
+            this.gui.setFontColor(hitHex)
             this.callbackBridge.setSwatch({
                 color: hitHex,
                 backgroundColor: bkHex,
             })
         } else if (mode === 4) {
-            this.gui.setBackgroundColor(hitHex)
             this.ctx.colorCube.markers.background.updateColor(hitHex)
+            this.gui.setBackgroundColor(hitHex)
             this.callbackBridge.setSwatch({
                 color: fontHex,
                 backgroundColor: hitHex,
             })
         } else if (mode === ColorCube.SearchOppositeColor) {
             const oppositeHex = getOppositeHexColor(hitHex)
-            this.gui.setFontColor(hitHex)
             this.ctx.colorCube.markers.font.updateColor(hitHex)
-            this.gui.setBackgroundColor(oppositeHex)
+            this.gui.setFontColor(hitHex)
             this.ctx.colorCube.markers.background.updateColor(oppositeHex)
+            this.gui.setBackgroundColor(oppositeHex)
             this.callbackBridge.setSwatch({
                 color: hitHex,
                 backgroundColor: oppositeHex,
             })
         } else if (mode === ColorCube.SearchBlackAndWhite) {
-            this.gui.setFontColor(hitHex)
             this.ctx.colorCube.markers.font.updateColor(hitHex)
+            this.gui.setFontColor(hitHex)
             this.callbackBridge.setSwatch({
                 color: fontHex,
                 backgroundColor: bkHex,

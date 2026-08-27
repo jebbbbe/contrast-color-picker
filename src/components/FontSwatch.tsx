@@ -19,7 +19,7 @@ export type FontSwatchState = {
 }
 
 export const initialFontSwatchState: FontSwatchState = {
-    color: "#0000ff",
+    color: "#000000",
     backgroundColor: "#ffffff",
     normalTextPassAA: true,
     normalTextPassAAA: false,

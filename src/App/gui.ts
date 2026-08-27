@@ -323,6 +323,7 @@ export class SceneGui {
         syncContrastPresetState(colorCubeMaterial.contrastRatio)
         syncOutputSpaceState(colorCube.transformSpaceMode)
         onSearchModeChange(state.searchMode)
+		updateSwatch()
     }
 
     destroy(): void {

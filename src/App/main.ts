@@ -134,10 +134,6 @@ export class ThreeSceneApp {
         // ui
         const gui = new SceneGui(this)
         this.gui = gui
-        this.callbackBridge.setSwatch({
-            color: colorCube.markers.background.getHex(),
-            backgroundColor: colorCube.markers.font.getHex(),
-        })
 
         // listeners
         aspectLayout.addResizeListener(renderer, camera, this.handleResize)

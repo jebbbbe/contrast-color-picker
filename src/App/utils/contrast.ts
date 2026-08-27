@@ -52,12 +52,9 @@ export function getContrastRatio(
 }
 
 export function getOppositeHexColor(hex: string): string {
-    _inverseColor.set(hex)
-    _inverseColor.setRGB(
-        1 - _inverseColor.r,
-        1 - _inverseColor.g,
-        1 - _inverseColor.b
-    )
+    const [r, g, b] = colorToSRGB(hex)
+
+    _inverseColor.setRGB(1 - r, 1 - g, 1 - b, SRGBColorSpace)
 
     return `#${_inverseColor.getHexString(SRGBColorSpace)}`
 }

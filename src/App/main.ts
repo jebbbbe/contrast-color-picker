@@ -22,7 +22,7 @@ export class ThreeSceneApp {
     private readonly gui: SceneGui
     readonly controls: OrbitControls
     private readonly raycastHelper: RaycastHelper
-    private readonly transformControls: TransformControls
+    readonly transformControls: TransformControls
     readonly ctx: {
         colorCube: ColorCubeVolume
     }

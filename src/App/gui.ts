@@ -48,7 +48,7 @@ export class SceneGui {
     readonly state: SceneGuiState
 
     constructor(app: ThreeSceneApp) {
-        const { controls, ctx, callbackBridge } = app
+        const { controls, ctx, callbackBridge, transformControls } = app
         const { colorCube } = ctx
         const { markers } = colorCube
         const colorCubeMaterial = colorCube.mesh.material
@@ -244,6 +244,8 @@ export class SceneGui {
             let nextMode = searchMode
             if (searchMode == 4) nextMode -= 2
             colorCubeMaterial.searchMode = nextMode
+
+			transformControls.detach()
 
             switch (searchMode) {
                 case ColorCube.SearchOppositeColor:

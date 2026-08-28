@@ -1,6 +1,7 @@
 import GUI from "lil-gui"
 import type { ThreeSceneApp } from "./main"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
+import { getOppositeHexColor } from "./utils/contrast"
 
 const sdfColorTargetOutputTitles = {
     Color: ColorCube.TargetOutputColor,
@@ -246,22 +247,32 @@ export class SceneGui {
 
             switch (searchMode) {
                 case ColorCube.SearchOppositeColor:
-                    console.log("SearchOppositeColor")
-
                     fontController.enable()
                     backgroundController.enable()
                     darkModeController.disable()
 
-                    fontController.onChange(onFontColorChange)
-                    backgroundController.onChange(onBackgroundColorChange)
+                    fontController.onChange(() => {
+                        const oppositeHex = getOppositeHexColor(state.fontColor)
+                        state.backgroundColor = oppositeHex
+                        markers.font.updateColor(state.fontColor)
+                        markers.background.updateColor(oppositeHex)
+                        updateSwatch()
+                    })
+                    backgroundController.onChange(() => {
+                        const oppositeHex = getOppositeHexColor(
+                            state.backgroundColor
+                        )
+                        state.fontColor = oppositeHex
+                        markers.background.updateColor(state.backgroundColor)
+                        markers.font.updateColor(oppositeHex)
+                        updateSwatch()
+                    })
 
                     markers.font.visible = true
                     markers.background.visible = true
                     markers.darkmode.visible = false
                     break
                 case 4:
-                    console.log("SearchTargetColor BACKGROUND")
-
                     fontController.enable()
                     backgroundController.enable()
                     darkModeController.disable()
@@ -280,8 +291,6 @@ export class SceneGui {
 
                     break
                 case ColorCube.SearchTargetColor:
-                    console.log("SearchTargetColor FONT")
-
                     fontController.enable()
                     backgroundController.enable()
                     darkModeController.disable()

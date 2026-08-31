@@ -1,3 +1,4 @@
+import { useState, type FormEvent } from "react"
 import "./FontSwatch.css"
 
 const textBank = [
@@ -6,8 +7,6 @@ const textBank = [
     "The quick brown fox jumps over the lazy dog.",
     "b, c, f, g, h, i, j, k, m, o, p, q, u, v, w, x, y, and z are letters.",
 ]
-// const sampleText = textBank[0]
-const sampleText = textBank[Math.floor(Math.random() * textBank.length)]
 
 export type FontSwatchState = {
     color: string
@@ -36,6 +35,20 @@ type FontSwatchProps = {
 }
 
 function FontSwatch({ swatch }: FontSwatchProps) {
+    const [sampleText, setSampleText] = useState(
+        () => textBank[Math.floor(Math.random() * textBank.length)]
+    )
+
+    function onSampleTextInput(event: FormEvent<HTMLSpanElement>): void {
+        const nextValue = event.currentTarget.textContent?.slice(0, 60) ?? ""
+
+        if (event.currentTarget.textContent !== nextValue) {
+            event.currentTarget.textContent = nextValue
+        }
+
+        setSampleText(nextValue)
+    }
+
     const sampleStyle = swatch.darkModeEnabled
         ? {
               color: swatch.color,
@@ -94,7 +107,13 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             </span>
                         </p>
                     </div>
-                    <span id="normal" style={sampleStyle}>
+                    <span
+                        id="normal"
+                        style={sampleStyle}
+                        contentEditable
+                        suppressContentEditableWarning
+                        onInput={onSampleTextInput}
+                    >
                         {sampleText}
                     </span>
                     <h2>Large Text</h2>
@@ -122,7 +141,13 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             </span>
                         </p>
                     </div>
-                    <span id="big" style={sampleStyle}>
+                    <span
+                        id="big"
+                        style={sampleStyle}
+                        contentEditable
+                        suppressContentEditableWarning
+                        onInput={onSampleTextInput}
+                    >
                         {sampleText}
                     </span>
                     {/* <h2>Graphical Objects and User Interface Components</h2>

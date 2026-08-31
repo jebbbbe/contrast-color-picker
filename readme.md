@@ -1,22 +1,23 @@
 # [Contrast Color Picker](https://www.contrastcolorpicker.com/)
 
-Pick accessible font and background color combinations and preview [WCAG contrast](https://webaim.org/resources/contrastchecker/) in an interactive 3d viewer.
-The viewer displays the passing color volume in sRGB for the selected color and contrast ratio.
+Though many color combinations are pleasing to the eye, not every one will have the contrast needed to be accesible to users with visual disabilities. The Web Content Accessibility Guidelines ([WCAG contrast](https://webaim.org/resources/contrastchecker/)) outlines specific contrast requirements for text on background and this program allows web designers to visualize, pick, and preview accessible font and background color combinations in an interactive 3D viewer.
 
-## modes
+The viewer displays passing color volumes in sRGB for the selected color and contrast ratio.
 
-- `Font`: pick font color while the solver displays the background color.
-- `Background`: pick background color while the solver displays the font color.
-- `Opposite`: displays colors with passing opposite colors; clicking updates both.
-- `Darkmode`: uses two background colors and displays the intersection of both volumes.
+## MODES
+
+- `Font`: pick your font color, and the solver displays background colors that pass.
+- `Background`: pick your background color, and the solver displays the font colors that pass.
+- `Opposite`: pick a font color that has a passing complementary color for its background; or vice versa
+- `Darkmode`: pick a font color for two different background colors, and the solver displays the intersection of both volumes.
 - `None`: displays the color cube with no active search.
 
-## vision options
+## VISION OPTIONS
 
-- change output space to match different vison kernels
-- crop color output to match differnt kernels.
+- changes the output space to match different vison kernels
+- crops color output to match differnt kernels.
 
-kernels avaliable:
+Kernels avaliable:
 
 - deuteranopia
 - protanopia
@@ -24,17 +25,17 @@ kernels avaliable:
 - tritanopia
 - custom
 
-## solver
+## SOLVER
 
-The Volumetric Solver uses a custom shader to pathtrace into the color cube. First finding a search interval with a ray marching approach, refines that interval with binary search,then quantizes the result to the nearest passing color.
+The Volumetric Solver uses a custom shader to pathtrace into the color cube. It first finds a search interval with a ray marching approach, refines that interval with binary search, and then quantizes the result to the nearest passing color.
 
-## install
+## INSTALL
 
 ```bash
 npm install
 npm run dev
 ```
 
-## refrences
+## REFERENCES
 
 - WebAIM contrast checker: https://webaim.org/resources/contrastchecker/

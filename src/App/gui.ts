@@ -1,7 +1,8 @@
 import GUI from "lil-gui"
+import type { ColorSyncChangeEvent, ColorSyncState } from "./ColorSync"
+import { SearchBackgroundColor } from "./ColorSync"
 import type { ThreeSceneApp } from "./main"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
-import { getOppositeHexColor } from "./utils/contrast"
 
 const sdfColorTargetOutputTitles = {
     Color: ColorCube.TargetOutputColor,
@@ -29,45 +30,38 @@ const sdfColorSearchTitles = {
     None: ColorCube.SearchNone,
     "Opposite Color": ColorCube.SearchOppositeColor,
     "Font Color": ColorCube.SearchTargetColor,
-    "Background Color": 4,
+    "Background Color": SearchBackgroundColor,
     "Dark Mode": ColorCube.SearchBlackAndWhite,
 } as const
 
 const sdfColorContrastPresetValues = ["", 3, 4.5, 7] as const
 
-type SceneGuiState = {
-    searchMode: number
+type ContrastPresetState = {
     contrastPreset: "" | number
-    fontColor: string
-    backgroundColor: string
-    darkModeColor: string
 }
 
 export class SceneGui {
     readonly gui: GUI
-    readonly state: SceneGuiState
+    private readonly colorSync: ThreeSceneApp["colorSync"]
+    private readonly handleColorSyncChange: (
+        event: ColorSyncChangeEvent
+    ) => void
 
     constructor(app: ThreeSceneApp) {
-        const { controls, ctx, callbackBridge, transformControls } = app
+        const { colorSync, controls, ctx, transformControls } = app
         const { colorCube } = ctx
-        const { markers } = colorCube
         const colorCubeMaterial = colorCube.mesh.material
 
-        const state: SceneGuiState = {
-            searchMode: colorCubeMaterial.searchMode,
+        const state: ColorSyncState = colorSync.state
+        const contrastPresetState: ContrastPresetState = {
             contrastPreset: "",
-            fontColor: markers.font.getHex(),
-            backgroundColor: markers.background.getHex(),
-            darkModeColor: markers.darkmode.getHex(),
         }
-
-        console.log(state)
 
         this.gui = new GUI({
             title: "Scene",
             container: app.container,
         })
-        this.state = state
+        this.colorSync = colorSync
 
         const colorCubeFolder = this.gui
 
@@ -77,7 +71,11 @@ export class SceneGui {
             .listen()
             .onChange(onSearchModeChange)
         colorCubeFolder
-            .add(state, "contrastPreset", sdfColorContrastPresetValues)
+            .add(
+                contrastPresetState,
+                "contrastPreset",
+                sdfColorContrastPresetValues
+            )
             .name("WCAG Contrast")
             .listen()
             .onChange(onContrastPresetChange)
@@ -126,43 +124,21 @@ export class SceneGui {
             .name("Transform Space")
             .listen()
             .onChange(onTransformSpaceChange)
-
-        function updateSwatch(): void {
-            callbackBridge.setSwatch({
-                color: state.fontColor,
-                backgroundColor: state.backgroundColor,
-                darkModeEnabled:
-                    state.searchMode === ColorCube.SearchBlackAndWhite,
-                darkBackgroundColor: state.darkModeColor,
-            })
-        }
-
-        function updateColorCubeTargetColor(value: string) {
-            colorCubeMaterial.targetColor = value
-        }
-
-        function onFontColorChange(): void {
-            markers.font.updateColor(state.fontColor)
-            updateSwatch()
-        }
-
-        function onBackgroundColorChange(): void {
-            markers.background.updateColor(state.backgroundColor)
-            updateSwatch()
-        }
-
-        function onDarkModeColorChange(): void {
-            markers.darkmode.updateColor(state.darkModeColor)
-            updateSwatch()
-        }
+        fontController.onChange((value: string) => colorSync.setFontColor(value))
+        backgroundController.onChange((value: string) =>
+            colorSync.setBackgroundColor(value)
+        )
+        darkModeController.onChange((value: string) =>
+            colorSync.setDarkModeColor(value)
+        )
 
         function syncContrastPresetState(value: number): void {
-            state.contrastPreset =
+            contrastPresetState.contrastPreset =
                 value === 3 || value === 4.5 || value === 7 ? value : ""
         }
 
         function onContrastPresetChange(
-            value: SceneGuiState["contrastPreset"]
+            value: ContrastPresetState["contrastPreset"]
         ): void {
             if (value === "") {
                 syncContrastPresetState(colorCubeMaterial.contrastRatio)
@@ -190,10 +166,6 @@ export class SceneGui {
             syncOutputSpaceState(value)
         }
 
-        function syncTransformSpaceState(): void {
-            syncOutputSpaceState(colorCube.transformSpaceMode)
-        }
-
         function randomizeCustomTransformSpaceMatrix(): void {
             colorCube.customTransformSpaceMatrix.set(
                 Math.random(),
@@ -207,7 +179,7 @@ export class SceneGui {
                 Math.random()
             )
             colorCube.transformSpaceMode = ColorCube.TransformCustom
-            syncTransformSpaceState()
+            syncOutputSpaceState(colorCube.transformSpaceMode)
         }
 
         function randomizeCustomTransformSpaceMatrixSummation(): void {
@@ -237,150 +209,61 @@ export class SceneGui {
 
             mat.set(e0, e1, e2, e3, e4, e5, e6, e7, e8)
             colorCube.transformSpaceMode = ColorCube.TransformCustom
-            syncTransformSpaceState()
+            syncOutputSpaceState(colorCube.transformSpaceMode)
         }
 
         function onSearchModeChange(searchMode: number): void {
-            let nextMode = searchMode
-            if (searchMode == 4) nextMode -= 2
-            colorCubeMaterial.searchMode = nextMode
+            colorSync.setSearchMode(searchMode)
+        }
 
-			transformControls.detach()
+        function syncSearchModeState(): void {
+            transformControls.detach()
 
-            switch (searchMode) {
+            switch (state.searchMode) {
                 case ColorCube.SearchOppositeColor:
-                    fontController.enable()
-                    backgroundController.enable()
-                    darkModeController.disable()
-
-                    fontController.onChange(() => {
-                        const oppositeHex = getOppositeHexColor(state.fontColor)
-                        state.backgroundColor = oppositeHex
-                        markers.font.updateColor(state.fontColor)
-                        markers.background.updateColor(oppositeHex)
-                        updateSwatch()
-                    })
-                    backgroundController.onChange(() => {
-                        const oppositeHex = getOppositeHexColor(
-                            state.backgroundColor
-                        )
-                        state.fontColor = oppositeHex
-                        markers.background.updateColor(state.backgroundColor)
-                        markers.font.updateColor(oppositeHex)
-                        updateSwatch()
-                    })
-
-                    markers.font.visible = true
-                    markers.background.visible = true
-                    markers.darkmode.visible = false
-                    break
-                case 4:
-                    fontController.enable()
-                    backgroundController.enable()
-                    darkModeController.disable()
-
-                    fontController.onChange(() => {
-                        onFontColorChange()
-                        updateColorCubeTargetColor(state.fontColor)
-                    })
-                    backgroundController.onChange(onBackgroundColorChange)
-
-                    markers.font.visible = true
-                    markers.background.visible = true
-                    markers.darkmode.visible = false
-
-                    updateColorCubeTargetColor(state.fontColor)
-
-                    break
+                case SearchBackgroundColor:
                 case ColorCube.SearchTargetColor:
                     fontController.enable()
                     backgroundController.enable()
                     darkModeController.disable()
-
-                    fontController.onChange(onFontColorChange)
-                    backgroundController.onChange(() => {
-                        onBackgroundColorChange()
-                        updateColorCubeTargetColor(state.backgroundColor)
-                    })
-
-                    markers.font.visible = true
-                    markers.background.visible = true
-                    markers.darkmode.visible = false
-
-                    updateColorCubeTargetColor(state.backgroundColor)
-
                     break
                 case ColorCube.SearchBlackAndWhite:
-                    console.log("SearchBlackAndWhite")
-
                     fontController.enable()
                     backgroundController.enable()
                     darkModeController.enable()
-
-                    fontController.onChange(() => {
-                        onFontColorChange()
-                        colorCubeMaterial.targetColor = state.fontColor
-                    })
-                    backgroundController.onChange(() => {
-                        onBackgroundColorChange()
-                        colorCubeMaterial.whitePoint = state.backgroundColor
-                    })
-                    darkModeController.onChange(() => {
-                        onDarkModeColorChange()
-                        colorCubeMaterial.blackPoint = state.darkModeColor
-                    })
-
-                    colorCubeMaterial.targetColor = state.fontColor
-                    colorCubeMaterial.whitePoint = state.backgroundColor
-                    colorCubeMaterial.blackPoint = state.darkModeColor
-
-                    markers.font.visible = true
-                    markers.background.visible = true
-                    markers.darkmode.visible = true
                     break
                 case ColorCube.SearchNone:
                 default:
-                    console.log("SearchNone")
-
                     fontController.disable()
                     backgroundController.disable()
                     darkModeController.disable()
-
-                    markers.font.visible = false
-                    markers.background.visible = false
-                    markers.darkmode.visible = false
                     break
             }
-            updateSwatch()
         }
 
         function swapColors() {
-            markers.font.swap(markers.background)
-            const fv = fontController.getValue()
-            const bv = backgroundController.getValue()
-            fontController.setValue(bv)
-            backgroundController.setValue(fv)
-            updateSwatch()
+            colorSync.swapColors()
         }
+
+        const handleColorSyncChange = ({
+            searchModeChanged,
+        }: ColorSyncChangeEvent): void => {
+            if (searchModeChanged) {
+                syncSearchModeState()
+            }
+        }
+
+        colorSync.addEventListener("change", handleColorSyncChange)
+        this.handleColorSyncChange = handleColorSyncChange
 
         syncContrastPresetState(colorCubeMaterial.contrastRatio)
         syncOutputSpaceState(colorCube.transformSpaceMode)
-        onSearchModeChange(state.searchMode)
-        updateSwatch()
+        syncSearchModeState()
     }
 
     destroy(): void {
+        this.colorSync.removeEventListener("change", this.handleColorSyncChange)
         this.gui.destroy()
-    }
-
-    setFontColor(value: string): void {
-        this.state.fontColor = value
-    }
-    setBackgroundColor(value: string): void {
-        this.state.backgroundColor = value
-    }
-    setDarkModeColor(value: string): void {
-        this.state.darkModeColor = value
     }
 }
 

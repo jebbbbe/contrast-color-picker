@@ -2,7 +2,7 @@
 
 Though many color combinations are pleasing to the eye, not every one will have the contrast needed to be accesible to users with visual disabilities. The Web Content Accessibility Guidelines ([WCAG contrast](https://webaim.org/resources/contrastchecker/)) outlines specific contrast requirements for text on background and this program allows web designers to visualize, pick, and preview accessible font and background color combinations in an interactive 3D viewer.
 
-The viewer displays passing color volumes in sRGB for the selected color and contrast ratio.
+The viewer displays color volumes in sRGB that pass the WCAG guidelines for the selected color and contrast ratio.
 
 ## MODES
 

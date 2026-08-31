@@ -162,3 +162,11 @@
 .fontSwatch #big a:focus {
     text-decoration: underline;
 }
+
+#normalDarkAA,
+#normalDarkAAA,
+#largeDarkAA,
+#largeDarkAAA {
+    margin-left: 0px;
+    margin-right: 0px;
+}

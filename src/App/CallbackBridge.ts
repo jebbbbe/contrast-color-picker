@@ -10,6 +10,7 @@ type FontPreviewInput = {
     backgroundColor: string
     darkModeEnabled?: boolean
     darkBackgroundColor?: string
+    darkModeColor?: string
 }
 
 export class CallbackBridge {
@@ -30,6 +31,19 @@ export class CallbackBridge {
         }
 
         const contrastRatio = getContrastRatio(color, backgroundColor)
+        const darkMode = {
+            normalDarkTextPassAA: false,
+            normalDarkTextPassAAA: false,
+            largeDarkTextPassAA: false,
+            largeDarkTextPassAAA: false,
+        }
+        if (darkModeEnabled) {
+            const contrastRatio = getContrastRatio(color, darkBackgroundColor)
+            darkMode.normalDarkTextPassAA = contrastRatio >= 4.5
+            darkMode.normalDarkTextPassAAA = contrastRatio >= 7
+            darkMode.largeDarkTextPassAA = contrastRatio >= 3
+            darkMode.largeDarkTextPassAAA = contrastRatio >= 4.5
+        }
 
         this.callbacks.setSwatch({
             color,
@@ -40,6 +54,7 @@ export class CallbackBridge {
             largeTextPassAAA: contrastRatio >= 4.5,
             darkModeEnabled,
             darkBackgroundColor,
+            ...darkMode,
         })
     }
 }

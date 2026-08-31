@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from "react"
 import "./FontSwatch.css"
+import PassFail from "./PassFail"
 
 const textBank = [
     "The five boxing wizards jump quickly.",
@@ -17,6 +18,10 @@ export type FontSwatchState = {
     largeTextPassAAA: boolean
     darkModeEnabled: boolean
     darkBackgroundColor: string
+    normalDarkTextPassAA: boolean
+    normalDarkTextPassAAA: boolean
+    largeDarkTextPassAA: boolean
+    largeDarkTextPassAAA: boolean
 }
 
 export const initialFontSwatchState: FontSwatchState = {
@@ -28,6 +33,10 @@ export const initialFontSwatchState: FontSwatchState = {
     largeTextPassAAA: true,
     darkModeEnabled: false,
     darkBackgroundColor: "#000000",
+    normalDarkTextPassAA: true,
+    normalDarkTextPassAAA: false,
+    largeDarkTextPassAA: false,
+    largeDarkTextPassAAA: false,
 }
 
 type FontSwatchProps = {
@@ -86,25 +95,25 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                     <div className="results">
                         <p>
                             WCAG AA:{" "}
-                            <span
+                            <PassFail
+                                id="normalDarkAA"
+                                pass={swatch.normalDarkTextPassAA}
+                            />
+                            <PassFail
                                 id="normalAA"
-                                className={
-                                    swatch.normalTextPassAA ? "pass" : "fail"
-                                }
-                            >
-                                {swatch.normalTextPassAA ? "Pass" : "Fail"}
-                            </span>
+                                pass={swatch.normalTextPassAA}
+                            />
                         </p>
                         <p>
                             WCAG AAA:{" "}
-                            <span
+                            <PassFail
+                                id="normalDarkAAA"
+                                pass={swatch.normalDarkTextPassAAA}
+                            />
+                            <PassFail
                                 id="normalAAA"
-                                className={
-                                    swatch.normalTextPassAAA ? "pass" : "fail"
-                                }
-                            >
-                                {swatch.normalTextPassAAA ? "Pass" : "Fail"}
-                            </span>
+                                pass={swatch.normalTextPassAAA}
+                            />
                         </p>
                     </div>
                     <span
@@ -120,25 +129,25 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                     <div className="results">
                         <p>
                             WCAG AA:{" "}
-                            <span
+                            <PassFail
+                                id="largeDarkAA"
+                                pass={swatch.largeDarkTextPassAA}
+                            />
+                            <PassFail
                                 id="bigAA"
-                                className={
-                                    swatch.largeTextPassAA ? "pass" : "fail"
-                                }
-                            >
-                                {swatch.largeTextPassAA ? "Pass" : "Fail"}
-                            </span>
+                                pass={swatch.largeTextPassAA}
+                            />
                         </p>
                         <p>
                             WCAG AAA:{" "}
-                            <span
+                            <PassFail
+                                id="largeDarkAAA"
+                                pass={swatch.largeDarkTextPassAAA}
+                            />
+                            <PassFail
                                 id="bigAAA"
-                                className={
-                                    swatch.largeTextPassAAA ? "pass" : "fail"
-                                }
-                            >
-                                {swatch.largeTextPassAAA ? "Pass" : "Fail"}
-                            </span>
+                                pass={swatch.largeTextPassAAA}
+                            />
                         </p>
                     </div>
                     <span

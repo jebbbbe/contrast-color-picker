@@ -15,6 +15,7 @@ import { SceneGui } from "./gui"
 const sceneBackgroundHex = "#dee4ef"
 export class ThreeSceneApp {
     readonly container: HTMLElement
+    readonly guiContainer: HTMLElement
     readonly callbackBridge: CallbackBridge
     readonly colorSync: ColorSync
     private readonly renderer: THREE.WebGLRenderer
@@ -30,7 +31,11 @@ export class ThreeSceneApp {
     }
     private animationFrameId = 0
 
-    constructor(container: HTMLElement, reactCallbacks: ReactCallbacks = {}) {
+    constructor(
+        container: HTMLElement,
+        guiContainer: HTMLElement,
+        reactCallbacks: ReactCallbacks = {}
+    ) {
         // layout
         const aspectLayout = new AspectLayout("dynamic", container)
         const callbackBridge = new CallbackBridge(reactCallbacks)
@@ -129,6 +134,7 @@ export class ThreeSceneApp {
 
         // props
         this.container = container
+        this.guiContainer = guiContainer
         this.callbackBridge = callbackBridge
         this.colorSync = colorSync
         this.aspectLayout = aspectLayout

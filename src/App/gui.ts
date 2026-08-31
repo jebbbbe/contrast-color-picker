@@ -59,7 +59,7 @@ export class SceneGui {
 
         this.gui = new GUI({
             title: "Scene",
-            container: app.container,
+            container: app.guiContainer,
         })
         this.colorSync = colorSync
 

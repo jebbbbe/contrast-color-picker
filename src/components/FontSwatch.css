@@ -19,7 +19,7 @@
 
 .fontSwatch #maincontent {
     display: flow-root;
-    width: min(700px, 100%);
+    width: 100%;
     max-width: 100%;
     margin: 0 0 20px;
     position: relative;
@@ -104,12 +104,19 @@
 }
 
 .fontSwatch .results p {
+    display: flex;
+    align-items: center;
     padding-bottom: 2px;
 }
 
-.fontSwatch .results span {
+.fontSwatch .results .resultBadges {
+    display: flex;
+    margin-left: auto;
+}
+
+.fontSwatch .results .pass,
+.fontSwatch .results .fail {
     box-sizing: content-box;
-    float: right;
     width: 2.2em;
     margin: 0 0.5em;
     padding: 0 0.5em;
@@ -167,6 +174,22 @@
 #normalDarkAAA,
 #largeDarkAA,
 #largeDarkAAA {
-    margin-left: 0px;
-    margin-right: 0px;
+    margin-left: 0;
+    margin-right: 0;
+}
+
+@media (max-width: 600px) {
+    .fontSwatch #normal,
+    .fontSwatch #big,
+    .fontSwatch #ui {
+        float: none;
+    }
+
+    .fontSwatch #normal,
+    .fontSwatch #big,
+    .fontSwatch #ui {
+        display: block;
+        clear: both;
+        width: 100%;
+    }
 }

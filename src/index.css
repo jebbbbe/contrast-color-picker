@@ -1,3 +1,7 @@
+:root {
+    --content-max-width: 700px;
+}
+
 html,
 body,
 #root {
@@ -43,14 +47,18 @@ footer {
 .content {
     box-sizing: border-box;
     display: flex;
+    align-items: center;
+    flex: 1;
     flex-direction: column;
     gap: 1rem;
-    margin: 0;
-    width: 100%;
+    justify-content: center;
+    margin: 0 auto;
+    width: min(var(--content-max-width), 100%);
 }
 
 .container {
     box-sizing: border-box;
+    width: 100%;
     /* padding: 1rem; */
 	/* padding-top: 0; */
 }
@@ -64,6 +72,7 @@ footer {
 }
 
 .gui-holder {
+    width: 100%;
     margin-top: 1rem;
 }
 
@@ -75,7 +84,8 @@ footer {
 
 .gui-holder > .lil-gui {
     --width: 100%;
-    max-width: 700px;
+    max-width: 100%;
+    margin-inline: auto;
 }
 
 #app canvas {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { button, folder, Leva, useControls } from "leva"
+import { button, Leva, useControls } from "leva"
 import type { ColorSyncChangeEvent } from "../App/ColorSync"
 import { SearchBackgroundColor } from "../App/ColorSync"
 import type ThreeSceneApp from "../App/main"
@@ -63,15 +63,110 @@ function LevaSceneControls({ app }: { app: ThreeSceneApp }) {
     const [contrastPreset, setContrastPreset] = useState<ContrastPresetState>(
         getContrastPresetValue(app.gui.local.colorCubeMaterial.contrastRatio)
     )
+    const { fontDisabled, backgroundDisabled, darkModeDisabled } =
+        getColorControlState(searchMode)
+
+    const [, setLeva] = useControls(
+        "Scene",
+        () => ({
+            "Search Mode": {
+                value: searchMode,
+                options: searchTitles,
+                onChange: (value: number) => {
+                    app.gui.setSearchMode(value)
+                    syncFromAppState()
+                },
+            },
+            "WCAG Contrast": {
+                value: contrastPreset,
+                options: [...contrastPresetValues],
+                onChange: (value: ContrastPresetState) => {
+                    if (value === "") {
+                        syncFromAppState()
+                        return
+                    }
+
+                    app.gui.setContrastPreset(value)
+                    syncFromAppState()
+                },
+            },
+            "Contrast Ratio": {
+                value: contrastRatio,
+                min: 1,
+                max: 21,
+                step: 0.001,
+                onChange: (value: number) => {
+                    app.gui.local.colorCubeMaterial.contrastRatio = value
+                    syncFromAppState()
+                },
+            },
+            Swap: button(() => {
+                app.gui.swapColors()
+                syncFromAppState()
+            }),
+            Font: {
+                value: fontColor,
+                disabled: fontDisabled,
+                onChange: (value: string) => {
+                    app.gui.setFontColor(value)
+                    syncFromAppState()
+                },
+            },
+            Background: {
+                value: backgroundColor,
+                disabled: backgroundDisabled,
+                onChange: (value: string) => {
+                    app.gui.setBackgroundColor(value)
+                    syncFromAppState()
+                },
+            },
+            "Dark Mode": {
+                value: darkModeColor,
+                disabled: darkModeDisabled,
+                onChange: (value: string) => {
+                    app.gui.setDarkModeColor(value)
+                    syncFromAppState()
+                },
+            },
+        }),
+        { collapsed: false },
+        [
+            app,
+            searchMode,
+            contrastPreset,
+            contrastRatio,
+            fontColor,
+            backgroundColor,
+            darkModeColor,
+            fontDisabled,
+            backgroundDisabled,
+            darkModeDisabled,
+        ]
+    )
 
     function syncFromAppState(): void {
         const { colorSync, colorCubeMaterial } = app.gui.local
-        setSearchMode(colorSync.state.searchMode)
-        setFontColor(colorSync.state.fontColor)
-        setBackgroundColor(colorSync.state.backgroundColor)
-        setDarkModeColor(colorSync.state.darkModeColor)
-        setContrastRatio(colorCubeMaterial.contrastRatio)
-        setContrastPreset(getContrastPresetValue(colorCubeMaterial.contrastRatio))
+        const nextSearchMode = colorSync.state.searchMode
+        const nextFontColor = colorSync.state.fontColor
+        const nextBackgroundColor = colorSync.state.backgroundColor
+        const nextDarkModeColor = colorSync.state.darkModeColor
+        const nextContrastRatio = colorCubeMaterial.contrastRatio
+        const nextContrastPreset = getContrastPresetValue(nextContrastRatio)
+
+        setSearchMode(nextSearchMode)
+        setFontColor(nextFontColor)
+        setBackgroundColor(nextBackgroundColor)
+        setDarkModeColor(nextDarkModeColor)
+        setContrastRatio(nextContrastRatio)
+        setContrastPreset(nextContrastPreset)
+        setLeva({
+            "Search Mode": nextSearchMode,
+            "WCAG Contrast": nextContrastPreset,
+            "Contrast Ratio": nextContrastRatio,
+            Font: nextFontColor,
+            Background: nextBackgroundColor,
+            "Dark Mode": nextDarkModeColor,
+        })
     }
 
     useEffect(() => {
@@ -87,113 +182,6 @@ function LevaSceneControls({ app }: { app: ThreeSceneApp }) {
             app.gui.local.colorSync.removeEventListener("change", handleChange)
         }
     }, [app])
-
-    const { fontDisabled, backgroundDisabled, darkModeDisabled } =
-        getColorControlState(searchMode)
-
-    useControls(
-        () => ({
-            Scene: folder(
-                {
-                    "Search Mode": {
-                        value: searchMode,
-                        options: searchTitles,
-                        onChange: (value: number) => {
-                            app.gui.setSearchMode(value)
-                            syncFromAppState()
-                        },
-                    },
-                    "WCAG Contrast": {
-                        value: contrastPreset,
-                        options: {
-                            "": contrastPresetValues[0],
-                            "3": contrastPresetValues[1],
-                            "4.5": contrastPresetValues[2],
-                            "7": contrastPresetValues[3],
-                        },
-                        onChange: (value: ContrastPresetState) => {
-                            if (value === "") {
-                                setContrastPreset(
-                                    getContrastPresetValue(
-                                        app.gui.local.colorCubeMaterial.contrastRatio
-                                    )
-                                )
-                                return
-                            }
-
-                            app.gui.setContrastPreset(value)
-                            setContrastRatio(
-                                app.gui.local.colorCubeMaterial.contrastRatio
-                            )
-                            setContrastPreset(
-                                getContrastPresetValue(
-                                    app.gui.local.colorCubeMaterial.contrastRatio
-                                )
-                            )
-                        },
-                    },
-                    "Contrast Ratio": {
-                        value: contrastRatio,
-                        min: 1,
-                        max: 21,
-                        step: 0.001,
-                        onChange: (value: number) => {
-                            app.gui.local.colorCubeMaterial.contrastRatio = value
-                            setContrastRatio(
-                                app.gui.local.colorCubeMaterial.contrastRatio
-                            )
-                            setContrastPreset(
-                                getContrastPresetValue(
-                                    app.gui.local.colorCubeMaterial.contrastRatio
-                                )
-                            )
-                        },
-                    },
-                    Swap: button(() => {
-                        app.gui.swapColors()
-                        syncFromAppState()
-                    }),
-                    Font: {
-                        value: fontColor,
-                        disabled: fontDisabled,
-                        onChange: (value: string) => {
-                            app.gui.setFontColor(value)
-                            syncFromAppState()
-                        },
-                    },
-                    Background: {
-                        value: backgroundColor,
-                        disabled: backgroundDisabled,
-                        onChange: (value: string) => {
-                            app.gui.setBackgroundColor(value)
-                            syncFromAppState()
-                        },
-                    },
-                    "Dark Mode": {
-                        value: darkModeColor,
-                        disabled: darkModeDisabled,
-                        onChange: (value: string) => {
-                            app.gui.setDarkModeColor(value)
-                            syncFromAppState()
-                        },
-                    },
-                },
-                { collapsed: false }
-            ),
-        }),
-        [
-            app,
-            searchMode,
-            contrastPreset,
-            contrastRatio,
-            fontColor,
-            backgroundColor,
-            darkModeColor,
-            fontDisabled,
-            backgroundDisabled,
-            darkModeDisabled,
-        ]
-    )
 
     return null
 }

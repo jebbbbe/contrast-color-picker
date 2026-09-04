@@ -18,6 +18,7 @@ type ContrastPresetState = {
 export class SceneGui {
     readonly gui: GUI
     readonly local: {
+        colorCube: ThreeSceneApp["ctx"]["colorCube"]
         colorSync: ThreeSceneApp["colorSync"]
         colorCubeMaterial: ColorCube.ColorCubeMaterial
     }
@@ -40,6 +41,7 @@ export class SceneGui {
             container: app.guiContainer,
         })
         this.local = {
+            colorCube,
             colorSync,
             colorCubeMaterial,
         }
@@ -52,11 +54,7 @@ export class SceneGui {
             .listen()
             .onChange(this.setSearchMode)
         colorCubeFolder
-            .add(
-                contrastPresetState,
-                "contrastPreset",
-                contrastPresetValues
-            )
+            .add(contrastPresetState, "contrastPreset", contrastPresetValues)
             .name("WCAG Contrast")
             .listen()
             .onChange((value: ContrastPresetState["contrastPreset"]) => {
@@ -84,7 +82,7 @@ export class SceneGui {
                         ? colorCubeMaterial.contrastRatio
                         : ""
             })
-        colorCubeFolder.add({ fn: swapColors }, "fn").name("Swap")
+        colorCubeFolder.add({ fn: this.swapColors }, "fn").name("Swap")
         const fontController = colorCubeFolder
             .addColor(state, "fontColor")
             .name("Font")
@@ -113,10 +111,26 @@ export class SceneGui {
             .name("Quantize Search")
         debugFolder.add(controls, "autoRotate").name("Rotate Camera")
         debugFolder
-            .add({ fn: randomizeCustomTransformSpaceMatrix }, "fn")
+            .add(
+                {
+                    fn: () => {
+                        this.randomizeCustomTransformSpaceMatrix(false)
+                        syncOutputSpaceState(colorCube.transformSpaceMode)
+                    },
+                },
+                "fn"
+            )
             .name("Randomize Custom Matrix")
         debugFolder
-            .add({ fn: randomizeCustomTransformSpaceMatrixSummation }, "fn")
+            .add(
+                {
+                    fn: () => {
+                        this.randomizeCustomTransformSpaceMatrix(true)
+                        syncOutputSpaceState(colorCube.transformSpaceMode)
+                    },
+                },
+                "fn"
+            )
             .name("Randomize Summation Matrix")
         const outputSpaceController = debugFolder
             .add(colorCubeMaterial, "transformMode", transformTitles)
@@ -142,52 +156,6 @@ export class SceneGui {
             syncOutputSpaceState(value)
         }
 
-        function randomizeCustomTransformSpaceMatrix(): void {
-            colorCube.customTransformSpaceMatrix.set(
-                Math.random(),
-                Math.random(),
-                Math.random(),
-                Math.random(),
-                Math.random(),
-                Math.random(),
-                Math.random(),
-                Math.random(),
-                Math.random()
-            )
-            colorCube.transformSpaceMode = ColorCube.TransformCustom
-            syncOutputSpaceState(colorCube.transformSpaceMode)
-        }
-
-        function randomizeCustomTransformSpaceMatrixSummation(): void {
-            const mat = colorCube.customTransformSpaceMatrix
-            let e0 = Math.random()
-            let e1 = Math.random()
-            let e2 = Math.random()
-            let e3 = Math.random()
-            let e4 = Math.random()
-            let e5 = Math.random()
-            let e6 = Math.random()
-            let e7 = Math.random()
-            let e8 = Math.random()
-            const s1 = e0 + e1 + e2
-            const s2 = e3 + e4 + e5
-            const s3 = e6 + e7 + e8
-
-            e0 = e0 / s1
-            e1 = e1 / s1
-            e2 = e2 / s1
-            e3 = e3 / s2
-            e4 = e4 / s2
-            e5 = e5 / s2
-            e6 = e6 / s3
-            e7 = e7 / s3
-            e8 = e8 / s3
-
-            mat.set(e0, e1, e2, e3, e4, e5, e6, e7, e8)
-            colorCube.transformSpaceMode = ColorCube.TransformCustom
-            syncOutputSpaceState(colorCube.transformSpaceMode)
-        }
-
         function syncSearchModeState(): void {
             transformControls.detach()
 
@@ -211,10 +179,6 @@ export class SceneGui {
                     darkModeController.disable()
                     break
             }
-        }
-
-        function swapColors() {
-            colorSync.swapColors()
         }
 
         const handleColorSyncChange = ({
@@ -256,6 +220,52 @@ export class SceneGui {
 
     readonly setDarkModeColor = (value: string): void => {
         this.local.colorSync.setDarkModeColor(value)
+    }
+
+    readonly swapColors = (): void => {
+        this.local.colorSync.swapColors()
+    }
+
+    readonly randomizeCustomTransformSpaceMatrix = (
+        useSummation: boolean
+    ): void => {
+        let e0 = Math.random()
+        let e1 = Math.random()
+        let e2 = Math.random()
+        let e3 = Math.random()
+        let e4 = Math.random()
+        let e5 = Math.random()
+        let e6 = Math.random()
+        let e7 = Math.random()
+        let e8 = Math.random()
+        if (useSummation) {
+            const s1 = e0 + e1 + e2
+            const s2 = e3 + e4 + e5
+            const s3 = e6 + e7 + e8
+
+            e0 = e0 / s1
+            e1 = e1 / s1
+            e2 = e2 / s1
+            e3 = e3 / s2
+            e4 = e4 / s2
+            e5 = e5 / s2
+            e6 = e6 / s3
+            e7 = e7 / s3
+            e8 = e8 / s3
+        }
+
+        this.local.colorCube.customTransformSpaceMatrix.set(
+            e0,
+            e1,
+            e2,
+            e3,
+            e4,
+            e5,
+            e6,
+            e7,
+            e8
+        )
+        this.local.colorCube.transformSpaceMode = ColorCube.TransformCustom
     }
 
     destroy(): void {

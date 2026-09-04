@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react"
-import { button, Leva, useControls } from "leva"
+import { button, LevaPanel, useControls, useCreateStore } from "leva"
 import type { ColorSyncChangeEvent } from "../App/ColorSync"
 import { SearchBackgroundColor } from "../App/ColorSync"
 import * as ColorCube from "../App/objects/materials/ColorCubeMaterial"
 import {
     contrastPresetValues,
     searchTitles,
+	levaTheme,
     type AppStubType,
 } from "../constants"
 
@@ -48,8 +49,13 @@ function getColorControlState(searchMode: number): {
 }
 
 function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
-    const [searchMode, setSearchMode] = useState(bridge.local.colorSync.state.searchMode)
-    const [fontColor, setFontColor] = useState(bridge.local.colorSync.state.fontColor)
+    const [oneLineLabels, setOneLineLabels] = useState(false)
+    const [searchMode, setSearchMode] = useState(
+        bridge.local.colorSync.state.searchMode
+    )
+    const [fontColor, setFontColor] = useState(
+        bridge.local.colorSync.state.fontColor
+    )
     const [backgroundColor, setBackgroundColor] = useState(
         bridge.local.colorSync.state.backgroundColor
     )
@@ -65,7 +71,10 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
     const { fontDisabled, backgroundDisabled, darkModeDisabled } =
         getColorControlState(searchMode)
 
-    const [, setLeva] = useControls(
+    const otherStore = useCreateStore()
+    const colorStore = useCreateStore()
+
+    const [, setOther] = useControls(
         () => ({
             "Search Mode": {
                 value: searchMode,
@@ -102,6 +111,18 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
                 bridge.swapColors()
                 syncFromBridgeState()
             }),
+        }),
+        { store: otherStore },
+        [
+            bridge,
+            searchMode,
+            contrastPreset,
+            contrastRatio,
+        ]
+    )
+
+    const [, setColors] = useControls(
+        () => ({
             Font: {
                 value: fontColor,
                 disabled: fontDisabled,
@@ -127,11 +148,9 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
                 },
             },
         }),
+        { store: colorStore },
         [
             bridge,
-            searchMode,
-            contrastPreset,
-            contrastRatio,
             fontColor,
             backgroundColor,
             darkModeColor,
@@ -156,15 +175,32 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
         setDarkModeColor(nextDarkModeColor)
         setContrastRatio(nextContrastRatio)
         setContrastPreset(nextContrastPreset)
-        setLeva({
+        setOther({
             "Search Mode": nextSearchMode,
             "WCAG Contrast": nextContrastPreset,
             "Contrast Ratio": nextContrastRatio,
+        })
+        setColors({
             Font: nextFontColor,
             Background: nextBackgroundColor,
             "Dark Mode": nextDarkModeColor,
         })
     }
+
+    // turn on one line labels
+    useEffect(() => {
+        const media = globalThis.matchMedia("(min-width: 701px)")
+        const syncOneLineLabels = (): void => {
+            setOneLineLabels(media.matches)
+        }
+
+        syncOneLineLabels()
+        media.addEventListener("change", syncOneLineLabels)
+
+        return () => {
+            media.removeEventListener("change", syncOneLineLabels)
+        }
+    }, [])
 
     useEffect(() => {
         syncFromBridgeState()
@@ -182,19 +218,30 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
 
     return (
         <>
-            <Leva
-                // theme={levaTheme} // you can pass a custom theme (see the styling section)
-                fill={true} // default = false, true makes the pane fill the parent dom node it's rendered in
-                flat={true} // default = false, true removes border radius and shadow
-                // oneLineLabels // default = false, alternative layout for labels, with labels and fields on separate rows
-                collapsed={false} // default = false, when true the GUI is collapsed
-                // hidden // default = false, when true the GUI is hidden
-                // neverHide // default = false, when true the GUI stays visible even when no controls are mounted
-                // hideCopyButton // default = false, hides the copy button in the title bar
-                titleBar={false}
-                neverHide={true}
-                // titleBar = {false}
-            />
+            <div className="leva-column">
+                <LevaPanel
+                    store={otherStore}
+					theme={levaTheme}
+                    fill={true}
+                    flat={true}
+                    oneLineLabels={oneLineLabels}
+                    collapsed={false}
+                    titleBar={false}
+                    neverHide={true}
+                />
+            </div>
+            <div className="leva-column">
+                <LevaPanel
+                    store={colorStore}
+					theme={levaTheme}
+                    fill={true}
+                    flat={true}
+                    oneLineLabels={oneLineLabels}
+                    collapsed={false}
+                    titleBar={false}
+                    neverHide={true}
+                />
+            </div>
         </>
     )
 }

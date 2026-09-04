@@ -11,8 +11,9 @@ import { AspectLayout } from "./utils/AspectLayout.js"
 import { getContrastRatio } from "./utils/contrast"
 import { logScenePixel } from "./utils/logScenePixel"
 import { SceneGui } from "./gui"
+import { levaTheme } from "../constants"
 
-const sceneBackgroundHex = "#dee4ef"
+const sceneBackgroundHex = levaTheme.colors.elevation2
 
 export class ThreeSceneApp {
     readonly container: HTMLElement

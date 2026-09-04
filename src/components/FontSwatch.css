@@ -37,7 +37,7 @@
     margin: 0 0 6px;
     padding-top: 15px;
     border-bottom: 1px solid;
-    color: #bf1722;
+    color: var(--highlight);
     font-family: "Roboto", Georgia, Times, serif;
     font-size: 150%;
     font-weight: normal;

@@ -24,6 +24,7 @@ export class ColorSync extends THREE.EventDispatcher<{
 }> {
     private readonly colorCube: ColorCubeVolume
     private readonly callbackBridge: CallbackBridge
+    private appliedSearchMode: number
     readonly state: ColorSyncState
 
     constructor(colorCube: ColorCubeVolume, callbackBridge: CallbackBridge) {
@@ -39,6 +40,7 @@ export class ColorSync extends THREE.EventDispatcher<{
             backgroundColor: markers.background.getHex(),
             darkModeColor: markers.darkmode.getHex(),
         }
+        this.appliedSearchMode = this.state.searchMode
 
         this.update({})
     }
@@ -117,7 +119,7 @@ export class ColorSync extends THREE.EventDispatcher<{
     private update(patch: Partial<ColorSyncState>): void {
         const searchModeChanged =
             patch.searchMode !== undefined &&
-            patch.searchMode !== this.state.searchMode
+            patch.searchMode !== this.appliedSearchMode
 
         Object.assign(this.state, patch)
         const { markers, mesh } = this.colorCube
@@ -145,6 +147,7 @@ export class ColorSync extends THREE.EventDispatcher<{
         markers.font.visible = searchMode !== ColorCube.SearchNone
         markers.background.visible = searchMode !== ColorCube.SearchNone
         markers.darkmode.visible = searchMode === ColorCube.SearchBlackAndWhite
+        this.appliedSearchMode = searchMode
 
         this.callbackBridge.setSwatch({
             color: fontColor,

@@ -1,41 +1,219 @@
-import { useEffect, useMemo, useState } from "react"
-import { button, buttonGroup, folder, Leva, useControls } from "leva"
+import { useEffect, useState } from "react"
+import { button, folder, Leva, useControls } from "leva"
+import type { ColorSyncChangeEvent } from "../App/ColorSync"
+import { SearchBackgroundColor } from "../App/ColorSync"
+import type ThreeSceneApp from "../App/main"
+import * as ColorCube from "../App/objects/materials/ColorCubeMaterial"
+import { contrastPresetValues, searchTitles } from "../constants"
 
-function LevaComponent() {
-    const schema = () => {
-        const Folder = folder(
-            {
-                // saveCubeAsGlb: button(controls.saveCubeAsGlb),
-                // saveCubeAsGltf: button(controls.saveCubeAsGltf),
-            },
-            { collapsed: true }
-        )
-        return {
-			Folder
-		}
+type ContrastPresetState = "" | number
+
+type LevaComponentProps = {
+    app: ThreeSceneApp | null
+}
+
+function getContrastPresetValue(contrastRatio: number): ContrastPresetState {
+    return contrastRatio === 3 || contrastRatio === 4.5 || contrastRatio === 7
+        ? contrastRatio
+        : ""
+}
+
+function getColorControlState(searchMode: number): {
+    fontDisabled: boolean
+    backgroundDisabled: boolean
+    darkModeDisabled: boolean
+} {
+    switch (searchMode) {
+        case ColorCube.SearchOppositeColor:
+        case SearchBackgroundColor:
+        case ColorCube.SearchTargetColor:
+            return {
+                fontDisabled: false,
+                backgroundDisabled: false,
+                darkModeDisabled: true,
+            }
+        case ColorCube.SearchBlackAndWhite:
+            return {
+                fontDisabled: false,
+                backgroundDisabled: false,
+                darkModeDisabled: false,
+            }
+        case ColorCube.SearchNone:
+        default:
+            return {
+                fontDisabled: true,
+                backgroundDisabled: true,
+                darkModeDisabled: true,
+            }
     }
-	useControls(schema())
+}
+
+function LevaSceneControls({ app }: { app: ThreeSceneApp }) {
+    const [searchMode, setSearchMode] = useState(app.gui.local.colorSync.state.searchMode)
+    const [fontColor, setFontColor] = useState(app.gui.local.colorSync.state.fontColor)
+    const [backgroundColor, setBackgroundColor] = useState(
+        app.gui.local.colorSync.state.backgroundColor
+    )
+    const [darkModeColor, setDarkModeColor] = useState(
+        app.gui.local.colorSync.state.darkModeColor
+    )
+    const [contrastRatio, setContrastRatio] = useState(
+        app.gui.local.colorCubeMaterial.contrastRatio
+    )
+    const [contrastPreset, setContrastPreset] = useState<ContrastPresetState>(
+        getContrastPresetValue(app.gui.local.colorCubeMaterial.contrastRatio)
+    )
+
+    function syncFromAppState(): void {
+        const { colorSync, colorCubeMaterial } = app.gui.local
+        setSearchMode(colorSync.state.searchMode)
+        setFontColor(colorSync.state.fontColor)
+        setBackgroundColor(colorSync.state.backgroundColor)
+        setDarkModeColor(colorSync.state.darkModeColor)
+        setContrastRatio(colorCubeMaterial.contrastRatio)
+        setContrastPreset(getContrastPresetValue(colorCubeMaterial.contrastRatio))
+    }
+
+    useEffect(() => {
+        syncFromAppState()
+
+        const handleChange = (_event: ColorSyncChangeEvent): void => {
+            syncFromAppState()
+        }
+
+        app.gui.local.colorSync.addEventListener("change", handleChange)
+
+        return () => {
+            app.gui.local.colorSync.removeEventListener("change", handleChange)
+        }
+    }, [app])
+
+    const { fontDisabled, backgroundDisabled, darkModeDisabled } =
+        getColorControlState(searchMode)
+
+    useControls(
+        () => ({
+            Scene: folder(
+                {
+                    "Search Mode": {
+                        value: searchMode,
+                        options: searchTitles,
+                        onChange: (value: number) => {
+                            app.gui.setSearchMode(value)
+                            syncFromAppState()
+                        },
+                    },
+                    "WCAG Contrast": {
+                        value: contrastPreset,
+                        options: {
+                            "": contrastPresetValues[0],
+                            "3": contrastPresetValues[1],
+                            "4.5": contrastPresetValues[2],
+                            "7": contrastPresetValues[3],
+                        },
+                        onChange: (value: ContrastPresetState) => {
+                            if (value === "") {
+                                setContrastPreset(
+                                    getContrastPresetValue(
+                                        app.gui.local.colorCubeMaterial.contrastRatio
+                                    )
+                                )
+                                return
+                            }
+
+                            app.gui.setContrastPreset(value)
+                            setContrastRatio(
+                                app.gui.local.colorCubeMaterial.contrastRatio
+                            )
+                            setContrastPreset(
+                                getContrastPresetValue(
+                                    app.gui.local.colorCubeMaterial.contrastRatio
+                                )
+                            )
+                        },
+                    },
+                    "Contrast Ratio": {
+                        value: contrastRatio,
+                        min: 1,
+                        max: 21,
+                        step: 0.001,
+                        onChange: (value: number) => {
+                            app.gui.local.colorCubeMaterial.contrastRatio = value
+                            setContrastRatio(
+                                app.gui.local.colorCubeMaterial.contrastRatio
+                            )
+                            setContrastPreset(
+                                getContrastPresetValue(
+                                    app.gui.local.colorCubeMaterial.contrastRatio
+                                )
+                            )
+                        },
+                    },
+                    Swap: button(() => {
+                        app.gui.swapColors()
+                        syncFromAppState()
+                    }),
+                    Font: {
+                        value: fontColor,
+                        disabled: fontDisabled,
+                        onChange: (value: string) => {
+                            app.gui.setFontColor(value)
+                            syncFromAppState()
+                        },
+                    },
+                    Background: {
+                        value: backgroundColor,
+                        disabled: backgroundDisabled,
+                        onChange: (value: string) => {
+                            app.gui.setBackgroundColor(value)
+                            syncFromAppState()
+                        },
+                    },
+                    "Dark Mode": {
+                        value: darkModeColor,
+                        disabled: darkModeDisabled,
+                        onChange: (value: string) => {
+                            app.gui.setDarkModeColor(value)
+                            syncFromAppState()
+                        },
+                    },
+                },
+                { collapsed: false }
+            ),
+        }),
+        [
+            app,
+            searchMode,
+            contrastPreset,
+            contrastRatio,
+            fontColor,
+            backgroundColor,
+            darkModeColor,
+            fontDisabled,
+            backgroundDisabled,
+            darkModeDisabled,
+        ]
+    )
+
+    return null
+}
+
+function LevaComponent({ app }: LevaComponentProps) {
     return (
-        <Leva
-            // theme={} // you can pass a custom theme (see the styling section)
-            fill={true} // default = false, true makes the pane fill the parent dom node it's rendered in
-            flat={true} // default = false, true removes border radius and shadow
-            // oneLineLabels // default = false, alternative layout for labels, with labels and fields on separate rows
-            collapsed={false} // default = false, when true the GUI is collapsed
-            // hidden // default = false, when true the GUI is hidden
-            // neverHide // default = false, when true the GUI stays visible even when no controls are mounted
-            // hideCopyButton // default = false, hides the copy button in the title bar
-            titleBar={{
-                // Configure title bar options
-                title: "Controls", // Custom title
-                drag: false, // Enable dragging
-                filter: false, // Enable filter/search
-                // position: { x: 0, y: 0 }, // Initial position (when drag is enabled)
-                // onDrag: () => {}, // Callback when dragged
-            }}
-            neverHide={true}
-            // titleBar = {false}
-        />
+        <>
+            <Leva
+                fill={true}
+                flat={true}
+                collapsed={false}
+                titleBar={{
+                    title: "Leva",
+                    drag: false,
+                    filter: false,
+                }}
+                neverHide={true}
+            />
+            {app ? <LevaSceneControls app={app} /> : null}
+        </>
     )
 }
 

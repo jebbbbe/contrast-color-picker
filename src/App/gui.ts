@@ -17,7 +17,10 @@ type ContrastPresetState = {
 
 export class SceneGui {
     readonly gui: GUI
-    private readonly colorSync: ThreeSceneApp["colorSync"]
+    readonly local: {
+        colorSync: ThreeSceneApp["colorSync"]
+        colorCubeMaterial: ColorCube.ColorCubeMaterial
+    }
     private readonly handleColorSyncChange: (
         event: ColorSyncChangeEvent
     ) => void
@@ -36,7 +39,10 @@ export class SceneGui {
             title: "Scene",
             container: app.guiContainer,
         })
-        this.colorSync = colorSync
+        this.local = {
+            colorSync,
+            colorCubeMaterial,
+        }
 
         const colorCubeFolder = this.gui
 
@@ -44,7 +50,7 @@ export class SceneGui {
             .add(state, "searchMode", searchTitles)
             .name("Search Mode")
             .listen()
-            .onChange(onSearchModeChange)
+            .onChange(this.setSearchMode)
         colorCubeFolder
             .add(
                 contrastPresetState,
@@ -53,25 +59,47 @@ export class SceneGui {
             )
             .name("WCAG Contrast")
             .listen()
-            .onChange(onContrastPresetChange)
+            .onChange((value: ContrastPresetState["contrastPreset"]) => {
+                if (value === "") {
+                    contrastPresetState.contrastPreset =
+                        colorCubeMaterial.contrastRatio === 3 ||
+                        colorCubeMaterial.contrastRatio === 4.5 ||
+                        colorCubeMaterial.contrastRatio === 7
+                            ? colorCubeMaterial.contrastRatio
+                            : ""
+                    return
+                }
+
+                this.setContrastPreset(value)
+            })
         colorCubeFolder
             .add(colorCubeMaterial, "contrastRatio", 1.0, 21.0, 0.001)
             .name("Contrast Ratio")
             .listen()
-            .onChange(onContrastRatioChange)
+            .onChange(() => {
+                contrastPresetState.contrastPreset =
+                    colorCubeMaterial.contrastRatio === 3 ||
+                    colorCubeMaterial.contrastRatio === 4.5 ||
+                    colorCubeMaterial.contrastRatio === 7
+                        ? colorCubeMaterial.contrastRatio
+                        : ""
+            })
         colorCubeFolder.add({ fn: swapColors }, "fn").name("Swap")
         const fontController = colorCubeFolder
             .addColor(state, "fontColor")
             .name("Font")
             .listen()
+            .onChange(this.setFontColor)
         const backgroundController = colorCubeFolder
             .addColor(state, "backgroundColor")
             .name("Background")
             .listen()
+            .onChange(this.setBackgroundColor)
         const darkModeController = colorCubeFolder
             .addColor(state, "darkModeColor")
             .name("Dark Mode")
             .listen()
+            .onChange(this.setDarkModeColor)
 
         const debugFolder = this.gui.addFolder("Advanced").close()
         debugFolder
@@ -99,33 +127,6 @@ export class SceneGui {
             .name("Transform Space")
             .listen()
             .onChange(onTransformSpaceChange)
-        fontController.onChange((value: string) => colorSync.setFontColor(value))
-        backgroundController.onChange((value: string) =>
-            colorSync.setBackgroundColor(value)
-        )
-        darkModeController.onChange((value: string) =>
-            colorSync.setDarkModeColor(value)
-        )
-
-        function syncContrastPresetState(value: number): void {
-            contrastPresetState.contrastPreset =
-                value === 3 || value === 4.5 || value === 7 ? value : ""
-        }
-
-        function onContrastPresetChange(
-            value: ContrastPresetState["contrastPreset"]
-        ): void {
-            if (value === "") {
-                syncContrastPresetState(colorCubeMaterial.contrastRatio)
-                return
-            }
-
-            colorCubeMaterial.contrastRatio = value
-        }
-
-        function onContrastRatioChange(): void {
-            syncContrastPresetState(colorCubeMaterial.contrastRatio)
-        }
 
         function syncOutputSpaceState(value: number): void {
             if (value === ColorCube.TransformDefault) {
@@ -187,10 +188,6 @@ export class SceneGui {
             syncOutputSpaceState(colorCube.transformSpaceMode)
         }
 
-        function onSearchModeChange(searchMode: number): void {
-            colorSync.setSearchMode(searchMode)
-        }
-
         function syncSearchModeState(): void {
             transformControls.detach()
 
@@ -231,13 +228,41 @@ export class SceneGui {
         colorSync.addEventListener("change", handleColorSyncChange)
         this.handleColorSyncChange = handleColorSyncChange
 
-        syncContrastPresetState(colorCubeMaterial.contrastRatio)
+        contrastPresetState.contrastPreset =
+            colorCubeMaterial.contrastRatio === 3 ||
+            colorCubeMaterial.contrastRatio === 4.5 ||
+            colorCubeMaterial.contrastRatio === 7
+                ? colorCubeMaterial.contrastRatio
+                : ""
         syncOutputSpaceState(colorCube.transformSpaceMode)
         syncSearchModeState()
     }
 
+    readonly setSearchMode = (searchMode: number): void => {
+        this.local.colorSync.setSearchMode(searchMode)
+    }
+
+    readonly setContrastPreset = (contrastRatio: number): void => {
+        this.local.colorCubeMaterial.contrastRatio = contrastRatio
+    }
+
+    readonly setFontColor = (value: string): void => {
+        this.local.colorSync.setFontColor(value)
+    }
+
+    readonly setBackgroundColor = (value: string): void => {
+        this.local.colorSync.setBackgroundColor(value)
+    }
+
+    readonly setDarkModeColor = (value: string): void => {
+        this.local.colorSync.setDarkModeColor(value)
+    }
+
     destroy(): void {
-        this.colorSync.removeEventListener("change", this.handleColorSyncChange)
+        this.local.colorSync.removeEventListener(
+            "change",
+            this.handleColorSyncChange
+        )
         this.gui.destroy()
     }
 }

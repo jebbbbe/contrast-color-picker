@@ -23,7 +23,7 @@ export class ThreeSceneApp {
     private readonly scene: THREE.Scene
     private readonly camera: THREE.PerspectiveCamera
     private readonly aspectLayout: AspectLayout
-    private readonly gui: SceneGui
+    readonly gui: SceneGui
     readonly controls: OrbitControls
     private readonly raycastHelper: RaycastHelper
     readonly transformControls: TransformControls

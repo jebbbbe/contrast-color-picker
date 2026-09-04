@@ -7,11 +7,12 @@ import FontSwatch, {
 import Header from "./components/Header"
 import LevaComponent from "./components/LevaComponent"
 import Footer from "./components/Footer"
+import { appStub, levaStub, type AppStubType } from "./constants"
 
 function App() {
     const threeSceneMountRef = useRef<HTMLDivElement | null>(null)
     const guiMountRef = useRef<HTMLDivElement | null>(null)
-    const [app, setApp] = useState<ThreeSceneApp | null>(null)
+    const [app, setApp] = useState<ThreeSceneApp | AppStubType | null>(appStub)
     const [swatch, setSwatch] = useState<FontSwatchState>(
         initialFontSwatchState
     )
@@ -47,7 +48,7 @@ function App() {
                         <div id="app" ref={threeSceneMountRef} />
                     </div>
                     <div className="leva-holder">
-                        <LevaComponent app={app} />
+                        <LevaComponent bridge={app?.gui ?? levaStub} />
                     </div>
                     <div className="gui-holder" ref={guiMountRef} />
                 </div>

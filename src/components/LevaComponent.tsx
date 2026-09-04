@@ -2,15 +2,14 @@ import { useEffect, useState } from "react"
 import { button, Leva, useControls } from "leva"
 import type { ColorSyncChangeEvent } from "../App/ColorSync"
 import { SearchBackgroundColor } from "../App/ColorSync"
-import type ThreeSceneApp from "../App/main"
 import * as ColorCube from "../App/objects/materials/ColorCubeMaterial"
-import { contrastPresetValues, searchTitles } from "../constants"
+import {
+    contrastPresetValues,
+    searchTitles,
+    type AppStubType,
+} from "../constants"
 
 type ContrastPresetState = "" | number
-
-type LevaComponentProps = {
-    app: ThreeSceneApp | null
-}
 
 function getContrastPresetValue(contrastRatio: number): ContrastPresetState {
     return contrastRatio === 3 || contrastRatio === 4.5 || contrastRatio === 7
@@ -48,24 +47,20 @@ function getColorControlState(searchMode: number): {
     }
 }
 
-function LevaSceneControls({ app }: { app: ThreeSceneApp }) {
-    const [searchMode, setSearchMode] = useState(
-        app.gui.local.colorSync.state.searchMode
-    )
-    const [fontColor, setFontColor] = useState(
-        app.gui.local.colorSync.state.fontColor
-    )
+function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
+    const [searchMode, setSearchMode] = useState(bridge.local.colorSync.state.searchMode)
+    const [fontColor, setFontColor] = useState(bridge.local.colorSync.state.fontColor)
     const [backgroundColor, setBackgroundColor] = useState(
-        app.gui.local.colorSync.state.backgroundColor
+        bridge.local.colorSync.state.backgroundColor
     )
     const [darkModeColor, setDarkModeColor] = useState(
-        app.gui.local.colorSync.state.darkModeColor
+        bridge.local.colorSync.state.darkModeColor
     )
     const [contrastRatio, setContrastRatio] = useState(
-        app.gui.local.colorCubeMaterial.contrastRatio
+        bridge.local.colorCubeMaterial.contrastRatio
     )
     const [contrastPreset, setContrastPreset] = useState<ContrastPresetState>(
-        getContrastPresetValue(app.gui.local.colorCubeMaterial.contrastRatio)
+        getContrastPresetValue(bridge.local.colorCubeMaterial.contrastRatio)
     )
     const { fontDisabled, backgroundDisabled, darkModeDisabled } =
         getColorControlState(searchMode)
@@ -76,8 +71,8 @@ function LevaSceneControls({ app }: { app: ThreeSceneApp }) {
                 value: searchMode,
                 options: searchTitles,
                 onChange: (value: number) => {
-                    app.gui.setSearchMode(value)
-                    syncFromAppState()
+                    bridge.setSearchMode(value)
+                    syncFromBridgeState()
                 },
             },
             "WCAG Contrast": {
@@ -85,12 +80,12 @@ function LevaSceneControls({ app }: { app: ThreeSceneApp }) {
                 options: [...contrastPresetValues],
                 onChange: (value: ContrastPresetState) => {
                     if (value === "") {
-                        syncFromAppState()
+                        syncFromBridgeState()
                         return
                     }
 
-                    app.gui.setContrastPreset(value)
-                    syncFromAppState()
+                    bridge.setContrastPreset(value)
+                    syncFromBridgeState()
                 },
             },
             "Contrast Ratio": {
@@ -99,41 +94,41 @@ function LevaSceneControls({ app }: { app: ThreeSceneApp }) {
                 max: 21,
                 step: 0.001,
                 onChange: (value: number) => {
-                    app.gui.local.colorCubeMaterial.contrastRatio = value
-                    syncFromAppState()
+                    bridge.local.colorCubeMaterial.contrastRatio = value
+                    syncFromBridgeState()
                 },
             },
             Swap: button(() => {
-                app.gui.swapColors()
-                syncFromAppState()
+                bridge.swapColors()
+                syncFromBridgeState()
             }),
             Font: {
                 value: fontColor,
                 disabled: fontDisabled,
                 onChange: (value: string) => {
-                    app.gui.setFontColor(value)
-                    syncFromAppState()
+                    bridge.setFontColor(value)
+                    syncFromBridgeState()
                 },
             },
             Background: {
                 value: backgroundColor,
                 disabled: backgroundDisabled,
                 onChange: (value: string) => {
-                    app.gui.setBackgroundColor(value)
-                    syncFromAppState()
+                    bridge.setBackgroundColor(value)
+                    syncFromBridgeState()
                 },
             },
             "Dark Mode": {
                 value: darkModeColor,
                 disabled: darkModeDisabled,
                 onChange: (value: string) => {
-                    app.gui.setDarkModeColor(value)
-                    syncFromAppState()
+                    bridge.setDarkModeColor(value)
+                    syncFromBridgeState()
                 },
             },
         }),
         [
-            app,
+            bridge,
             searchMode,
             contrastPreset,
             contrastRatio,
@@ -146,8 +141,8 @@ function LevaSceneControls({ app }: { app: ThreeSceneApp }) {
         ]
     )
 
-    function syncFromAppState(): void {
-        const { colorSync, colorCubeMaterial } = app.gui.local
+    function syncFromBridgeState(): void {
+        const { colorSync, colorCubeMaterial } = bridge.local
         const nextSearchMode = colorSync.state.searchMode
         const nextFontColor = colorSync.state.fontColor
         const nextBackgroundColor = colorSync.state.backgroundColor
@@ -172,23 +167,19 @@ function LevaSceneControls({ app }: { app: ThreeSceneApp }) {
     }
 
     useEffect(() => {
-        syncFromAppState()
+        syncFromBridgeState()
 
         const handleChange = (_event: ColorSyncChangeEvent): void => {
-            syncFromAppState()
+            syncFromBridgeState()
         }
 
-        app.gui.local.colorSync.addEventListener("change", handleChange)
+        bridge.local.colorSync.addEventListener("change", handleChange)
 
         return () => {
-            app.gui.local.colorSync.removeEventListener("change", handleChange)
+            bridge.local.colorSync.removeEventListener("change", handleChange)
         }
-    }, [app])
+    }, [bridge])
 
-    return null
-}
-
-function LevaComponent({ app }: LevaComponentProps) {
     return (
         <>
             <Leva
@@ -204,7 +195,6 @@ function LevaComponent({ app }: LevaComponentProps) {
                 neverHide={true}
                 // titleBar = {false}
             />
-            {app ? <LevaSceneControls app={app} /> : null}
         </>
     )
 }

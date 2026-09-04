@@ -32,3 +32,35 @@ export const searchTitles = {
 } as const
 
 export const contrastPresetValues = ["", 3, 4.5, 7] as const
+
+const noop = (..._args: any[]): void => {}
+
+export const appStub = {
+    gui: {
+        local: {
+            colorSync: {
+                state: {
+                    searchMode: ColorCube.SearchTargetColor,
+                    fontColor: "#000000",
+                    backgroundColor: "#ffffff",
+                    darkModeColor: "#000000",
+                },
+                addEventListener: noop,
+                removeEventListener: noop,
+            },
+            colorCubeMaterial: {
+                contrastRatio: 4.5,
+            },
+        },
+        setSearchMode: noop,
+        setContrastPreset: noop,
+        setFontColor: noop,
+        setBackgroundColor: noop,
+        setDarkModeColor: noop,
+        swapColors: noop,
+    },
+}
+
+export type AppStubType = typeof appStub
+
+export const levaStub = appStub.gui

@@ -3,38 +3,13 @@ import type { ColorSyncChangeEvent, ColorSyncState } from "./ColorSync"
 import { SearchBackgroundColor } from "./ColorSync"
 import type { ThreeSceneApp } from "./main"
 import * as ColorCube from "./objects/materials/ColorCubeMaterial"
-
-const sdfColorTargetOutputTitles = {
-    Color: ColorCube.TargetOutputColor,
-    Luminance: ColorCube.TargetOutputLuminance,
-    Steps: ColorCube.TargetOutputSteps,
-} as const
-
-const sdfColorTransformTitles = {
-    Default: ColorCube.TransformDefault,
-    Protanopia: ColorCube.TransformProtanopia,
-    Deuteranopia: ColorCube.TransformDeuteranopia,
-    Tritanopia: ColorCube.TransformTritanopia,
-    Monochromacy: ColorCube.TransformMonochromacy,
-    Custom: ColorCube.TransformCustom,
-} as const
-
-const sdfColorRaycastTitles = {
-    "Binary Search": ColorCube.RaycastBinarySearch,
-    Bracketed: ColorCube.RaycastBracketed,
-    Bracketed2: ColorCube.RaycastBracketed2,
-    Bracketed3: ColorCube.RaycastBracketed3,
-} as const
-
-const sdfColorSearchTitles = {
-	"Font Color": ColorCube.SearchTargetColor,
-    "Background Color": SearchBackgroundColor,
-    "Dark Mode": ColorCube.SearchBlackAndWhite,
-	"Opposite Color": ColorCube.SearchOppositeColor,
-    None: ColorCube.SearchNone,
-} as const
-
-const sdfColorContrastPresetValues = ["", 3, 4.5, 7] as const
+import {
+    contrastPresetValues,
+    raycastTitles,
+    searchTitles,
+    targetOutputTitles,
+    transformTitles,
+} from "../constants"
 
 type ContrastPresetState = {
     contrastPreset: "" | number
@@ -66,7 +41,7 @@ export class SceneGui {
         const colorCubeFolder = this.gui
 
         colorCubeFolder
-            .add(state, "searchMode", sdfColorSearchTitles)
+            .add(state, "searchMode", searchTitles)
             .name("Search Mode")
             .listen()
             .onChange(onSearchModeChange)
@@ -74,7 +49,7 @@ export class SceneGui {
             .add(
                 contrastPresetState,
                 "contrastPreset",
-                sdfColorContrastPresetValues
+                contrastPresetValues
             )
             .name("WCAG Contrast")
             .listen()
@@ -100,10 +75,10 @@ export class SceneGui {
 
         const debugFolder = this.gui.addFolder("Advanced").close()
         debugFolder
-            .add(colorCubeMaterial, "targetOutput", sdfColorTargetOutputTitles)
+            .add(colorCubeMaterial, "targetOutput", targetOutputTitles)
             .name("Cube Output")
         debugFolder
-            .add(colorCubeMaterial, "raycastMode", sdfColorRaycastTitles)
+            .add(colorCubeMaterial, "raycastMode", raycastTitles)
             .name("Raycast Mode")
         debugFolder
             .add(colorCubeMaterial, "quantizeSearch")
@@ -116,11 +91,11 @@ export class SceneGui {
             .add({ fn: randomizeCustomTransformSpaceMatrixSummation }, "fn")
             .name("Randomize Summation Matrix")
         const outputSpaceController = debugFolder
-            .add(colorCubeMaterial, "transformMode", sdfColorTransformTitles)
+            .add(colorCubeMaterial, "transformMode", transformTitles)
             .name("Output Space")
             .listen()
         debugFolder
-            .add(colorCube, "transformSpaceMode", sdfColorTransformTitles)
+            .add(colorCube, "transformSpaceMode", transformTitles)
             .name("Transform Space")
             .listen()
             .onChange(onTransformSpaceChange)

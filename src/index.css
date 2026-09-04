@@ -76,6 +76,11 @@ footer {
     margin-top: 1rem;
 }
 
+.leva-holder {
+    width: 100%;
+    margin-top: 1rem;
+}
+
 #app {
     position: relative;
     width: 100%;

@@ -4,12 +4,14 @@ import FontSwatch, {
     initialFontSwatchState,
     type FontSwatchState,
 } from "./components/FontSwatch"
-import Footer from "./components/Footer"
 import Header from "./components/Header"
+import LevaComponent from "./components/LevaComponent"
+import Footer from "./components/Footer"
 
 function App() {
     const threeSceneMountRef = useRef<HTMLDivElement | null>(null)
     const guiMountRef = useRef<HTMLDivElement | null>(null)
+    const [app, setApp] = useState<ThreeSceneApp | null>(null)
     const [swatch, setSwatch] = useState<FontSwatchState>(
         initialFontSwatchState
     )
@@ -26,11 +28,13 @@ function App() {
                 setSwatch: setSwatch,
             }
         )
+        setApp(app)
         app.animate()
         ;(globalThis as any).app = app
 
         return () => {
             app.dispose()
+            setApp(null)
         }
     }, [])
 
@@ -41,6 +45,9 @@ function App() {
                 <div className="container">
                     <div className="app-holder">
                         <div id="app" ref={threeSceneMountRef} />
+                    </div>
+                    <div className="leva-holder">
+                        <LevaComponent app={app} />
                     </div>
                     <div className="gui-holder" ref={guiMountRef} />
                 </div>

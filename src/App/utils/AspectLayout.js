@@ -134,7 +134,16 @@ export class AspectLayout {
 
         this.resize()
 
-        renderer.setSize(this.x, this.y)
+        if (
+            !Number.isFinite(this.x) ||
+            !Number.isFinite(this.y) ||
+            this.x < 1 ||
+            this.y < 1
+        ) {
+            return
+        }
+
+        renderer.setSize(this.x, this.y, false)
         if (this.dynamic && camera.type === "OrthographicCamera") {
             camera.left = this.cam.l
             camera.right = this.cam.r

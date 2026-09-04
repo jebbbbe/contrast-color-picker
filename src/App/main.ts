@@ -13,6 +13,7 @@ import { logScenePixel } from "./utils/logScenePixel"
 import { SceneGui } from "./gui"
 
 const sceneBackgroundHex = "#dee4ef"
+
 export class ThreeSceneApp {
     readonly container: HTMLElement
     readonly guiContainer: HTMLElement
@@ -29,6 +30,7 @@ export class ThreeSceneApp {
     readonly ctx: {
         colorCube: ColorCubeVolume
     }
+    private readonly pixelRatio = Math.min(globalThis.devicePixelRatio || 1, 2)
     private animationFrameId = 0
 
     constructor(
@@ -45,8 +47,8 @@ export class ThreeSceneApp {
         // renderer.outputColorSpace = THREE.LinearSRGBColorSpace
         renderer.outputColorSpace = THREE.SRGBColorSpace
         renderer.toneMapping = THREE.NoToneMapping
-        renderer.setPixelRatio(globalThis.devicePixelRatio)
-        renderer.setSize(1, 1)
+        renderer.setPixelRatio(this.pixelRatio)
+        renderer.setSize(1, 1, false)
         container.appendChild(renderer.domElement)
 
         // scene
@@ -183,7 +185,7 @@ export class ThreeSceneApp {
     }
 
     private readonly handleResize = (): void => {
-        this.renderer.setPixelRatio(globalThis.devicePixelRatio)
+        this.renderer.setPixelRatio(this.pixelRatio)
         this.controls.update()
     }
 

@@ -51,7 +51,7 @@ footer {
     flex: 1;
     flex-direction: column;
     gap: 1rem;
-    justify-content: center;
+    justify-content: top;
     margin: 0 auto;
     width: min(var(--content-max-width), 100%);
 }

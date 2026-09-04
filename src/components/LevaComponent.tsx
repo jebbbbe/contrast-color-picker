@@ -49,8 +49,12 @@ function getColorControlState(searchMode: number): {
 }
 
 function LevaSceneControls({ app }: { app: ThreeSceneApp }) {
-    const [searchMode, setSearchMode] = useState(app.gui.local.colorSync.state.searchMode)
-    const [fontColor, setFontColor] = useState(app.gui.local.colorSync.state.fontColor)
+    const [searchMode, setSearchMode] = useState(
+        app.gui.local.colorSync.state.searchMode
+    )
+    const [fontColor, setFontColor] = useState(
+        app.gui.local.colorSync.state.fontColor
+    )
     const [backgroundColor, setBackgroundColor] = useState(
         app.gui.local.colorSync.state.backgroundColor
     )
@@ -67,7 +71,6 @@ function LevaSceneControls({ app }: { app: ThreeSceneApp }) {
         getColorControlState(searchMode)
 
     const [, setLeva] = useControls(
-        "Scene",
         () => ({
             "Search Mode": {
                 value: searchMode,
@@ -129,7 +132,6 @@ function LevaSceneControls({ app }: { app: ThreeSceneApp }) {
                 },
             },
         }),
-        { collapsed: false },
         [
             app,
             searchMode,
@@ -190,15 +192,17 @@ function LevaComponent({ app }: LevaComponentProps) {
     return (
         <>
             <Leva
-                fill={true}
-                flat={true}
-                collapsed={false}
-                titleBar={{
-                    title: "Leva",
-                    drag: false,
-                    filter: false,
-                }}
+                // theme={levaTheme} // you can pass a custom theme (see the styling section)
+                fill={true} // default = false, true makes the pane fill the parent dom node it's rendered in
+                flat={true} // default = false, true removes border radius and shadow
+                // oneLineLabels // default = false, alternative layout for labels, with labels and fields on separate rows
+                collapsed={false} // default = false, when true the GUI is collapsed
+                // hidden // default = false, when true the GUI is hidden
+                // neverHide // default = false, when true the GUI stays visible even when no controls are mounted
+                // hideCopyButton // default = false, hides the copy button in the title bar
+                titleBar={false}
                 neverHide={true}
+                // titleBar = {false}
             />
             {app ? <LevaSceneControls app={app} /> : null}
         </>

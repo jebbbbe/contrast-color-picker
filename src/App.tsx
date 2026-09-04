@@ -50,11 +50,13 @@ function App() {
                     <div className="leva-holder">
                         <LevaComponent bridge={app?.gui ?? levaStub} />
                     </div>
-                    <div className="gui-holder" ref={guiMountRef} />
                 </div>
-                <div className="container">
-                    <FontSwatch swatch={swatch} />
-                </div>
+                <div
+                    className="gui-holder"
+                    style={{ display: "none" }}
+                    ref={guiMountRef}
+                />
+                <FontSwatch swatch={swatch} />
             </article>
             <Footer />
         </main>

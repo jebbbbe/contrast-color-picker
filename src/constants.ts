@@ -67,7 +67,7 @@ export const levaStub = appStub.gui
 
 export const levaTheme = {
     colors: {
-        // elevation1: "#ffffff",
+        elevation1: "#ffffff",
         elevation2: "#ffffff", //dee4ef
         elevation3: "#c8c8c8",
         accent1: "#bf1722",

@@ -1,6 +1,5 @@
 import { SearchBackgroundColor } from "./App/ColorSync"
 import * as ColorCube from "./App/objects/materials/ColorCubeMaterial"
-import type { LevaCustomTheme } from "leva"
 
 export const targetOutputTitles = {
     Color: ColorCube.TargetOutputColor,
@@ -66,14 +65,14 @@ export type AppStubType = typeof appStub
 
 export const levaStub = appStub.gui
 
-export const levaTheme: LevaCustomTheme = {
+export const levaTheme = {
     colors: {
         // elevation1: "#ffffff",
         elevation2: "#ffffff", //dee4ef
         elevation3: "#c8c8c8",
-        // accent1: "#335883",
+        accent1: "#bf1722",
         accent2: "#bf1722",
-        // accent3: "#e100ff",
+        accent3: "#590b10",
         // highlight1: "#004cff",
         highlight2: "#000000",
         // highlight3: "#ff0000",

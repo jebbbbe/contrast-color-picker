@@ -1,22 +1,15 @@
 import { useEffect, useState } from "react"
-import { button, LevaPanel, useControls, useCreateStore } from "leva"
+import {
+    button,
+    buttonGroup,
+    LevaPanel,
+    useControls,
+    useCreateStore,
+} from "leva"
 import type { ColorSyncChangeEvent } from "../App/ColorSync"
 import { SearchBackgroundColor } from "../App/ColorSync"
 import * as ColorCube from "../App/objects/materials/ColorCubeMaterial"
-import {
-    contrastPresetValues,
-    searchTitles,
-	levaTheme,
-    type AppStubType,
-} from "../constants"
-
-type ContrastPresetState = "" | number
-
-function getContrastPresetValue(contrastRatio: number): ContrastPresetState {
-    return contrastRatio === 3 || contrastRatio === 4.5 || contrastRatio === 7
-        ? contrastRatio
-        : ""
-}
+import { searchTitles, levaTheme, type AppStubType } from "../constants"
 
 function getColorControlState(searchMode: number): {
     fontDisabled: boolean
@@ -65,9 +58,6 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
     const [contrastRatio, setContrastRatio] = useState(
         bridge.local.colorCubeMaterial.contrastRatio
     )
-    const [contrastPreset, setContrastPreset] = useState<ContrastPresetState>(
-        getContrastPresetValue(bridge.local.colorCubeMaterial.contrastRatio)
-    )
     const { fontDisabled, backgroundDisabled, darkModeDisabled } =
         getColorControlState(searchMode)
 
@@ -76,7 +66,8 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
 
     const [, setOther] = useControls(
         () => ({
-            "Search Mode": {
+            searchMode: {
+                label: "Search Mode",
                 value: searchMode,
                 options: searchTitles,
                 onChange: (value: number) => {
@@ -84,20 +75,8 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
                     syncFromBridgeState()
                 },
             },
-            "WCAG Contrast": {
-                value: contrastPreset,
-                options: [...contrastPresetValues],
-                onChange: (value: ContrastPresetState) => {
-                    if (value === "") {
-                        syncFromBridgeState()
-                        return
-                    }
-
-                    bridge.setContrastPreset(value)
-                    syncFromBridgeState()
-                },
-            },
-            "Contrast Ratio": {
+            contrastRatio: {
+                label: "Contrast Ratio",
                 value: contrastRatio,
                 min: 1,
                 max: 21,
@@ -107,23 +86,37 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
                     syncFromBridgeState()
                 },
             },
+            presets: buttonGroup({
+                // label: "WCAG Contrast",
+                label: "",
+                opts: {
+                    "3 ": () => {
+                        bridge.setContrastPreset(3)
+                        syncFromBridgeState()
+                    },
+                    "4.5 ": () => {
+                        bridge.setContrastPreset(4.5)
+                        syncFromBridgeState()
+                    },
+                    "7 ": () => {
+                        bridge.setContrastPreset(7)
+                        syncFromBridgeState()
+                    },
+                },
+            }),
             Swap: button(() => {
                 bridge.swapColors()
                 syncFromBridgeState()
             }),
         }),
         { store: otherStore },
-        [
-            bridge,
-            searchMode,
-            contrastPreset,
-            contrastRatio,
-        ]
+        [bridge, searchMode, contrastRatio]
     )
 
     const [, setColors] = useControls(
         () => ({
-            Font: {
+            font: {
+                label: "Font",
                 value: fontColor,
                 disabled: fontDisabled,
                 onChange: (value: string) => {
@@ -131,7 +124,8 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
                     syncFromBridgeState()
                 },
             },
-            Background: {
+            background: {
+                label: "Background",
                 value: backgroundColor,
                 disabled: backgroundDisabled,
                 onChange: (value: string) => {
@@ -139,7 +133,8 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
                     syncFromBridgeState()
                 },
             },
-            "Dark Mode": {
+            darkMode: {
+                label: "Dark Mode",
                 value: darkModeColor,
                 disabled: darkModeDisabled,
                 onChange: (value: string) => {
@@ -167,23 +162,20 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
         const nextBackgroundColor = colorSync.state.backgroundColor
         const nextDarkModeColor = colorSync.state.darkModeColor
         const nextContrastRatio = colorCubeMaterial.contrastRatio
-        const nextContrastPreset = getContrastPresetValue(nextContrastRatio)
 
         setSearchMode(nextSearchMode)
         setFontColor(nextFontColor)
         setBackgroundColor(nextBackgroundColor)
         setDarkModeColor(nextDarkModeColor)
         setContrastRatio(nextContrastRatio)
-        setContrastPreset(nextContrastPreset)
         setOther({
-            "Search Mode": nextSearchMode,
-            "WCAG Contrast": nextContrastPreset,
-            "Contrast Ratio": nextContrastRatio,
+            searchMode: nextSearchMode,
+            contrastRatio: nextContrastRatio,
         })
         setColors({
-            Font: nextFontColor,
-            Background: nextBackgroundColor,
-            "Dark Mode": nextDarkModeColor,
+            font: nextFontColor,
+            background: nextBackgroundColor,
+            darkMode: nextDarkModeColor,
         })
     }
 
@@ -221,7 +213,7 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
             <div className="leva-column">
                 <LevaPanel
                     store={otherStore}
-					theme={levaTheme}
+                    theme={levaTheme}
                     fill={true}
                     flat={true}
                     oneLineLabels={oneLineLabels}
@@ -233,7 +225,7 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
             <div className="leva-column">
                 <LevaPanel
                     store={colorStore}
-					theme={levaTheme}
+                    theme={levaTheme}
                     fill={true}
                     flat={true}
                     oneLineLabels={oneLineLabels}

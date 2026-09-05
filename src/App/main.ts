@@ -57,14 +57,14 @@ export class ThreeSceneApp {
 
         // camera
         const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
-        camera.position.set(-0.75, 0.25, 1.75)
+        camera.position.set(-0.60, 0.15, 1.60)
 
         // controls
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enableDamping = true
         controls.autoRotateSpeed = 2.5
         controls.minDistance = 0.25
-        controls.maxDistance = 2.5
+        controls.maxDistance = 1.95
         controls.target.set(0, 0, 0)
         camera.lookAt(controls.target)
         controls.update()

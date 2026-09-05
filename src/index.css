@@ -1,8 +1,7 @@
 :root {
     --content-max-width: 750px;
     --gap: 1rem;
-    /* --levaGap: 1rem; */
-    --levaGap: 0px;
+    --leva-gap: 0px;
     --highlight: #bf1722;
     --sceneColor: #ffffff;
 }
@@ -65,7 +64,7 @@ footer {
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    gap: var(--levaGap);
+    gap: var(--gap);
     width: 100%;
 }
 
@@ -86,7 +85,7 @@ footer {
     background-color: var(--sceneColor);
     display: flex;
     flex-direction: row;
-    gap: var(--levaGap);
+    gap: var(--gap);
 }
 
 .leva-column {
@@ -140,6 +139,7 @@ footer {
         max-height: 100%;
         overflow-y: auto;
         flex-direction: column;
+		gap: var(--leva-gap);
     }
 
     .leva-holder .leva-column {

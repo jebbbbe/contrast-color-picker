@@ -17,6 +17,7 @@ type ContrastPresetState = {
 
 export class SceneGui {
     readonly gui: GUI
+    private readonly requestRender: () => void
     readonly local: {
         colorCube: ThreeSceneApp["ctx"]["colorCube"]
         colorSync: ThreeSceneApp["colorSync"]
@@ -27,6 +28,7 @@ export class SceneGui {
     ) => void
 
     constructor(app: ThreeSceneApp) {
+        this.requestRender = app.requestRender
         const { colorSync, controls, ctx, transformControls } = app
         const { colorCube } = ctx
         const colorCubeMaterial = colorCube.mesh.material
@@ -40,6 +42,8 @@ export class SceneGui {
             title: "Scene",
             container: app.guiContainer,
         })
+        // Includes debug controls that mutate materials and matrices directly.
+        this.gui.onChange(this.requestRender)
         this.local = {
             colorCube,
             colorSync,
@@ -100,6 +104,7 @@ export class SceneGui {
             .onChange(this.setDarkModeColor)
 
         const debugFolder = this.gui.addFolder("Advanced").close()
+        debugFolder.add(app, "animateLoop").name("Animate Loop").listen()
         debugFolder
             .add(colorCubeMaterial, "targetOutput", targetOutputTitles)
             .name("Cube Output")
@@ -208,6 +213,7 @@ export class SceneGui {
 
     readonly setContrastPreset = (contrastRatio: number): void => {
         this.local.colorCubeMaterial.contrastRatio = contrastRatio
+        this.requestRender()
     }
 
     readonly setFontColor = (value: string): void => {

@@ -83,7 +83,7 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
                 max: 21,
                 step: 0.001,
                 onChange: (value: number) => {
-                    bridge.local.colorCubeMaterial.contrastRatio = value
+                    bridge.setContrastPreset(value)
                     syncFromBridgeState()
                 },
             },

@@ -30,7 +30,6 @@ function App() {
             }
         )
         setApp(app)
-        app.animate()
         ;(globalThis as any).app = app
 
         return () => {

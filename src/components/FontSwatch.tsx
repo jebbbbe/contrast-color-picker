@@ -126,7 +126,8 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                         <span
                             id="normal"
                             style={sampleStyle}
-                            contentEditable
+                            contentEditable="plaintext-only"
+							spellCheck="false"
                             suppressContentEditableWarning
                             onInput={onSampleTextInput}
                         >
@@ -168,7 +169,8 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                         <span
                             id="big"
                             style={sampleStyle}
-                            contentEditable
+                            contentEditable="plaintext-only"
+							spellCheck="false"
                             suppressContentEditableWarning
                             onInput={onSampleTextInput}
                         >

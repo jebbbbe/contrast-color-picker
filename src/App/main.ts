@@ -32,6 +32,7 @@ export class ThreeSceneApp {
         colorCube: ColorCubeVolume
     }
     private animationFrameId = 0
+    private looping = false
 
     constructor(
         container: HTMLElement,
@@ -105,10 +106,12 @@ export class ThreeSceneApp {
             // marker update
             object.updatePosition(object.position)
             this.colorSync.syncMarker(object)
+            this.requestRender()
         })
         // disable orbit controls
         transformControls.addEventListener("dragging-changed", (event) => {
             controls.enabled = !event.value
+            this.requestRender()
         })
 
         // lights
@@ -155,16 +158,24 @@ export class ThreeSceneApp {
         this.gui = gui
 
         // listeners
+        controls.addEventListener("change", this.requestRender)
+        controls.addEventListener("start", this.requestRender)
+        controls.addEventListener("end", this.requestRender)
+        colorSync.addEventListener("change", this.requestRender)
         aspectLayout.addResizeListener(renderer, camera, this.handleResize)
         renderer.domElement.addEventListener(
             "pointerdown",
             this.handleCanvasClick
         )
+        this.requestRender()
     }
 
     dispose(): void {
-        globalThis.cancelAnimationFrame(this.animationFrameId)
         this.aspectLayout.removeResizeListener()
+        this.controls.removeEventListener("change", this.requestRender)
+        this.controls.removeEventListener("start", this.requestRender)
+        this.controls.removeEventListener("end", this.requestRender)
+        this.colorSync.removeEventListener("change", this.requestRender)
         this.controls.dispose()
         this.transformControls.dispose()
         this.gui.destroy()
@@ -175,18 +186,45 @@ export class ThreeSceneApp {
             this.handleCanvasClick
         )
         this.renderer.domElement.remove()
+        globalThis.cancelAnimationFrame(this.animationFrameId)
         this.animationFrameId = 0
     }
 
-    readonly animate = (): void => {
+    get animateLoop(): boolean {
+        return this.looping
+    }
+
+    set animateLoop(value: boolean) {
+        this.looping = value
+        this.requestRender()
+    }
+
+    readonly requestRender = (): void => {
+        if (!this.animationFrameId) {
+            this.animationFrameId = globalThis.requestAnimationFrame(this.animate)
+        }
+    }
+
+    private readonly animate = (): void => {
+        this.animationFrameId = 0
+        this.render()
+
+        if (
+            this.animateLoop ||
+            (this.controls.enabled && this.controls.autoRotate)
+        ) {
+            this.requestRender()
+        }
+    }
+
+    private render(): void {
         this.controls.update()
         this.renderer.render(this.scene, this.camera)
-        this.animationFrameId = globalThis.requestAnimationFrame(this.animate)
     }
 
     private readonly handleResize = (): void => {
         this.renderer.setPixelRatio(globalThis.devicePixelRatio)
-        this.controls.update()
+        this.requestRender()
     }
 
     private readonly handleCanvasClick = (event: MouseEvent): void => {

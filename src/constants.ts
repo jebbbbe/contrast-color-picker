@@ -61,10 +61,9 @@ export const appStub = {
     },
 }
 
+// https://leva.pmnd.rs/?path=/story/advanced-theme--default
 export type AppStubType = typeof appStub
-
 export const levaStub = appStub.gui
-
 export const levaTheme = {
     colors: {
         elevation1: "#ffffff",
@@ -79,14 +78,14 @@ export const levaTheme = {
         // vivid1: "#ffcc00",
     },
     space: {
-        md: "10px", // 10
+        md: "1px", // 10
     },
     fontSizes: {
         root: "12px", // 11
     },
     sizes: {
         // controlWidth: "160px", // 160
-        // colorPickerWidth: "200px",
-        // colorPickerHeight: "200px",
+        colorPickerWidth: "192px", // 160
+        colorPickerHeight: "120px", //100
     },
 }

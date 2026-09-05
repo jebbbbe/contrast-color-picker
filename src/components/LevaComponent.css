@@ -1,0 +1,40 @@
+/* 
+dropdown svg icon
+set so we can do theme.space.md = "0px"
+*/
+.leva-c-dkRbIj > svg {
+    right: 10px !important;
+}
+
+/* 
+remove padding from first and last elems so both columns components are uniform in spacing throughout 
+*/
+.leva-c-dmsJDs > :first-child {
+    padding-top: 0 !important;
+}
+.leva-c-dmsJDs > :last-child {
+    padding-bottom: 0 !important;
+}
+
+/*
+slider dark color
+*/
+.leva-c-bbMqub {
+    background-color: #590b10 !important;
+}
+
+/*
+color picker: larger swatch, smaller hex text field
+the row is a grid (swatch | text), so widen the grid's first
+column and let the swatch fill it. sizing the swatch alone
+overlaps because the grid column stays narrow.
+*/
+.leva-c-khXfrH {
+    grid-template-columns: 80px 1fr !important;
+    column-gap: 8px !important;
+}
+
+.leva-c-VuHFz {
+    width: 100% !important;
+    border: 1px solid #c8c8c8 !important;
+}

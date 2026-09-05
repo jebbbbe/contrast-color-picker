@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react"
+import "./LevaComponent.css"
 import {
     button,
     buttonGroup,
@@ -179,18 +180,21 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
         })
     }
 
-    // turn on one line labels
+    // turn on one line labels on large screens and small screens
     useEffect(() => {
-        const media = globalThis.matchMedia("(min-width: 701px)")
+        const smallMedia = globalThis.matchMedia("(max-width: 619px)")
+        const largeMedia = globalThis.matchMedia("(min-width: 701px)")
         const syncOneLineLabels = (): void => {
-            setOneLineLabels(media.matches)
+            setOneLineLabels(smallMedia.matches || largeMedia.matches)
         }
 
         syncOneLineLabels()
-        media.addEventListener("change", syncOneLineLabels)
+        smallMedia.addEventListener("change", syncOneLineLabels)
+        largeMedia.addEventListener("change", syncOneLineLabels)
 
         return () => {
-            media.removeEventListener("change", syncOneLineLabels)
+            smallMedia.removeEventListener("change", syncOneLineLabels)
+            largeMedia.removeEventListener("change", syncOneLineLabels)
         }
     }, [])
 

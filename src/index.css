@@ -146,3 +146,9 @@ footer {
         flex: 0 0 auto;
     }
 }
+
+@media (max-width: 349px) {
+    .leva-holder {
+        flex-direction: column;
+    }
+}

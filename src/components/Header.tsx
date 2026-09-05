@@ -1,8 +1,8 @@
 function Header() {
     return (
-        <>
-            <h1>Contrast Color Picker</h1>
-        </>
+        <h1 className="content" style={{ alignItems: "start" }}>
+            Contrast Color Picker
+        </h1>
     )
 }
 

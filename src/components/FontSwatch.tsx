@@ -94,87 +94,87 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                     <h2>WCAG Normal Text</h2>
                     <div className="results">
                         <p>
-                            AA:{" "}
+                            <span className="resultLabel">AA:</span>
                             <span className="resultBadges">
                                 <PassFail
                                     id="normalAA"
                                     pass={swatch.normalTextPassAA}
                                 />
-                                {swatch.darkModeEnabled && (
-                                    <PassFail
-                                        id="normalDarkAA"
-                                        pass={swatch.normalDarkTextPassAA}
-                                    />
-                                )}
                             </span>
+                            {swatch.darkModeEnabled && (
+                                <PassFail
+                                    id="normalDarkAA"
+                                    pass={swatch.normalDarkTextPassAA}
+                                />
+                            )}
                         </p>
                         <p>
-                            AAA:{" "}
+                            <span className="resultLabel">AAA:</span>
                             <span className="resultBadges">
                                 <PassFail
                                     id="normalAAA"
                                     pass={swatch.normalTextPassAAA}
                                 />
-                                {swatch.darkModeEnabled && (
-                                    <PassFail
-                                        id="normalDarkAAA"
-                                        pass={swatch.normalDarkTextPassAAA}
-                                    />
-                                )}
                             </span>
+                            {swatch.darkModeEnabled && (
+                                <PassFail
+                                    id="normalDarkAAA"
+                                    pass={swatch.normalDarkTextPassAAA}
+                                />
+                            )}
                         </p>
+                        <span
+                            id="normal"
+                            style={sampleStyle}
+                            contentEditable
+                            suppressContentEditableWarning
+                            onInput={onSampleTextInput}
+                        >
+                            {sampleText}
+                        </span>
                     </div>
-                    <span
-                        id="normal"
-                        style={sampleStyle}
-                        contentEditable
-                        suppressContentEditableWarning
-                        onInput={onSampleTextInput}
-                    >
-                        {sampleText}
-                    </span>
                     <h2>WCAG Large Text</h2>
                     <div className="results">
                         <p>
-                            AA:{" "}
+                            <span className="resultLabel">AA:</span>
                             <span className="resultBadges">
                                 <PassFail
                                     id="bigAA"
                                     pass={swatch.largeTextPassAA}
                                 />
-                                {swatch.darkModeEnabled && (
-                                    <PassFail
-                                        id="largeDarkAA"
-                                        pass={swatch.largeDarkTextPassAA}
-                                    />
-                                )}
                             </span>
+                            {swatch.darkModeEnabled && (
+                                <PassFail
+                                    id="largeDarkAA"
+                                    pass={swatch.largeDarkTextPassAA}
+                                />
+                            )}
                         </p>
                         <p>
-                            AAA:{" "}
+                            <span className="resultLabel">AAA:</span>
                             <span className="resultBadges">
                                 <PassFail
                                     id="bigAAA"
                                     pass={swatch.largeTextPassAAA}
                                 />
-                                {swatch.darkModeEnabled && (
-                                    <PassFail
-                                        id="largeDarkAAA"
-                                        pass={swatch.largeDarkTextPassAAA}
-                                    />
-                                )}
                             </span>
+                            {swatch.darkModeEnabled && (
+                                <PassFail
+                                    id="largeDarkAAA"
+                                    pass={swatch.largeDarkTextPassAAA}
+                                />
+                            )}
                         </p>
+                        <span
+                            id="big"
+                            style={sampleStyle}
+                            contentEditable
+                            suppressContentEditableWarning
+                            onInput={onSampleTextInput}
+                        >
+                            {sampleText}
+                        </span>
                     </div>
-                    <span
-                        id="big"
-                        style={sampleStyle}
-                        contentEditable
-                        suppressContentEditableWarning
-                        onInput={onSampleTextInput}
-                    >
-                        {sampleText}
-                    </span>
                 </div>
             </article>
         </div>

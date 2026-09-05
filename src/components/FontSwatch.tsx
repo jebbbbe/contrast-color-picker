@@ -91,10 +91,10 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             permalink
                         </a>
                     </div> */}
-                    <h2>Normal Text</h2>
+                    <h2>WCAG Normal Text</h2>
                     <div className="results">
                         <p>
-                            WCAG AA:{" "}
+                            AA:{" "}
                             <span className="resultBadges">
                                 <PassFail
                                     id="normalAA"
@@ -109,7 +109,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             </span>
                         </p>
                         <p>
-                            WCAG AAA:{" "}
+                            AAA:{" "}
                             <span className="resultBadges">
                                 <PassFail
                                     id="normalAAA"
@@ -133,10 +133,10 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                     >
                         {sampleText}
                     </span>
-                    <h2>Large Text</h2>
+                    <h2>WCAG Large Text</h2>
                     <div className="results">
                         <p>
-                            WCAG AA:{" "}
+                            AA:{" "}
                             <span className="resultBadges">
                                 <PassFail
                                     id="bigAA"
@@ -151,7 +151,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             </span>
                         </p>
                         <p>
-                            WCAG AAA:{" "}
+                            AAA:{" "}
                             <span className="resultBadges">
                                 <PassFail
                                     id="bigAAA"
@@ -175,26 +175,6 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                     >
                         {sampleText}
                     </span>
-                    {/* <h2>Graphical Objects and User Interface Components</h2>
-                    <div className="results">
-                        <p>
-                            WCAG AA: &nbsp;
-                            <span id="uiAA" className="pass">
-                                Pass
-                            </span>
-                        </p>
-                    </div>
-                    <span id="ui" style={sampleStyle}>
-                        ★
-                        <input
-                            type="text"
-                            id="uibox"
-                            value="Text Input"
-                            readOnly
-                            aria-label="Sample text input"
-                            style={inputStyle}
-                        />{" "}
-                    </span> */}
                 </div>
             </article>
         </div>

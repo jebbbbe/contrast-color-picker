@@ -1,3 +1,29 @@
+/*
+leva font override
+https://fonts.google.com/specimen/Work+Sans?preview.script=Latn
+*/
+.leva-holder,
+.leva-holder * {
+    font-family:
+        "Work Sans",
+        system-ui,
+        -apple-system,
+        "Segoe UI",
+        Roboto,
+        "Helvetica Neue",
+        Arial,
+        sans-serif !important;
+}
+
+/*
+slider value box: leva's default 38px column is too narrow and the
+value text clips. Widen it (no font/theme change). Uses :has() +
+the stable input id so it survives stitches hash rotation.
+*/
+.leva-holder div:has(> div > input#contrastRatio) {
+    grid-template-columns: auto 52px !important;
+}
+
 /* 
 dropdown svg icon
 set so we can do theme.space.md = "0px"
@@ -37,4 +63,16 @@ overlaps because the grid column stays narrow.
 .leva-c-VuHFz {
     width: 100% !important;
     border: 1px solid #c8c8c8 !important;
+}
+
+/*
+border styles
+*/
+.leva-c-dkRbIj, /*dropdown*/
+.leva-c-kXfPOu,/*color string*/
+.leva-c-ihqPFh  /*button*/ {
+    border: 1px solid var(--border) !important;
+}
+.leva-c-ihqPFh  /*button*/ {
+    background-color: var(--sceneColor) !important;
 }

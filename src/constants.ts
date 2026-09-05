@@ -68,20 +68,25 @@ export const levaTheme = {
     colors: {
         elevation1: "#ffffff",
         elevation2: "#ffffff", //dee4ef
-        elevation3: "#c8c8c8",
+        elevation3: "#ffffff", //c8c8c8
         accent1: "#bf1722",
         accent2: "#bf1722",
         accent3: "#590b10",
         // highlight1: "#004cff",
         highlight2: "#000000",
-        // highlight3: "#ff0000",
+        highlight3: "#000000",
         // vivid1: "#ffcc00",
     },
     space: {
-        md: "1px", // 10
+        md: "1.5px", // 10
+    },
+    fonts: {
+        sans: '"Work Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        mono: '"Work Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
     },
     fontSizes: {
-        root: "12px", // 11
+        root: "14px", // 11
+        // rowHeight: "40px", //24
     },
     sizes: {
         // controlWidth: "160px", // 160

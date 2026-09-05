@@ -15,64 +15,34 @@
 >
     <defs>
         <linearGradient id="ab" x1="32" y1="8" x2="52" y2="20" gradientUnits="userSpaceOnUse">
-            <stop stop-color="var(--va)" />
-            <stop offset="1" stop-color="var(--vb)" />
-        </linearGradient>
-        <linearGradient id="ac" x1="32" y1="8" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-            <stop stop-color="var(--va)" />
-            <stop offset="1" stop-color="var(--vc)" />
+            <stop style="stop-color: var(--va)" />
+            <stop offset="1" style="stop-color: var(--vb)" />
         </linearGradient>
         <linearGradient id="ad" x1="32" y1="8" x2="12" y2="20" gradientUnits="userSpaceOnUse">
-            <stop stop-color="var(--va)" />
-            <stop offset="1" stop-color="var(--vd)" />
-        </linearGradient>
-        <linearGradient id="bc" x1="52" y1="20" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-            <stop stop-color="var(--vb)" />
-            <stop offset="1" stop-color="var(--vc)" />
-        </linearGradient>
-        <linearGradient id="cd" x1="32" y1="32" x2="12" y2="20" gradientUnits="userSpaceOnUse">
-            <stop stop-color="var(--vc)" />
-            <stop offset="1" stop-color="var(--vd)" />
+            <stop style="stop-color: var(--va)" />
+            <stop offset="1" style="stop-color: var(--vd)" />
         </linearGradient>
         <linearGradient id="de" x1="12" y1="20" x2="12" y2="44" gradientUnits="userSpaceOnUse">
-            <stop stop-color="var(--vd)" />
-            <stop offset="1" stop-color="var(--ve)" />
+            <stop style="stop-color: var(--vd)" />
+            <stop offset="1" style="stop-color: var(--ve)" />
         </linearGradient>
         <linearGradient id="bf" x1="52" y1="20" x2="52" y2="44" gradientUnits="userSpaceOnUse">
-            <stop stop-color="var(--vb)" />
-            <stop offset="1" stop-color="var(--vf)" />
-        </linearGradient>
-        <linearGradient id="cg" x1="32" y1="32" x2="32" y2="56" gradientUnits="userSpaceOnUse">
-            <stop stop-color="var(--vc)" />
-            <stop offset="1" stop-color="var(--vg)" />
+            <stop style="stop-color: var(--vb)" />
+            <stop offset="1" style="stop-color: var(--vf)" />
         </linearGradient>
         <linearGradient id="eg" x1="12" y1="44" x2="32" y2="56" gradientUnits="userSpaceOnUse">
-            <stop stop-color="var(--ve)" />
-            <stop offset="1" stop-color="var(--vg)" />
+            <stop style="stop-color: var(--ve)" />
+            <stop offset="1" style="stop-color: var(--vg)" />
         </linearGradient>
         <linearGradient id="fg" x1="52" y1="44" x2="32" y2="56" gradientUnits="userSpaceOnUse">
-            <stop stop-color="var(--vf)" />
-            <stop offset="1" stop-color="var(--vg)" />
-        </linearGradient>
-        <linearGradient id="ec" x1="12" y1="44" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-            <stop stop-color="var(--ve)" />
-            <stop offset="1" stop-color="var(--vc)" />
-        </linearGradient>
-        <linearGradient id="fc" x1="52" y1="44" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-            <stop stop-color="var(--vf)" />
-            <stop offset="1" stop-color="var(--vc)" />
+            <stop style="stop-color: var(--vf)" />
+            <stop offset="1" style="stop-color: var(--vg)" />
         </linearGradient>
     </defs>
-    <path d="M32 8 52 20" stroke="url(#ab)" stroke-width="var(--stroke)" stroke-linecap="round" />
-    <!-- <path d="M32 8 32 32" stroke="url(#ac)" stroke-width="var(--stroke)" stroke-linecap="round" /> -->
-    <path d="M32 8 12 20" stroke="url(#ad)" stroke-width="var(--stroke)" stroke-linecap="round" />
-    <!-- <path d="M52 20 32 32" stroke="url(#bc)" stroke-width="var(--stroke)" stroke-linecap="round" /> -->
-    <!-- <path d="M32 32 12 20" stroke="url(#cd)" stroke-width="var(--stroke)" stroke-linecap="round" /> -->
-    <path d="M12 20 12 44" stroke="url(#de)" stroke-width="var(--stroke)" stroke-linecap="round" />
-    <path d="M52 20 52 44" stroke="url(#bf)" stroke-width="var(--stroke)" stroke-linecap="round" />
-    <!-- <path d="M32 32 32 56" stroke="url(#cg)" stroke-width="var(--stroke)" stroke-linecap="round" /> -->
-    <path d="M12 44 32 56" stroke="url(#eg)" stroke-width="var(--stroke)" stroke-linecap="round" />
-    <path d="M52 44 32 56" stroke="url(#fg)" stroke-width="var(--stroke)" stroke-linecap="round" />
-    <!-- <path d="M12 44 32 32" stroke="url(#ec)" stroke-width="var(--stroke)" stroke-linecap="round" /> -->
-    <!-- <path d="M52 44 32 32" stroke="url(#fc)" stroke-width="var(--stroke)" stroke-linecap="round" /> -->
+    <path d="M32 8 52 20" stroke="url(#ab)" style="stroke-width: var(--stroke)" stroke-linecap="round" />
+    <path d="M32 8 12 20" stroke="url(#ad)" style="stroke-width: var(--stroke)" stroke-linecap="round" />
+    <path d="M12 20 12 44" stroke="url(#de)" style="stroke-width: var(--stroke)" stroke-linecap="round" />
+    <path d="M52 20 52 44" stroke="url(#bf)" style="stroke-width: var(--stroke)" stroke-linecap="round" />
+    <path d="M12 44 32 56" stroke="url(#eg)" style="stroke-width: var(--stroke)" stroke-linecap="round" />
+    <path d="M52 44 32 56" stroke="url(#fg)" style="stroke-width: var(--stroke)" stroke-linecap="round" />
 </svg>

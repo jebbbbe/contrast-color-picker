@@ -1,9 +1,30 @@
+/* Work Sans - self-hosted variable font (woff2, latin only) */
+@font-face {
+    font-family: "Work Sans";
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("/fonts/work-sans-latin-normal.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "Work Sans";
+    font-style: italic;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url("/fonts/work-sans-latin-italic.woff2") format("woff2");
+}
+
 :root {
     --content-max-width: 750px;
     --gap: 1rem;
     --leva-gap: 0px;
     --highlight: #bf1722;
     --sceneColor: #ffffff;
+    --border: #888888;
+
+    --highlight-opposite: #40e8dd;
+    --sceneColor-opposite: #30002d;
 }
 
 html,
@@ -16,6 +37,15 @@ body,
 body {
     margin: 0;
     background: #fff;
+    font-family:
+        "Work Sans",
+        system-ui,
+        -apple-system,
+        "Segoe UI",
+        Roboto,
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
 }
 
 #root {
@@ -139,7 +169,7 @@ footer {
         max-height: 100%;
         overflow-y: auto;
         flex-direction: column;
-		gap: var(--leva-gap);
+        gap: var(--leva-gap);
     }
 
     .leva-holder .leva-column {

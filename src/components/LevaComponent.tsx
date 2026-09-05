@@ -182,7 +182,7 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
 
     // turn on one line labels on large screens and small screens
     useEffect(() => {
-        const smallMedia = globalThis.matchMedia("(max-width: 619px)")
+        const smallMedia = globalThis.matchMedia("(max-width: 625px)")
         const largeMedia = globalThis.matchMedia("(min-width: 701px)")
         const syncOneLineLabels = (): void => {
             setOneLineLabels(smallMedia.matches || largeMedia.matches)

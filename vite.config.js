@@ -23,17 +23,12 @@ export default defineConfig({
         rolldownOptions: {
             output: {
                 codeSplitting: {
-                    includeDependenciesRecursively: false,
+                    includeDependenciesRecursively: true,
                     groups: [
                         {
                             name: "three",
                             priority: 2,
                             test: /node_modules[\\/]three[\\/]/,
-                        },
-                        {
-                            name: "app",
-                            priority: 1,
-                            test: /[\\/]src[\\/]App[\\/]/,
                         },
                     ],
                 },

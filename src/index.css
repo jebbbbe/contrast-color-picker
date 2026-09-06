@@ -121,7 +121,7 @@ footer {
     width: 100%;
     background-color: var(--sceneColor);
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     gap: var(--gap);
 }
 
@@ -157,6 +157,12 @@ footer {
     height: 100%;
 }
 
+@media (width > 349px) {
+    .leva-holder {
+        flex-direction: row;
+    }
+}
+
 @media (min-width: 701px) {
     .container {
         flex-direction: row;
@@ -181,11 +187,5 @@ footer {
 
     .leva-holder .leva-column {
         flex: 0 0 auto;
-    }
-}
-
-@media (max-width: 349px) {
-    .leva-holder {
-        flex-direction: column;
     }
 }

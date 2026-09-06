@@ -1,0 +1,68 @@
+.app-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    width: min(var(--content-max-width), 100%);
+    margin-inline: auto;
+    padding-block: 0.25rem;
+    text-align: center;
+}
+
+@media (min-width: 500px) {
+    .app-header {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+    }
+}
+
+.app-header nav {
+    display: flex;
+    align-items: center;
+    gap: 0;
+}
+
+.app-header a,
+.app-header button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.25rem;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+}
+
+@media (min-width: 500px) {
+    .app-header a,
+    .app-header button {
+        padding-block: 0.5rem;
+    }
+}
+
+.app-header button img {
+    transition: transform 0.3s ease;
+}
+
+.app-header a:focus-visible img,
+.app-header button:focus-visible img {
+    opacity: 0.5;
+}
+
+.app-header button:focus-visible img {
+    transform: rotate(30deg);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .app-header a:hover img,
+    .app-header button:hover img {
+        opacity: 0.5;
+    }
+
+    .app-header button:hover img {
+        transform: rotate(30deg);
+    }
+}

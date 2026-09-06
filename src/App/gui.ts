@@ -39,7 +39,7 @@ export class SceneGui {
         }
 
         this.gui = new GUI({
-            title: "Scene",
+            title: "Settings",
             container: app.guiContainer,
         })
         // Includes debug controls that mutate materials and matrices directly.
@@ -50,7 +50,7 @@ export class SceneGui {
             colorCubeMaterial,
         }
 
-        const colorCubeFolder = this.gui
+        const colorCubeFolder = this.gui.addFolder("Scene").close()
 
         colorCubeFolder
             .add(state, "searchMode", searchTitles)
@@ -103,7 +103,7 @@ export class SceneGui {
             .listen()
             .onChange(this.setDarkModeColor)
 
-        const debugFolder = this.gui.addFolder("Advanced").close()
+        const debugFolder = this.gui.addFolder("Advanced").open()
         debugFolder.add(app, "animateLoop").name("Animate Loop").listen()
         debugFolder
             .add(colorCubeMaterial, "targetOutput", targetOutputTitles)

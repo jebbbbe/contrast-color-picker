@@ -1,0 +1,13 @@
+# todo
+- [x] links
+- [ ] ssg
+- [ ] shader compile time
+- [ ] better ray march algo
+    - [ ] reduce number of steps
+    - [ ] use correct color format and matrix inverses
+    - [ ] better quantize fn?
+    - [ ] merge into one file
+- [ ] search params
+- [ ] refrence links in footer
+- [ ] move color space to UI
+- [ ] always use leva oneLineLabels

@@ -12,7 +12,7 @@ import { getContrastRatio } from "./utils/contrast"
 import { logScenePixel } from "./utils/logScenePixel"
 import { SceneGui } from "./gui"
 import { levaTheme } from "../constants"
-
+import { StatsPanel } from "./utils/stat.js"
 const sceneBackgroundHex = levaTheme.colors.elevation2
 
 export class ThreeSceneApp {
@@ -31,8 +31,9 @@ export class ThreeSceneApp {
     readonly ctx: {
         colorCube: ColorCubeVolume
     }
+    private stats?: StatsPanel
     private animationFrameId = 0
-    private looping = false
+    private looping = import.meta.env.DEV // false
 
     constructor(
         container: HTMLElement,
@@ -58,7 +59,7 @@ export class ThreeSceneApp {
 
         // camera
         const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
-        camera.position.set(-0.60, 0.15, 1.60)
+        camera.position.set(-0.6, 0.15, 1.6)
 
         // controls
         const controls = new OrbitControls(camera, renderer.domElement)
@@ -157,6 +158,12 @@ export class ThreeSceneApp {
         const gui = new SceneGui(this)
         this.gui = gui
 
+        //stats
+        if (import.meta.env.DEV) {
+            const statsPanel = new StatsPanel(container, import.meta.env.DEV)
+            this.stats = statsPanel
+        }
+
         // listeners
         controls.addEventListener("change", this.requestRender)
         controls.addEventListener("start", this.requestRender)
@@ -201,7 +208,9 @@ export class ThreeSceneApp {
 
     readonly requestRender = (): void => {
         if (!this.animationFrameId) {
-            this.animationFrameId = globalThis.requestAnimationFrame(this.animate)
+            this.animationFrameId = globalThis.requestAnimationFrame(
+                this.animate
+            )
         }
     }
 
@@ -218,6 +227,7 @@ export class ThreeSceneApp {
     }
 
     private render(): void {
+        if (import.meta.env.DEV) this.stats?.update()
         this.controls.update()
         this.renderer.render(this.scene, this.camera)
     }

@@ -85,7 +85,7 @@ footer {
     flex: 1;
     flex-direction: column;
     gap: var(--gap);
-    justify-content: top;
+    justify-content: flex-start;
     margin: 0 auto;
     width: min(var(--content-max-width), 100%);
 }

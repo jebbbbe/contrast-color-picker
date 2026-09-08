@@ -79,7 +79,7 @@ export class ColorCubeVolume extends THREE.Group {
         }
 
         this.transformSpaceModeValue = nextValue
-        this.mesh.material.transformSpaceMatrix.copy(nextMatrix)
+        this.mesh.material.transformSpaceMatrix.copy(nextMatrix).invert()
     }
 }
 

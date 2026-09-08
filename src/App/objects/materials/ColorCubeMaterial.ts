@@ -133,7 +133,7 @@ export class ColorCubeMaterial extends ShaderMaterial {
     }
 
     set targetColor(value: ColorRepresentation) {
-        this.uniforms.targetColor.value.set(value)
+        this.uniforms.targetColor.value.set(value).convertLinearToSRGB()
     }
 
     get whitePoint(): Color {
@@ -141,7 +141,7 @@ export class ColorCubeMaterial extends ShaderMaterial {
     }
 
     set whitePoint(value: ColorRepresentation) {
-        this.uniforms.whitePoint.value.set(value)
+        this.uniforms.whitePoint.value.set(value).convertLinearToSRGB()
     }
 
     get blackPoint(): Color {
@@ -149,7 +149,7 @@ export class ColorCubeMaterial extends ShaderMaterial {
     }
 
     set blackPoint(value: ColorRepresentation) {
-        this.uniforms.blackPoint.value.set(value)
+        this.uniforms.blackPoint.value.set(value).convertLinearToSRGB()
     }
 
     get transformMode(): number {
@@ -165,7 +165,7 @@ export class ColorCubeMaterial extends ShaderMaterial {
     }
 
     set transformSpaceMatrix(value: Matrix3) {
-        this.uniforms.transformSpaceMatrix.value.copy(value)
+        this.uniforms.transformSpaceMatrix.value.copy(value).invert()
     }
 
     get contrastRatio(): number {

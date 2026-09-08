@@ -1,4 +1,5 @@
 # todo
+
 - [x] links
 - [x] mobile first css
 - [ ] ssg
@@ -12,3 +13,10 @@
     - [ ] better quantize fn?
     - [ ] merge into one file
 - [ ] shader compile time
+
+# perf
+
+| title          | desktop fps, ms | mobile fps, ms |
+| -------------- | --------------- | -------------- |
+| bracketed 3    | 120, 8          | 15, 69         |
+| uniform format | 120, 8          | 17, 60         |

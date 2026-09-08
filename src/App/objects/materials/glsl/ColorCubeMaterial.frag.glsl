@@ -61,10 +61,10 @@ const mat3 monochromacyMatrix = mat3(
 #include <quantize_func>
 
 bool meetsContrastThreshold(vec3 sRGB1, vec3 sRGB2) {
-    #ifdef QUANTIZE_SEARCH
-    sRGB1 = quantize(sRGB1);
-    sRGB2 = quantize(sRGB2);
-    #endif
+    // #ifdef QUANTIZE_SEARCH
+    // sRGB1 = quantize(sRGB1);
+    // sRGB2 = quantize(sRGB2);
+    // #endif
     return getContrastRatio(sRGB1, sRGB2) >= contrastRatio;
 }
 
@@ -76,13 +76,10 @@ bool passesSearchFilter(vec3 sRGBsample) {
     } else if (searchMode == SEARCH_OPPOSITE_COLOR) {
         return meetsContrastThreshold(sRGBsample, getOppositeLinearColor(sRGBsample));
     } else if (searchMode == SEARCH_TARGET_COLOR) {
-        vec3 sRGBtarget = linearToSRGB(targetColor);
-        return meetsContrastThreshold(sRGBsample, sRGBtarget);
+        return meetsContrastThreshold(sRGBsample, targetColor);
     } else if (searchMode == SEARCH_BLACK_AND_WHITE) {
-        vec3 sRGBwhitePoint = linearToSRGB(whitePoint);
-        vec3 sRGBblackPoint = linearToSRGB(blackPoint);
-        return meetsContrastThreshold(sRGBsample, sRGBwhitePoint) &&
-            meetsContrastThreshold(sRGBsample, sRGBblackPoint);
+        return meetsContrastThreshold(sRGBsample, whitePoint) &&
+            meetsContrastThreshold(sRGBsample, blackPoint);
     } else {
         return true;
     }
@@ -106,14 +103,14 @@ vec3 applyVisionTransform(vec3 sampleColor) {
 }
 
 bool isInsideTransformedBounds(vec3 pos) {
-    mat3 transformMatrix = transformSpaceMatrix;
-    float det = determinant(transformMatrix);
+    mat3 inverseTransformMatrix = transformSpaceMatrix;
+    float det = determinant(inverseTransformMatrix);
 
     if (abs(det) < 0.00001) {
         return true;
     }
 
-    vec3 inversePos = inverse(transformMatrix) * pos;
+    vec3 inversePos = inverseTransformMatrix * pos;
 
     return
         inversePos.r >= -EPSILON &&
@@ -139,14 +136,13 @@ vec2 intersectBox(vec3 rayOrigin, vec3 rayDirection, vec3 boxMin, vec3 boxMax) {
 vec2 intersectColorCubeBounds(vec3 rayOrigin, vec3 rayDirection) {
     vec2 cubeBounds = intersectBox(rayOrigin, rayDirection, cubeMin, cubeMax);
 
-    mat3 transformMatrix = transformSpaceMatrix;
-    float det = determinant(transformMatrix);
+    mat3 inverseTransformMatrix = transformSpaceMatrix;
+    float det = determinant(inverseTransformMatrix);
 
     if (abs(det) < 0.00001) {
         return cubeBounds;
     }
 
-    mat3 inverseTransformMatrix = inverse(transformMatrix);
     vec3 colorRayOrigin = rayOrigin - cubeMin;
     vec2 transformBounds = intersectBox(
         inverseTransformMatrix * colorRayOrigin,
@@ -273,16 +269,16 @@ vec4 raycastBracketedSearch(
 
 float getBlackAndWhiteMinLuminance() {
     float darkPointLum = min(
-        getLuminanceFromSRGB(linearToSRGB(whitePoint)),
-        getLuminanceFromSRGB(linearToSRGB(blackPoint))
+        getLuminanceFromSRGB(whitePoint),
+        getLuminanceFromSRGB(blackPoint)
     );
     return contrastRatio * (darkPointLum + 0.05) - 0.05;
 }
 
 float getBlackAndWhiteMaxLuminance() {
     float lightPointLum = max(
-        getLuminanceFromSRGB(linearToSRGB(whitePoint)),
-        getLuminanceFromSRGB(linearToSRGB(blackPoint))
+        getLuminanceFromSRGB(whitePoint),
+        getLuminanceFromSRGB(blackPoint)
     );
     return (lightPointLum + 0.05) / contrastRatio - 0.05;
 }

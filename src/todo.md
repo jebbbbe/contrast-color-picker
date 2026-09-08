@@ -3,7 +3,7 @@
 - [x] mobile first css
 - [ ] ssg
 - [ ] search params
-- [ ] always use leva oneLineLabels
+- [x] always use leva oneLineLabels
 - [ ] refrence links in footer
 - [ ] move color space to UI
 - [ ] better ray march algo

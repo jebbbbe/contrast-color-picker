@@ -43,7 +43,6 @@ function getColorControlState(searchMode: number): {
 }
 
 function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
-    const [oneLineLabels, setOneLineLabels] = useState(false)
     const [searchMode, setSearchMode] = useState(
         bridge.local.colorSync.state.searchMode
     )
@@ -180,23 +179,6 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
         })
     }
 
-    // turn on one line labels on large screens and small screens
-    useEffect(() => {
-        const smallMedia = globalThis.matchMedia("(max-width: 625px)")
-        const largeMedia = globalThis.matchMedia("(min-width: 701px)")
-        const syncOneLineLabels = (): void => {
-            setOneLineLabels(smallMedia.matches || largeMedia.matches)
-        }
-
-        syncOneLineLabels()
-        smallMedia.addEventListener("change", syncOneLineLabels)
-        largeMedia.addEventListener("change", syncOneLineLabels)
-
-        return () => {
-            smallMedia.removeEventListener("change", syncOneLineLabels)
-            largeMedia.removeEventListener("change", syncOneLineLabels)
-        }
-    }, [])
 
     useEffect(() => {
         syncFromBridgeState()
@@ -220,7 +202,7 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
                     theme={levaTheme}
                     fill={true}
                     flat={true}
-                    oneLineLabels={oneLineLabels}
+                    oneLineLabels={true}
                     collapsed={false}
                     titleBar={false}
                     neverHide={true}
@@ -232,7 +214,7 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
                     theme={levaTheme}
                     fill={true}
                     flat={true}
-                    oneLineLabels={oneLineLabels}
+                    oneLineLabels={true}
                     collapsed={false}
                     titleBar={false}
                     neverHide={true}

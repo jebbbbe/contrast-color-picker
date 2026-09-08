@@ -111,9 +111,6 @@ export class SceneGui {
         debugFolder
             .add(colorCubeMaterial, "raycastMode", raycastTitles)
             .name("Raycast Mode")
-        debugFolder
-            .add(colorCubeMaterial, "quantizeSearch")
-            .name("Quantize Search")
         debugFolder.add(controls, "autoRotate").name("Rotate Camera")
         debugFolder
             .add(

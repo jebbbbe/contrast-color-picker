@@ -611,11 +611,13 @@ void main() {
 
     vec3 outputPosition = (modelMatrix * vec4(outputColor.rgb + cubeMin, 1.0)).xyz;
 
+	#ifdef QUANTIZE_RESULT
     stepCountMax += QUANTIZE_STEP_COUNT_MAX;
     outputColor.rgb = quantizeToNearestAcceptableColor(
 		outputColor.rgb,	
 		stepsTaken
 	);
+	 #endif
 
     outputColor.rgb = applyVisionTransform(outputColor.rgb);
 

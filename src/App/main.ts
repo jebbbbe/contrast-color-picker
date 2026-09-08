@@ -9,7 +9,7 @@ import ColorSync from "./ColorSync"
 import { RaycastHelper } from "./RaycastHelper"
 import { AspectLayout } from "./utils/AspectLayout.js"
 import { getContrastRatio } from "./utils/contrast"
-import { logScenePixel } from "./utils/logScenePixel"
+import { logScenePixel, quantizeToPassingColor } from "./utils/logScenePixel"
 import { SceneGui } from "./gui"
 import { levaTheme } from "../constants"
 import { StatsPanel } from "./utils/stat.js"
@@ -245,6 +245,7 @@ export class ThreeSceneApp {
         const mode = this.colorSync.state.searchMode
         if (mode === ColorCube.SearchNone) return
 
+        const material = this.ctx.colorCube.mesh.material
         // raycast
         const hits = this.raycastHelper.castFromEvent(event, undefined, true)
 
@@ -283,7 +284,7 @@ export class ThreeSceneApp {
             return
         }
 
-        const hitHex = logScenePixel(
+        let hitHex = logScenePixel(
             this.renderer,
             this.scene,
             this.camera,
@@ -291,6 +292,17 @@ export class ThreeSceneApp {
             event.clientX,
             event.clientY
         )
+        // quantize in the shader OR when we sample
+        if (!material.quantizeResult) {
+            hitHex = quantizeToPassingColor(
+                hitHex,
+                material.contrastRatio,
+                mode,
+                this.colorSync.state.fontColor,
+                this.colorSync.state.backgroundColor,
+                this.colorSync.state.darkModeColor
+            )
+        }
 
         // clicked background
         if (hitHex === sceneBackgroundHex) return

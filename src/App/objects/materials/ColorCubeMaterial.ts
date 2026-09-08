@@ -43,6 +43,7 @@ export const SearchBlackAndWhite = 3
 
 export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
     contrastRatio?: number
+    quantizeResult?: boolean
     raycastMode?: number
     searchMode?: number
     targetColor?: ColorRepresentation
@@ -88,6 +89,7 @@ export class ColorCubeMaterial extends ShaderMaterial {
             side: DoubleSide,
         })
 
+        this.quantizeResult = false
         this.setValues(parameters)
     }
 
@@ -97,6 +99,25 @@ export class ColorCubeMaterial extends ShaderMaterial {
 
     set targetOutput(value: number) {
         this.uniforms.targetOutput.value = Math.max(0, Math.floor(value))
+    }
+
+    get quantizeResult(): boolean {
+        return Boolean(this.defines?.QUANTIZE_RESULT)
+    }
+
+    set quantizeResult(value: boolean) {
+        if (value) {
+            this.defines = {
+                ...this.defines,
+                QUANTIZE_RESULT: 1,
+            }
+        } else if (this.defines?.QUANTIZE_RESULT !== undefined) {
+            const { QUANTIZE_RESULT, ...defines } = this.defines
+            void QUANTIZE_RESULT
+            this.defines = defines
+        }
+
+        this.needsUpdate = true
     }
 
     get raycastMode(): number {

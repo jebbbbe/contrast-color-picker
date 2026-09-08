@@ -16,9 +16,10 @@
 
 # perf
 
-| title          | desktop fps, ms | mobile fps, ms |
-| -------------- | --------------- | -------------- |
-| bracketed 3    | 120, 8          | 15, 69         |
-| uniform format | 120, 8          | 17, 60         |
-| lum uniforms   | 120, 8          | 18, 55         |
-| raycast branch | 120, 8          | 20, 50         |
+| title           | desktop fps, ms | mobile fps, ms |
+| --------------- | --------------- | -------------- |
+| bracketed 3     | 120, 8          | 15, 69         |
+| uniform format  | 120, 8          | 17, 60         |
+| lum uniforms    | 120, 8          | 18, 55         |
+| raycast branch  | 120, 8          | 20, 50         |
+| quantize result | 120, 8          | 35, 26         |

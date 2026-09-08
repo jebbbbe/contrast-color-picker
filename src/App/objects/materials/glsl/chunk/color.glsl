@@ -94,6 +94,13 @@ float getLuminanceFromSRGB(vec3 sRGB) {
     return dot(sRGBToLinear(sRGB), lumCoefficients);
 }
 
+float getContrastRatio(vec3 sRGBsample, float targetLuminance) {
+    float sampleLuminance = getLuminanceFromSRGB(sRGBsample);
+    float l1 = max(sampleLuminance, targetLuminance);
+    float l2 = min(sampleLuminance, targetLuminance);
+    return (l1 + 0.05) / (l2 + 0.05);
+}
+
 float getContrastRatio(vec3 sRGB1, vec3 sRGB2) {
     float lum1 = getLuminanceFromSRGB(sRGB1);
     float lum2 = getLuminanceFromSRGB(sRGB2);

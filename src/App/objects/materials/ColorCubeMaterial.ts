@@ -15,6 +15,11 @@ import * as noop from "./glsl/chunk/registerChunks"
 
 import type { ColorRepresentation, ShaderMaterialParameters } from "three"
 
+function getSRGBLuminance(color: Color): number {
+    const linear = color.clone().convertSRGBToLinear()
+    return linear.r * 0.2126 + linear.g * 0.7152 + linear.b * 0.0722
+}
+
 export const TargetOutputColor = 0
 export const TargetOutputLuminance = 1
 export const TargetOutputSteps = 3
@@ -52,8 +57,11 @@ export type ColorCubeMaterialParameters = ShaderMaterialParameters & {
     raycastMode: { value: RaycastBracketed3 },
     searchMode: { value: SearchTargetColor },
     targetColor: { value: new Color("#ffffff") },
+    targetLuminance: { value: 1 },
     whitePoint: { value: new Color("#ffffff") },
+    whitePointLuminance: { value: 1 },
     blackPoint: { value: new Color("#000000") },
+    blackPointLuminance: { value: 0 },
     targetOutput: { value: TargetOutputColor },
     transformMode: { value: TransformDefault },
     transformSpaceMatrix: { value: new Matrix3() },
@@ -113,6 +121,9 @@ export class ColorCubeMaterial extends ShaderMaterial {
 
     set targetColor(value: ColorRepresentation) {
         this.uniforms.targetColor.value.set(value).convertLinearToSRGB()
+        this.uniforms.targetLuminance.value = getSRGBLuminance(
+            this.uniforms.targetColor.value
+        )
     }
 
     get whitePoint(): Color {
@@ -121,6 +132,9 @@ export class ColorCubeMaterial extends ShaderMaterial {
 
     set whitePoint(value: ColorRepresentation) {
         this.uniforms.whitePoint.value.set(value).convertLinearToSRGB()
+        this.uniforms.whitePointLuminance.value = getSRGBLuminance(
+            this.uniforms.whitePoint.value
+        )
     }
 
     get blackPoint(): Color {
@@ -129,6 +143,9 @@ export class ColorCubeMaterial extends ShaderMaterial {
 
     set blackPoint(value: ColorRepresentation) {
         this.uniforms.blackPoint.value.set(value).convertLinearToSRGB()
+        this.uniforms.blackPointLuminance.value = getSRGBLuminance(
+            this.uniforms.blackPoint.value
+        )
     }
 
     get transformMode(): number {

@@ -4,8 +4,11 @@ uniform float contrastRatio;
 uniform uint raycastMode;
 uniform uint searchMode;
 uniform vec3 targetColor;
+uniform float targetLuminance;
 uniform vec3 whitePoint;
+uniform float whitePointLuminance;
 uniform vec3 blackPoint;
+uniform float blackPointLuminance;
 uniform uint targetOutput;
 uniform uint transformMode;
 uniform mat3 transformSpaceMatrix;
@@ -60,15 +63,13 @@ const mat3 monochromacyMatrix = mat3(
 #include <color_func>
 #include <quantize_func>
 
-bool meetsContrastThreshold(vec3 sRGB1, vec3 sRGB2) {
-    // #ifdef QUANTIZE_SEARCH
-    // sRGB1 = quantize(sRGB1);
-    // sRGB2 = quantize(sRGB2);
-    // #endif
-    return getContrastRatio(sRGB1, sRGB2) >= contrastRatio;
+bool meetsContrastThreshold(vec3 sRGBsample, float targetLuminance) {
+    return getContrastRatio(sRGBsample, targetLuminance) >= contrastRatio;
 }
 
-
+bool meetsContrastThreshold(vec3 sRGBsample, vec3 sRGBtarget) {
+    return getContrastRatio(sRGBsample, sRGBtarget) >= contrastRatio;
+}
 
 bool passesSearchFilter(vec3 sRGBsample) {
     if (searchMode == SEARCH_NONE) {
@@ -76,10 +77,10 @@ bool passesSearchFilter(vec3 sRGBsample) {
     } else if (searchMode == SEARCH_OPPOSITE_COLOR) {
         return meetsContrastThreshold(sRGBsample, getOppositeLinearColor(sRGBsample));
     } else if (searchMode == SEARCH_TARGET_COLOR) {
-        return meetsContrastThreshold(sRGBsample, targetColor);
+        return meetsContrastThreshold(sRGBsample, targetLuminance);
     } else if (searchMode == SEARCH_BLACK_AND_WHITE) {
-        return meetsContrastThreshold(sRGBsample, whitePoint) &&
-            meetsContrastThreshold(sRGBsample, blackPoint);
+        return meetsContrastThreshold(sRGBsample, whitePointLuminance) &&
+            meetsContrastThreshold(sRGBsample, blackPointLuminance);
     } else {
         return true;
     }
@@ -269,16 +270,16 @@ vec4 raycastBracketedSearch(
 
 float getBlackAndWhiteMinLuminance() {
     float darkPointLum = min(
-        getLuminanceFromSRGB(whitePoint),
-        getLuminanceFromSRGB(blackPoint)
+        whitePointLuminance,
+        blackPointLuminance
     );
     return contrastRatio * (darkPointLum + 0.05) - 0.05;
 }
 
 float getBlackAndWhiteMaxLuminance() {
     float lightPointLum = max(
-        getLuminanceFromSRGB(whitePoint),
-        getLuminanceFromSRGB(blackPoint)
+        whitePointLuminance,
+        blackPointLuminance
     );
     return (lightPointLum + 0.05) / contrastRatio - 0.05;
 }

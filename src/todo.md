@@ -5,8 +5,8 @@
 - [/] ssg
 - [/] search params
 - [x] always use leva oneLineLabels
-- [ ] refrence links in footer
-- [ ] readme.md
+- [x] refrence links in footer
+- [x] readme.md
 - [x] display current contrast
 - [x] move color space to UI
 - [x] darkmode?
@@ -15,6 +15,8 @@
     - [x] use correct color format and matrix inverses
     - [x] better quantize fn?
     - [ ] merge into one file
+    - [ ] volume + d/dx
+	- [ ] textures
 - [x] shader compile time
 
 # perf

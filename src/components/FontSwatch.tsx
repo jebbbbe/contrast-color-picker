@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react"
+import { memo, useRef, useState, type FormEvent } from "react"
 import "./FontSwatch.css"
 import PassFail from "./PassFail"
 
@@ -48,9 +48,11 @@ type FontSwatchProps = {
 }
 
 function FontSwatch({ swatch }: FontSwatchProps) {
-    const [sampleText, setSampleText] = useState(
+    const [initialSampleText] = useState(
         () => textBank[Math.floor(Math.random() * textBank.length)]
     )
+    const normalSampleRef = useRef<HTMLSpanElement>(null)
+    const largeSampleRef = useRef<HTMLSpanElement>(null)
 
     function onSampleTextInput(event: FormEvent<HTMLSpanElement>): void {
         const nextValue = event.currentTarget.textContent?.slice(0, 60) ?? ""
@@ -59,7 +61,14 @@ function FontSwatch({ swatch }: FontSwatchProps) {
             event.currentTarget.textContent = nextValue
         }
 
-        setSampleText(nextValue)
+        const otherSample =
+            event.currentTarget === normalSampleRef.current
+                ? largeSampleRef.current
+                : normalSampleRef.current
+
+        if (otherSample) {
+            otherSample.textContent = nextValue
+        }
     }
 
     const sampleStyle = swatch.darkModeEnabled
@@ -140,6 +149,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             )}
                         </p>
                         <span
+                            ref={normalSampleRef}
                             className="textSample"
                             style={sampleStyle}
                             contentEditable="plaintext-only"
@@ -147,7 +157,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             suppressContentEditableWarning
                             onInput={onSampleTextInput}
                         >
-                            {sampleText}
+                            {initialSampleText}
                         </span>
                     </div>
                     <h2>WCAG Large Text</h2>
@@ -179,6 +189,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             )}
                         </p>
                         <span
+                            ref={largeSampleRef}
                             className="textSample largeTextSample"
                             style={sampleStyle}
                             contentEditable="plaintext-only"
@@ -186,7 +197,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             suppressContentEditableWarning
                             onInput={onSampleTextInput}
                         >
-                            {sampleText}
+                            {initialSampleText}
                         </span>
                     </div>
                 </div>
@@ -195,4 +206,4 @@ function FontSwatch({ swatch }: FontSwatchProps) {
     )
 }
 
-export default FontSwatch
+export default memo(FontSwatch)

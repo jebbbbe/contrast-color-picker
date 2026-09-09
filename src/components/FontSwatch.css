@@ -8,13 +8,13 @@
 }
 
 .fontSwatch .pass {
-    background-color: #080;
+    background-color: var(--pass);
     border-radius: 1em;
-    color: #fff;
+    color: var(--sceneColor);
 }
 
 .fontSwatch .fail {
-    color: #c00;
+    color: var(--fail);
 }
 
 .fontSwatch article {
@@ -60,7 +60,7 @@
 }
 
 .fontSwatch .ratioContainer > span.pass {
-    border: 3px solid #080;
+    border: 3px solid var(--pass);
     padding: 8px;
 }
 
@@ -69,7 +69,7 @@
     min-width: 7em;
     margin-bottom: 6px;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-light);
     border-radius: 6px;
 }
 
@@ -129,7 +129,7 @@
     width: 100%;
     max-width: 100%;
     padding: 1em;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-light);
     text-align: center;
     grid-column: 1 / -1;
     grid-row: 3;

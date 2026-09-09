@@ -43,26 +43,36 @@
     }
 }
 
-.app-header button img {
+.app-header .headerIcon {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background-color: var(--page-text);
+    mask-size: contain;
+    mask-position: center;
+    mask-repeat: no-repeat;
+}
+
+.app-header button .headerIcon {
     transition: transform 0.3s ease;
 }
 
-.app-header a:focus-visible img,
-.app-header button:focus-visible img {
+.app-header a:focus-visible .headerIcon,
+.app-header button:focus-visible .headerIcon {
     opacity: 0.5;
 }
 
-.app-header button:focus-visible img {
+.app-header button:focus-visible .headerIcon {
     transform: rotate(30deg);
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .app-header a:hover img,
-    .app-header button:hover img {
+    .app-header a:hover .headerIcon,
+    .app-header button:hover .headerIcon {
         opacity: 0.5;
     }
 
-    .app-header button:hover img {
+    .app-header button:hover .headerIcon {
         transform: rotate(30deg);
     }
 }

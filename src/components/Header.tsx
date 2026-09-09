@@ -17,7 +17,11 @@ function Header({ settingsOpen, onToggleSettings }: HeaderProps) {
                     aria-label="Description"
                     title="Description"
                 >
-                    <img src="/description.svg" alt="" width="24" height="24" />
+                    <span
+                        className="headerIcon"
+                        aria-hidden="true"
+                        style={{ maskImage: 'url("/description.svg")' }}
+                    />
                 </a>
                 <a
                     href="https://github.com/jebbbbe/contrast-color-picker"
@@ -26,7 +30,11 @@ function Header({ settingsOpen, onToggleSettings }: HeaderProps) {
                     aria-label="View source code"
                     title="View source code"
                 >
-                    <img src="/code.svg" alt="" width="24" height="24" />
+                    <span
+                        className="headerIcon"
+                        aria-hidden="true"
+                        style={{ maskImage: 'url("/code.svg")' }}
+                    />
                 </a>
                 <button
                     type="button"
@@ -38,7 +46,11 @@ function Header({ settingsOpen, onToggleSettings }: HeaderProps) {
                     aria-controls="scene-settings"
                     onClick={onToggleSettings}
                 >
-                    <img src="/settings.svg" alt="" width="24" height="24" />
+                    <span
+                        className="headerIcon"
+                        aria-hidden="true"
+                        style={{ maskImage: 'url("/settings.svg")' }}
+                    />
                 </button>
             </nav>
         </header>

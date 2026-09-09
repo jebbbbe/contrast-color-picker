@@ -64,6 +64,22 @@ export const appStub = {
 // https://leva.pmnd.rs/?path=/story/advanced-theme--default
 export type AppStubType = typeof appStub
 export const levaStub = appStub.gui
+let prefersDarkMode =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-color-scheme: dark)").matches
+// prefersDarkMode = false
+const darkmode = {
+    colors: {
+        elevation1: "#110022",
+        elevation2: "#110022",
+        elevation3: "#110022",
+        accent1: "#40e8dd",
+        accent2: "#40e8dd",
+        accent3: "#a6f4ef",
+        highlight2: "#ffffff",
+        highlight3: "#000000",
+    },
+}
 export const levaTheme = {
     colors: {
         elevation1: "#ffffff",
@@ -76,6 +92,7 @@ export const levaTheme = {
         highlight2: "#000000",
         highlight3: "#000000",
         // vivid1: "#ffcc00",
+        ...(prefersDarkMode ? darkmode.colors : {}),
     },
     space: {
         md: "1.5px", // 10

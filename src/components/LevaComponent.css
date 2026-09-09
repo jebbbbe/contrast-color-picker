@@ -46,7 +46,7 @@ remove padding from first and last elems so both columns components are uniform 
 slider dark color
 */
 .leva-c-bbMqub {
-    background-color: #590b10 !important;
+    background-color: var(--slider-track) !important;
 }
 
 /*

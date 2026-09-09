@@ -16,15 +16,48 @@
 }
 
 :root {
+    color-scheme: light;
     --content-max-width: 750px;
     --gap: 1rem;
     --leva-gap: 0px;
     --highlight: #bf1722;
     --sceneColor: #ffffff;
     --border: #888888;
-
+    --border-light: #ccc;
+    --pass: #080;
+    --fail: #c00;
+    --slider-track: #590b10;
     --highlight-opposite: #40e8dd;
-    --sceneColor-opposite: #30002d;
+    --sceneColor-opposite: #110022;
+    --page-background: var(--sceneColor);
+    --page-text: #000;
+}
+
+@media (prefers-color-scheme: dark) {
+    /*
+		also see src/constants.ts
+	*/
+    :root {
+        color-scheme: dark;
+        --page-background: var(--sceneColor-opposite);
+        --page-text: var(--sceneColor);
+        --highlight: var(--highlight-opposite);
+        --border: var(--border-light);
+        --fail: #ff8080;
+        --slider-track: #1b645f;
+    }
+
+    .leva-holder .leva-c-ihqPFh {
+        background-color: var(--page-background) !important;
+        color: var(--page-text) !important;
+    }
+
+    .leva-holder .leva-c-ihqPFh:not(:disabled):hover,
+    .leva-holder .leva-c-ihqPFh:not(:disabled):focus-visible {
+        background-color: var(--highlight) !important;
+        border-color: var(--highlight) !important;
+        color: var(--page-background) !important;
+    }
 }
 
 html,
@@ -36,7 +69,8 @@ body,
 
 body {
     margin: 0;
-    background: #fff;
+    background: var(--page-background);
+    color: var(--page-text);
     font-family:
         "Work Sans",
         system-ui,
@@ -119,7 +153,7 @@ footer {
 
 .leva-holder {
     width: 100%;
-    background-color: var(--sceneColor);
+    background-color: var(--page-background);
     display: flex;
     flex-direction: column;
     gap: var(--gap);
@@ -142,7 +176,7 @@ footer {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-light);
 }
 
 .gui-holder > .lil-gui {

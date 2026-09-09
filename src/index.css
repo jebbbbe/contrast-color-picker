@@ -153,6 +153,7 @@ footer {
 
 .leva-holder {
     width: 100%;
+    min-height: 280px;
     background-color: var(--page-background);
     display: flex;
     flex-direction: column;
@@ -201,6 +202,7 @@ footer {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         align-items: start;
+        min-height: 175px;
     }
 
     .leva-holder .leva-column:first-child {
@@ -238,6 +240,7 @@ footer {
         min-width: 175px;
         width: 300px;
         height: auto;
+        min-height: 0;
         max-height: 100%;
         overflow: visible;
         flex-direction: column;

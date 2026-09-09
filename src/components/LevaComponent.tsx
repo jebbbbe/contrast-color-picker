@@ -13,6 +13,7 @@ import { SearchBackgroundColor } from "../App/ColorSync"
 import * as ColorCube from "../App/objects/materials/ColorCubeMaterial"
 import {
     searchTitles,
+	transformTitles,
     levaTransformTitles,
     levaTheme,
     type AppStubType,
@@ -95,7 +96,7 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
                     transient: false,
                     label: "Transform Space",
                     value: transformSpace,
-                    options: levaTransformTitles,
+                    options: transformTitles,
                     onChange: (value: number, _path, context) => {
                         if (context.initial || !context.fromPanel) return
                         bridge.setTransformSpace(value)

@@ -149,6 +149,26 @@ export class SceneGui {
             .listen()
             .onChange(onTransformSpaceChange)
 
+        const matrixFolder = debugFolder.addFolder("Matrix").close()
+        for (let index = 0; index < 9; index++) {
+            matrixFolder
+                .add(
+                    colorCube.customTransformSpaceMatrix.elements,
+                    index,
+                    0,
+                    1,
+                    0.001
+                )
+                .name("")
+                .listen()
+                .onChange(() => {
+                    colorCube.customTransformSpaceMatrix.set(
+                        ...colorCube.customTransformSpaceMatrix.elements
+                    )
+                    this.setTransformSpace(ColorCube.TransformCustom)
+                })
+        }
+
         function syncOutputSpaceState(value: number): void {
             if (value === ColorCube.TransformDefault) {
                 outputSpaceController.enable()

@@ -74,9 +74,9 @@ function FontSwatch({ swatch }: FontSwatchProps) {
 
     return (
         <div className="fontSwatch">
-            <article id="maincontent">
-                <div id="resultsContainer">
-                    <div id="ratioContainer">
+            <article>
+                <div className="resultsContainer">
+                    <div className="ratioContainer">
                         <span
                             className={
                                 swatch.normalTextPassAA ? "pass" : "fail"
@@ -84,7 +84,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                         >
                             Contrast Ratio
                             <span
-                                id="ratio"
+                                className="ratio"
                                 aria-live="polite"
                                 aria-atomic="false"
                             >
@@ -101,7 +101,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             >
                                 Dark Contrast Ratio
                                 <span
-                                    id="ratioDark"
+                                    className="ratio"
                                     aria-live="polite"
                                     aria-atomic="false"
                                 >
@@ -117,13 +117,11 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             <span className="resultLabel">AA:</span>
                             <span className="resultBadges">
                                 <PassFail
-                                    id="normalAA"
                                     pass={swatch.normalTextPassAA}
                                 />
                             </span>
                             {swatch.darkModeEnabled && (
                                 <PassFail
-                                    id="normalDarkAA"
                                     pass={swatch.normalDarkTextPassAA}
                                 />
                             )}
@@ -132,19 +130,17 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             <span className="resultLabel">AAA:</span>
                             <span className="resultBadges">
                                 <PassFail
-                                    id="normalAAA"
                                     pass={swatch.normalTextPassAAA}
                                 />
                             </span>
                             {swatch.darkModeEnabled && (
                                 <PassFail
-                                    id="normalDarkAAA"
                                     pass={swatch.normalDarkTextPassAAA}
                                 />
                             )}
                         </p>
                         <span
-                            id="normal"
+                            className="textSample"
                             style={sampleStyle}
                             contentEditable="plaintext-only"
                             spellCheck="false"
@@ -160,13 +156,11 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             <span className="resultLabel">AA:</span>
                             <span className="resultBadges">
                                 <PassFail
-                                    id="bigAA"
                                     pass={swatch.largeTextPassAA}
                                 />
                             </span>
                             {swatch.darkModeEnabled && (
                                 <PassFail
-                                    id="largeDarkAA"
                                     pass={swatch.largeDarkTextPassAA}
                                 />
                             )}
@@ -175,19 +169,17 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             <span className="resultLabel">AAA:</span>
                             <span className="resultBadges">
                                 <PassFail
-                                    id="bigAAA"
                                     pass={swatch.largeTextPassAAA}
                                 />
                             </span>
                             {swatch.darkModeEnabled && (
                                 <PassFail
-                                    id="largeDarkAAA"
                                     pass={swatch.largeDarkTextPassAAA}
                                 />
                             )}
                         </p>
                         <span
-                            id="big"
+                            className="textSample largeTextSample"
                             style={sampleStyle}
                             contentEditable="plaintext-only"
                             spellCheck="false"

@@ -17,7 +17,7 @@
     color: #c00;
 }
 
-.fontSwatch #maincontent {
+.fontSwatch article {
     display: flow-root;
     width: 100%;
     max-width: 100%;
@@ -27,7 +27,7 @@
     outline: 0;
 }
 
-.fontSwatch #resultsContainer {
+.fontSwatch .resultsContainer {
     display: flow-root;
     width: 100%;
 }
@@ -43,20 +43,13 @@
     line-height: 1.25em;
 }
 
-.fontSwatch article p,
-.fontSwatch pre {
+.fontSwatch article p {
     margin: 0;
     padding-bottom: 1em;
     line-height: 1.5em;
 }
 
-.fontSwatch a {
-    color: #20399d;
-    text-decoration: underline;
-    transition: background-color 0.25s linear;
-}
-
-.fontSwatch #ratioContainer {
+.fontSwatch .ratioContainer {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -66,15 +59,12 @@
     text-align: center;
 }
 
-.fontSwatch #ratioContainer > span.pass,
-.fontSwatch #textBackRatioContainer.pass > span,
-.fontSwatch #linkTextRatioContainer.pass > span,
-.fontSwatch #linkBackRatioContainer.pass > span {
+.fontSwatch .ratioContainer > span.pass {
     border: 3px solid #080;
     padding: 8px;
 }
 
-.fontSwatch #ratioContainer > span {
+.fontSwatch .ratioContainer > span {
     display: inline-block;
     min-width: 7em;
     margin-bottom: 6px;
@@ -83,25 +73,9 @@
     border-radius: 6px;
 }
 
-.fontSwatch #ratio,
-.fontSwatch #ratioDark,
-.fontSwatch #textBackRatio,
-.fontSwatch #linkTextRatio,
-.fontSwatch #linkBackRatio {
+.fontSwatch .ratio {
     display: block;
     font-size: 3em;
-}
-
-.fontSwatch #textBackRatio,
-.fontSwatch #linkTextRatio,
-.fontSwatch #linkBackRatio {
-    display: inline-block;
-    min-width: 4em;
-}
-
-.fontSwatch #permalink {
-    display: block;
-    border: none;
 }
 
 .fontSwatch .results {
@@ -150,21 +124,13 @@
     transition: all 0.2s;
 }
 
-.fontSwatch #normal,
-.fontSwatch #big,
-.fontSwatch #ui {
+.fontSwatch .textSample {
     display: block;
-    float: none;
-    clear: both;
     width: 100%;
     max-width: 100%;
     padding: 1em;
     border: 1px solid #ccc;
     text-align: center;
-}
-
-.fontSwatch #normal,
-.fontSwatch #big {
     grid-column: 1 / -1;
     grid-row: 3;
     min-width: 0;
@@ -173,55 +139,18 @@
     overflow-wrap: anywhere;
 }
 
-.fontSwatch #big {
+.fontSwatch .largeTextSample {
     font-size: 14pt;
     font-weight: bold;
 }
 
-.fontSwatch #ui {
-    margin-bottom: 20px;
-    padding: 5px 0 10px;
-}
-
-.fontSwatch #ui::first-letter {
-    font-size: 1.5em;
-    font-weight: bold;
-}
-
-.fontSwatch #uibox {
-    display: block;
-    margin: auto;
-    padding: 2px;
-    border: 2px solid grey;
-}
-
-.fontSwatch #normal a,
-.fontSwatch #big a {
-    text-decoration: none;
-}
-
-.fontSwatch #normal a:hover,
-.fontSwatch #normal a:focus,
-.fontSwatch #big a:hover,
-.fontSwatch #big a:focus {
-    text-decoration: underline;
-}
-
-#normalDarkAA,
-#normalDarkAAA,
-#largeDarkAA,
-#largeDarkAAA {
-    margin-left: 0;
-    margin-right: 0;
-}
-
 @media (width >= 700px) {
-    .fontSwatch #ratioContainer {
+    .fontSwatch .ratioContainer {
         justify-content: space-evenly;
     }
 }
 
-.fontSwatch #ratioContainer:has(> span:only-child) {
+.fontSwatch .ratioContainer:has(> span:only-child) {
     justify-content: center;
 }
 
@@ -230,17 +159,10 @@
         grid-template-columns: max-content max-content minmax(0, 460px) max-content;
     }
 
-    .fontSwatch #normal,
-    .fontSwatch #big {
+    .fontSwatch .textSample {
         grid-column: 3;
         grid-row: 1 / 3;
         max-width: 460px;
         margin-top: 0;
-    }
-
-    .fontSwatch #normal,
-    .fontSwatch #big,
-    .fontSwatch #ui {
-        clear: none;
     }
 }

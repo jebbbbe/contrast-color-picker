@@ -18,6 +18,8 @@ type ContrastPresetState = {
 export class SceneGui {
     readonly gui: GUI
     private readonly requestRender: () => void
+    private readonly spaceChangeListeners = new Set<() => void>()
+    private syncOutputSpaceState: (value: number) => void = () => {}
     readonly local: {
         colorCube: ThreeSceneApp["ctx"]["colorCube"]
         colorSync: ThreeSceneApp["colorSync"]
@@ -43,7 +45,10 @@ export class SceneGui {
             container: app.guiContainer,
         })
         // Includes debug controls that mutate materials and matrices directly.
-        this.gui.onChange(this.requestRender)
+        this.gui.onChange(() => {
+            this.notifySpaceChange()
+            this.requestRender()
+        })
         this.local = {
             colorCube,
             colorSync,
@@ -158,6 +163,8 @@ export class SceneGui {
             syncOutputSpaceState(value)
         }
 
+        this.syncOutputSpaceState = syncOutputSpaceState
+
         function syncSearchModeState(): void {
             transformControls.detach()
 
@@ -206,6 +213,32 @@ export class SceneGui {
 
     readonly setSearchMode = (searchMode: number): void => {
         this.local.colorSync.setSearchMode(searchMode)
+    }
+
+    readonly subscribeSpaceChange = (listener: () => void): (() => void) => {
+        this.spaceChangeListeners.add(listener)
+        return () => {
+            this.spaceChangeListeners.delete(listener)
+        }
+    }
+
+    private notifySpaceChange(): void {
+        this.syncOutputSpaceState(this.local.colorCube.transformSpaceMode)
+        for (const listener of this.spaceChangeListeners) {
+            listener()
+        }
+    }
+
+    readonly setOutputSpace = (value: number): void => {
+        this.local.colorCubeMaterial.transformMode = value
+        this.notifySpaceChange()
+        this.requestRender()
+    }
+
+    readonly setTransformSpace = (value: number): void => {
+        this.local.colorCube.transformSpaceMode = value
+        this.notifySpaceChange()
+        this.requestRender()
     }
 
     readonly setContrastPreset = (contrastRatio: number): void => {
@@ -268,10 +301,11 @@ export class SceneGui {
             e7,
             e8
         )
-        this.local.colorCube.transformSpaceMode = ColorCube.TransformCustom
+        this.setTransformSpace(ColorCube.TransformCustom)
     }
 
     destroy(): void {
+        this.spaceChangeListeners.clear()
         this.local.colorSync.removeEventListener(
             "change",
             this.handleColorSyncChange

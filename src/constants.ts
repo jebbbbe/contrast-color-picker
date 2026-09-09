@@ -16,6 +16,15 @@ export const transformTitles = {
     Custom: ColorCube.TransformCustom,
 } as const
 
+export const levaTransformTitles = {
+    Default: ColorCube.TransformDefault,
+    Protanopia: ColorCube.TransformProtanopia,
+    Deuteranopia: ColorCube.TransformDeuteranopia,
+    Tritanopia: ColorCube.TransformTritanopia,
+    // Monochromacy: ColorCube.TransformMonochromacy,
+    // Custom: ColorCube.TransformCustom,
+} as const
+
 export const raycastTitles = {
     "Binary Search": ColorCube.RaycastBinarySearch,
     Bracketed: ColorCube.RaycastBracketed,
@@ -50,9 +59,16 @@ export const appStub = {
             },
             colorCubeMaterial: {
                 contrastRatio: 4.5,
+                transformMode: ColorCube.TransformDefault,
+            },
+            colorCube: {
+                transformSpaceMode: ColorCube.TransformDefault,
             },
         },
         setSearchMode: noop,
+        setOutputSpace: noop,
+        setTransformSpace: noop,
+        subscribeSpaceChange: (_listener: () => void) => noop,
         setContrastPreset: noop,
         setFontColor: noop,
         setBackgroundColor: noop,
@@ -77,7 +93,7 @@ const darkmode = {
         accent2: "#40e8dd",
         accent3: "#a6f4ef",
         highlight2: "#ffffff",
-        highlight3: "#000000",
+        highlight3: "#ffffff",
     },
 }
 export const levaTheme = {

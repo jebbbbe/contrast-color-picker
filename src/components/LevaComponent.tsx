@@ -3,6 +3,7 @@ import "./LevaComponent.css"
 import {
     button,
     buttonGroup,
+    folder,
     LevaPanel,
     useControls,
     useCreateStore,
@@ -10,7 +11,12 @@ import {
 import type { ColorSyncChangeEvent } from "../App/ColorSync"
 import { SearchBackgroundColor } from "../App/ColorSync"
 import * as ColorCube from "../App/objects/materials/ColorCubeMaterial"
-import { searchTitles, levaTheme, type AppStubType } from "../constants"
+import {
+    searchTitles,
+    levaTransformTitles,
+    levaTheme,
+    type AppStubType,
+} from "../constants"
 
 function getColorControlState(searchMode: number): {
     fontDisabled: boolean
@@ -58,11 +64,64 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
     const [contrastRatio, setContrastRatio] = useState(
         bridge.local.colorCubeMaterial.contrastRatio
     )
+    const [outputSpace, setOutputSpace] = useState(
+        bridge.local.colorCubeMaterial.transformMode
+    )
+    const [transformSpace, setTransformSpace] = useState(
+        bridge.local.colorCube.transformSpaceMode
+    )
     const { fontDisabled, backgroundDisabled, darkModeDisabled } =
         getColorControlState(searchMode)
 
     const otherStore = useCreateStore()
     const colorStore = useCreateStore()
+    const spaceStore = useCreateStore()
+
+    const [, setSpaces] = useControls(
+        () => ({
+            "Vision Options": folder({
+                outputSpace: {
+                    transient: false,
+                    label: "Output Space",
+                    value: outputSpace,
+                    options: levaTransformTitles,
+                    disabled: transformSpace !== ColorCube.TransformDefault,
+                    onChange: (value: number, _path, context) => {
+                        if (context.initial || !context.fromPanel) return
+                        bridge.setOutputSpace(value)
+                    },
+                },
+                transformSpace: {
+                    transient: false,
+                    label: "Transform Space",
+                    value: transformSpace,
+                    options: levaTransformTitles,
+                    onChange: (value: number, _path, context) => {
+                        if (context.initial || !context.fromPanel) return
+                        bridge.setTransformSpace(value)
+                    },
+                },
+            }, { collapsed: true }),
+        }),
+        { store: spaceStore },
+        [bridge, outputSpace, transformSpace]
+    )
+
+    useEffect(() => {
+        function syncSpaces(): void {
+            const nextOutputSpace = bridge.local.colorCubeMaterial.transformMode
+            const nextTransformSpace = bridge.local.colorCube.transformSpaceMode
+            setOutputSpace(nextOutputSpace)
+            setTransformSpace(nextTransformSpace)
+            setSpaces({
+                outputSpace: nextOutputSpace,
+                transformSpace: nextTransformSpace,
+            })
+        }
+
+        syncSpaces()
+        return bridge.subscribeSpaceChange(syncSpaces)
+    }, [bridge, setSpaces])
 
     const [, setOther] = useControls(
         () => ({
@@ -179,7 +238,6 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
         })
     }
 
-
     useEffect(() => {
         syncFromBridgeState()
 
@@ -195,7 +253,7 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
     }, [bridge])
 
     return (
-        <>
+        <div className="leva-panels">
             <div className="leva-column">
                 <LevaPanel
                     store={otherStore}
@@ -220,7 +278,19 @@ function LevaComponent({ bridge }: { bridge: AppStubType["gui"] }) {
                     neverHide={true}
                 />
             </div>
-        </>
+            <div className="leva-column" id="visionOptions">
+                <LevaPanel
+                    store={spaceStore}
+                    theme={levaTheme}
+                    fill={true}
+                    flat={true}
+                    oneLineLabels={true}
+                    collapsed={false}
+                    titleBar={false}
+                    neverHide={true}
+                />
+            </div>
+        </div>
     )
 }
 

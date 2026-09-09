@@ -8,8 +8,8 @@
 - [ ] refrence links in footer
 - [ ] readme.md
 - [x] display current contrast
-- [ ] move color space to UI
-- [ ] darkmode?
+- [x] move color space to UI
+- [x] darkmode?
 - [ ] better ray march algo
     - [x] reduce number of steps
     - [x] use correct color format and matrix inverses

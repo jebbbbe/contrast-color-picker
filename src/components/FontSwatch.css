@@ -144,6 +144,27 @@
     font-weight: bold;
 }
 
+@media (width < 500px) {
+    .fontSwatch .ratio {
+        font-size: 2.5em;
+    }
+}
+
+@media (width <= 420px) {
+    .fontSwatch .ratioContainer {
+        font-size: 0.8em;
+    }
+    .fontSwatch .ratio {
+        font-size: 2em;
+    }
+}
+
+@media (width <= 390px) {
+    .fontSwatch .ratio {
+        font-size: 1.5em;
+    }
+}
+
 @media (width >= 700px) {
     .fontSwatch .ratioContainer {
         justify-content: space-evenly;
@@ -156,7 +177,9 @@
 
 @media (width > 600px) {
     .fontSwatch .results {
-        grid-template-columns: max-content max-content minmax(0, 460px) max-content;
+        grid-template-columns:
+            max-content max-content minmax(0, 460px)
+            max-content;
     }
 
     .fontSwatch .textSample {

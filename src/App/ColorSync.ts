@@ -152,6 +152,7 @@ export class ColorSync extends THREE.EventDispatcher<{
         this.callbackBridge.setSwatch({
             color: fontColor,
             backgroundColor,
+            targetRatio: material.contrastRatio,
             darkModeEnabled: searchMode === ColorCube.SearchBlackAndWhite,
             darkBackgroundColor: darkModeColor,
         })

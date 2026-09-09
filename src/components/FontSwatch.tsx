@@ -13,12 +13,14 @@ export type FontSwatchState = {
     color: string
     backgroundColor: string
     contrastRatio: string
+    contrastRatioPass: boolean
     normalTextPassAA: boolean
     normalTextPassAAA: boolean
     largeTextPassAA: boolean
     largeTextPassAAA: boolean
     darkModeEnabled: boolean
     contrastRatioDark: string
+    contrastRatioDarkPass: boolean
     darkBackgroundColor: string
     normalDarkTextPassAA: boolean
     normalDarkTextPassAAA: boolean
@@ -30,12 +32,14 @@ export const initialFontSwatchState: FontSwatchState = {
     color: "#000000",
     backgroundColor: "#ffffff",
     contrastRatio: "21",
+    contrastRatioPass: true,
     normalTextPassAA: true,
     normalTextPassAAA: true,
     largeTextPassAA: true,
     largeTextPassAAA: true,
     darkModeEnabled: false,
     contrastRatioDark: "1",
+    contrastRatioDarkPass: false,
     darkBackgroundColor: "#000000",
     normalDarkTextPassAA: true,
     normalDarkTextPassAAA: false,
@@ -88,7 +92,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                     <div className="ratioContainer">
                         <span
                             className={
-                                swatch.normalTextPassAA ? "pass" : "fail"
+                                swatch.contrastRatioPass ? "pass" : "fail"
                             }
                         >
                             Contrast Ratio
@@ -103,7 +107,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                         {swatch.darkModeEnabled && (
                             <span
                                 className={
-                                    swatch.normalDarkTextPassAA
+                                    swatch.contrastRatioDarkPass
                                         ? "pass"
                                         : "fail"
                                 }
@@ -125,27 +129,19 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                         <p>
                             <span className="resultLabel">AA:</span>
                             <span className="resultBadges">
-                                <PassFail
-                                    pass={swatch.normalTextPassAA}
-                                />
+                                <PassFail pass={swatch.normalTextPassAA} />
                             </span>
                             {swatch.darkModeEnabled && (
-                                <PassFail
-                                    pass={swatch.normalDarkTextPassAA}
-                                />
+                                <PassFail pass={swatch.normalDarkTextPassAA} />
                             )}
                         </p>
                         <p>
                             <span className="resultLabel">AAA:</span>
                             <span className="resultBadges">
-                                <PassFail
-                                    pass={swatch.normalTextPassAAA}
-                                />
+                                <PassFail pass={swatch.normalTextPassAAA} />
                             </span>
                             {swatch.darkModeEnabled && (
-                                <PassFail
-                                    pass={swatch.normalDarkTextPassAAA}
-                                />
+                                <PassFail pass={swatch.normalDarkTextPassAAA} />
                             )}
                         </p>
                         <span
@@ -165,27 +161,19 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                         <p>
                             <span className="resultLabel">AA:</span>
                             <span className="resultBadges">
-                                <PassFail
-                                    pass={swatch.largeTextPassAA}
-                                />
+                                <PassFail pass={swatch.largeTextPassAA} />
                             </span>
                             {swatch.darkModeEnabled && (
-                                <PassFail
-                                    pass={swatch.largeDarkTextPassAA}
-                                />
+                                <PassFail pass={swatch.largeDarkTextPassAA} />
                             )}
                         </p>
                         <p>
                             <span className="resultLabel">AAA:</span>
                             <span className="resultBadges">
-                                <PassFail
-                                    pass={swatch.largeTextPassAAA}
-                                />
+                                <PassFail pass={swatch.largeTextPassAAA} />
                             </span>
                             {swatch.darkModeEnabled && (
-                                <PassFail
-                                    pass={swatch.largeDarkTextPassAAA}
-                                />
+                                <PassFail pass={swatch.largeDarkTextPassAAA} />
                             )}
                         </p>
                         <span

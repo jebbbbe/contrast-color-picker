@@ -9,6 +9,7 @@ export type ReactCallbacks = {
 type FontPreviewInput = {
     color: string
     backgroundColor: string
+    targetRatio: number
     darkModeEnabled?: boolean
     darkBackgroundColor?: string
     darkModeColor?: string
@@ -24,6 +25,7 @@ export class CallbackBridge {
     setSwatch({
         color,
         backgroundColor,
+        targetRatio,
         darkModeEnabled = false,
         darkBackgroundColor = "#000000",
     }: FontPreviewInput): void {
@@ -33,6 +35,7 @@ export class CallbackBridge {
 
         let contrastRatio = getContrastRatio(color, backgroundColor)
         const darkMode = {
+            contrastRatioDarkPass: false,
             normalDarkTextPassAA: false,
             normalDarkTextPassAAA: false,
             largeDarkTextPassAA: false,
@@ -40,6 +43,7 @@ export class CallbackBridge {
         }
         const contrastRatioDark = getContrastRatio(color, darkBackgroundColor)
         if (darkModeEnabled) {
+            darkMode.contrastRatioDarkPass = contrastRatioDark >= targetRatio
             darkMode.normalDarkTextPassAA = contrastRatioDark >= 4.5
             darkMode.normalDarkTextPassAAA = contrastRatioDark >= 7
             darkMode.largeDarkTextPassAA = contrastRatioDark >= 3
@@ -50,6 +54,7 @@ export class CallbackBridge {
             color,
             backgroundColor,
             contrastRatio: String(Number(contrastRatio.toFixed(2))),
+            contrastRatioPass: contrastRatio >= targetRatio,
             normalTextPassAA: contrastRatio >= 4.5,
             normalTextPassAAA: contrastRatio >= 7,
             largeTextPassAA: contrastRatio >= 3,

@@ -12,11 +12,13 @@ const textBank = [
 export type FontSwatchState = {
     color: string
     backgroundColor: string
+    contrastRatio: string
     normalTextPassAA: boolean
     normalTextPassAAA: boolean
     largeTextPassAA: boolean
     largeTextPassAAA: boolean
     darkModeEnabled: boolean
+    contrastRatioDark: string
     darkBackgroundColor: string
     normalDarkTextPassAA: boolean
     normalDarkTextPassAAA: boolean
@@ -27,11 +29,13 @@ export type FontSwatchState = {
 export const initialFontSwatchState: FontSwatchState = {
     color: "#000000",
     backgroundColor: "#ffffff",
+    contrastRatio: "21",
     normalTextPassAA: true,
     normalTextPassAAA: true,
     largeTextPassAA: true,
     largeTextPassAAA: true,
     darkModeEnabled: false,
+    contrastRatioDark: "1",
     darkBackgroundColor: "#000000",
     normalDarkTextPassAA: true,
     normalDarkTextPassAAA: false,
@@ -72,25 +76,41 @@ function FontSwatch({ swatch }: FontSwatchProps) {
         <div className="fontSwatch">
             <article id="maincontent">
                 <div id="resultsContainer">
-                    {/* <div id="ratioContainer" className="pass">
-                        <span>
+                    <div id="ratioContainer">
+                        <span
+                            className={
+                                swatch.normalTextPassAA ? "pass" : "fail"
+                            }
+                        >
                             Contrast Ratio
                             <span
                                 id="ratio"
                                 aria-live="polite"
                                 aria-atomic="false"
                             >
-                                <b>8.59</b>:1
+                                <b>{swatch.contrastRatio}</b>:1
                             </span>
                         </span>
-                        <a
-                            id="permalink"
-                            className="permalink"
-                            href="./?fcolor=0000FF&amp;bcolor=FFFFFF"
-                        >
-                            permalink
-                        </a>
-                    </div> */}
+                        {swatch.darkModeEnabled && (
+                            <span
+                                className={
+                                    swatch.normalDarkTextPassAA
+                                        ? "pass"
+                                        : "fail"
+                                }
+                            >
+                                Dark Contrast Ratio
+                                <span
+                                    id="ratioDark"
+                                    aria-live="polite"
+                                    aria-atomic="false"
+                                >
+                                    <b>{swatch.contrastRatioDark}</b>:1
+                                </span>
+                            </span>
+                        )}
+                    </div>
+
                     <h2>WCAG Normal Text</h2>
                     <div className="results">
                         <p>
@@ -127,7 +147,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             id="normal"
                             style={sampleStyle}
                             contentEditable="plaintext-only"
-							spellCheck="false"
+                            spellCheck="false"
                             suppressContentEditableWarning
                             onInput={onSampleTextInput}
                         >
@@ -170,7 +190,7 @@ function FontSwatch({ swatch }: FontSwatchProps) {
                             id="big"
                             style={sampleStyle}
                             contentEditable="plaintext-only"
-							spellCheck="false"
+                            spellCheck="false"
                             suppressContentEditableWarning
                             onInput={onSampleTextInput}
                         >

@@ -5,9 +5,10 @@ type PassFailProps = Omit<ComponentPropsWithoutRef<"span">, "children"> & {
 }
 
 function PassFail({ pass, ...props }: PassFailProps) {
+    const result = pass ? "pass" : "fail"
     return (
-        <span {...props} className={pass ? "pass" : "fail"}>
-            {pass ? "Pass" : "Fail"}
+        <span {...props} className={result}>
+            {result}
         </span>
     )
 }

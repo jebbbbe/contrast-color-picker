@@ -57,11 +57,16 @@
 }
 
 .fontSwatch #ratioContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 1rem;
     padding-top: 0.6em;
     text-align: center;
 }
 
-.fontSwatch #ratioContainer.pass > span,
+.fontSwatch #ratioContainer > span.pass,
 .fontSwatch #textBackRatioContainer.pass > span,
 .fontSwatch #linkTextRatioContainer.pass > span,
 .fontSwatch #linkBackRatioContainer.pass > span {
@@ -79,6 +84,7 @@
 }
 
 .fontSwatch #ratio,
+.fontSwatch #ratioDark,
 .fontSwatch #textBackRatio,
 .fontSwatch #linkTextRatio,
 .fontSwatch #linkBackRatio {
@@ -140,6 +146,7 @@
     padding: 0 0.5em;
     font-weight: bold;
     text-align: center;
+    text-transform: capitalize;
     transition: all 0.2s;
 }
 
@@ -206,6 +213,16 @@
 #largeDarkAAA {
     margin-left: 0;
     margin-right: 0;
+}
+
+@media (width >= 700px) {
+    .fontSwatch #ratioContainer {
+        justify-content: space-evenly;
+    }
+}
+
+.fontSwatch #ratioContainer:has(> span:only-child) {
+    justify-content: center;
 }
 
 @media (width > 600px) {

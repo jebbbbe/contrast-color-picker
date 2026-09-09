@@ -7,15 +7,15 @@
 - [x] always use leva oneLineLabels
 - [ ] refrence links in footer
 - [ ] readme.md
-- [ ] display current contrast
+- [x] display current contrast
 - [ ] move color space to UI
 - [ ] darkmode?
 - [ ] better ray march algo
-    - [ ] reduce number of steps
-    - [ ] use correct color format and matrix inverses
-    - [ ] better quantize fn?
+    - [x] reduce number of steps
+    - [x] use correct color format and matrix inverses
+    - [x] better quantize fn?
     - [ ] merge into one file
-- [ ] shader compile time
+- [x] shader compile time
 
 # perf
 

@@ -22,7 +22,7 @@ export class ThreeSceneApp {
     readonly colorSync: ColorSync
     private readonly renderer: THREE.WebGLRenderer
     private readonly scene: THREE.Scene
-    private readonly camera: THREE.PerspectiveCamera
+    private readonly camera: THREE.OrthographicCamera | THREE.PerspectiveCamera
     private readonly aspectLayout: AspectLayout
     readonly gui: SceneGui
     readonly controls: OrbitControls
@@ -58,16 +58,25 @@ export class ThreeSceneApp {
         scene.background = new THREE.Color(sceneBackgroundHex)
 
         // camera
-        const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
+		// const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
+        const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 100)
         camera.position.set(-0.6, 0.15, 1.6)
 
         // controls
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enableDamping = true
         controls.autoRotateSpeed = 2.5
-        controls.minDistance = 0.25
-        controls.maxDistance = 1.95
         controls.target.set(0, 0, 0)
+
+        if (camera instanceof THREE.OrthographicCamera) {
+            const initialDistance = camera.position.distanceTo(controls.target)
+            controls.minZoom = initialDistance / 1.95
+            controls.maxZoom = initialDistance / 0.25
+        } else {
+            controls.minDistance = 0.25
+            controls.maxDistance = 1.95
+        }
+
         camera.lookAt(controls.target)
         controls.update()
 

@@ -13,7 +13,8 @@ uniform uint targetOutput;
 uniform uint transformMode;
 uniform mat3 transformSpaceMatrix;
 
-in vec3 localPosition;
+in vec3 rayOrigin;
+in vec3 rayDirection;
 out highp vec4 outColor;
 #define gl_FragColor outColor
 
@@ -554,9 +555,6 @@ vec3 quantizeToNearestAcceptableColor(
 }
 
 void main() {
-    mat4 inverseModelMatrix = inverse(modelMatrix);
-    vec3 rayOrigin = (inverseModelMatrix * vec4(cameraPosition, 1.0)).xyz;
-    vec3 rayDirection = normalize(localPosition - rayOrigin);
     float stepsTaken = 0.0;
     float stepCountMax = 0.0;
 

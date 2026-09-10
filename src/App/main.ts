@@ -13,6 +13,11 @@ import { logScenePixel, quantizeToPassingColor } from "./utils/logScenePixel"
 import { SceneGui } from "./gui"
 import { levaTheme } from "../constants"
 import { StatsPanel } from "./utils/stat.js"
+import {
+    AnimationController,
+    CameraAnimation,
+    MaterialAnimation,
+} from "./utils/AnimationController.js"
 const sceneBackgroundHex = levaTheme.colors.elevation2
 
 export class ThreeSceneApp {
@@ -34,6 +39,7 @@ export class ThreeSceneApp {
     private stats?: StatsPanel
     private animationFrameId = 0
     private looping = import.meta.env.DEV // false
+    onStartAnimation = true
 
     constructor(
         container: HTMLElement,
@@ -58,9 +64,11 @@ export class ThreeSceneApp {
         scene.background = new THREE.Color(sceneBackgroundHex)
 
         // camera
-		// const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
+        const endingPos = new THREE.Vector3(1.2, 0.5, 1.2)
+        // const camera = new THREE.PerspectiveCamera(60, 1, 0.1, 100)
+        // camera.position.set(-0.6, 0.15, 1.6)
         const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 100)
-        camera.position.set(-0.6, 0.15, 1.6)
+        camera.position.copy(endingPos)
 
         // controls
         const controls = new OrbitControls(camera, renderer.domElement)
@@ -183,6 +191,41 @@ export class ThreeSceneApp {
             "pointerdown",
             this.handleCanvasClick
         )
+
+        // inital animation
+        if (this.onStartAnimation) {
+            const animation = new AnimationController(
+                renderer,
+                controls,
+                transformControls,
+                // prettier-ignore
+                [
+                    new CameraAnimation(camera, controls.target, [
+                        { frame: new THREE.Vector3(0, 0, -1.769), time: 0.05 },
+                        { frame: new THREE.Vector3(1.106, 0.55, -1.266), time: 0.366667 },
+                        { frame: new THREE.Vector3(1.577, 0.8, -0.044), time: 0.683333 },
+                        { frame: endingPos, time: 1 },
+                    ]),
+                    new MaterialAnimation(
+                        colorCube.mesh.material.uniforms.contrastRatio,
+                        [
+                            { frame: 1, time: 0 },
+                            { frame: 4.5, time: 0.67 },
+                        ]
+                    ),
+                ],
+                2000
+            )
+            this.frame = (time: number): void => {
+                this.animationFrameId = 0
+                animation.update(time)
+                this.render()
+                if (!animation.active) {
+                    this.frame = this.animate
+                }
+                this.requestRender()
+            }
+        }
         this.requestRender()
     }
 
@@ -217,14 +260,13 @@ export class ThreeSceneApp {
 
     readonly requestRender = (): void => {
         if (!this.animationFrameId) {
-            this.animationFrameId = globalThis.requestAnimationFrame(
-                this.animate
-            )
+            this.animationFrameId = globalThis.requestAnimationFrame(this.frame)
         }
     }
 
     private readonly animate = (): void => {
         this.animationFrameId = 0
+        this.controls.update()
         this.render()
 
         if (
@@ -235,9 +277,10 @@ export class ThreeSceneApp {
         }
     }
 
+    private frame: FrameRequestCallback = this.animate
+
     private render(): void {
         if (import.meta.env.DEV) this.stats?.update()
-        this.controls.update()
         this.renderer.render(this.scene, this.camera)
     }
 

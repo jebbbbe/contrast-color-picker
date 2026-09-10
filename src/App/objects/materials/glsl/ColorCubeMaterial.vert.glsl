@@ -12,7 +12,5 @@ void main() {
         rayDirection = (inverseModelViewMatrix * vec4(0.0, 0.0, -1.0, 0.0)).xyz;
     }
 
-    rayDirection = normalize(rayDirection);
-
     gl_Position = projectionMatrix * viewPosition;
 }

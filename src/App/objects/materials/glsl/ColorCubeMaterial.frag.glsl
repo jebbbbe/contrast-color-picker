@@ -555,10 +555,11 @@ vec3 quantizeToNearestAcceptableColor(
 }
 
 void main() {
+    vec3 normalizedRayDirection = normalize(rayDirection);
     float stepsTaken = 0.0;
     float stepCountMax = 0.0;
 
-    vec2 bounds = intersectColorCubeBounds(rayOrigin, rayDirection);
+    vec2 bounds = intersectColorCubeBounds(rayOrigin, normalizedRayDirection);
     if (bounds.x > bounds.y) {
         discard;
     }
@@ -569,7 +570,7 @@ void main() {
         // stepCountMax = float(BINARY_SEARCH_STEPS);
         // outputColor = raycastBinarySearch(
             // rayOrigin,
-            // rayDirection,
+            // normalizedRayDirection,
             // bounds,
             // stepsTaken
         // );
@@ -577,7 +578,7 @@ void main() {
         // stepCountMax = float(BRACKET_RAY_STEPS + BINARY_SEARCH_STEPS);
         // outputColor = raycastBracketedSearch(
             // rayOrigin,
-            // rayDirection,
+            // normalizedRayDirection,
             // bounds,
             // stepsTaken
         // );
@@ -585,7 +586,7 @@ void main() {
         // stepCountMax = float(BRACKET_RAY_STEPS + BINARY_SEARCH_STEPS);
         // outputColor = raycastBracketedSearch2(
             // rayOrigin,
-            // rayDirection,
+            // normalizedRayDirection,
             // bounds,
             // stepsTaken
         // );
@@ -593,7 +594,7 @@ void main() {
         stepCountMax = float(BRACKET_RAY_STEPS + BINARY_SEARCH_STEPS);
         outputColor = raycastBracketedSearch3(
             rayOrigin,
-            rayDirection,
+            normalizedRayDirection,
             bounds,
             stepsTaken
         );
@@ -601,7 +602,7 @@ void main() {
         // stepCountMax = float(BINARY_SEARCH_STEPS);
         // outputColor = raycastBinarySearch(
             // rayOrigin,
-            // rayDirection,
+            // normalizedRayDirection,
             // bounds,
             // stepsTaken
         // );

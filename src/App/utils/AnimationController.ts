@@ -65,13 +65,16 @@ export class CameraAnimation implements AnimationTrack {
 export class MaterialAnimation implements AnimationTrack {
     private readonly interpolant: Interpolant
     private readonly uniform: IUniform<number>
+    private readonly onChange?: (value: number) => void
 
     constructor(
         uniform: IUniform<number>,
         frames: AnimationFrame<number>[],
-        InterpolantClass: AnimationInterpolant = LinearInterpolant
+        InterpolantClass: AnimationInterpolant = LinearInterpolant,
+        onChange?: (value: number) => void
     ) {
         this.uniform = uniform
+        this.onChange = onChange
         this.interpolant = new InterpolantClass(
             frames.map(({ time }) => time),
             frames.map(({ frame }) => frame),
@@ -80,7 +83,9 @@ export class MaterialAnimation implements AnimationTrack {
     }
 
     apply(progress: number): void {
-        this.uniform.value = this.interpolant.evaluate(progress)[0]
+        const value = this.interpolant.evaluate(progress)[0]
+        this.uniform.value = value
+        this.onChange?.(value)
     }
 }
 

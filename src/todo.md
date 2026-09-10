@@ -18,6 +18,7 @@
     - [ ] volume + d/dx
 	- [ ] textures
 - [x] shader compile time
+- [ ] sync levaUI with intro animation? 
 
 # perf
 

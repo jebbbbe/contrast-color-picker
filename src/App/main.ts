@@ -206,13 +206,17 @@ export class ThreeSceneApp {
                         { frame: new THREE.Vector3(1.577, 0.8, -0.044), time: 0.683333 },
                         { frame: endingPos, time: 1 },
                     ]),
-                    new MaterialAnimation(
-                        colorCube.mesh.material.uniforms.contrastRatio,
-                        [
-                            { frame: 1, time: 0 },
-                            { frame: 4.5, time: 0.67 },
-                        ]
-                    ),
+                    //new MaterialAnimation(
+                    //    colorCube.mesh.material.uniforms.contrastRatio,
+                    //    [
+                    //        { frame: 1, time: 0 },
+                    //        { frame: 4.5, time: 0.67 },
+                    //    ],
+					//	undefined,
+                    //    (value) => {
+                    //        (this.ctx.colorCube.mesh.material as any).contrastRatio = value
+                    //    }
+                    //),
                 ],
                 2000
             )

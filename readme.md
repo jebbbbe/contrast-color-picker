@@ -1,15 +1,19 @@
 # Contrast Color Picker
 
-Though many color combinations are pleasing to the eye, not all of them work as readable font and background combinations. Which is why ([WCAG contrast](https://webaim.org/resources/contrastchecker/)) exists. The Color Picker displays colors in a sRGB cube that pass the WCAG guidelines for the selected color and contrast ratio.
+A Color Palette Picker with an interactive 3D view that shows colors matching a selected contrast ratio.
 
-I had a few questions that prompted this color picker:
+Though many color combinations are pleasing to the eye, not all provide enough contrast for readable text and backgrounds (see [WebAIM’s Contrast Checker](https://webaim.org/resources/contrastchecker/).) The Color Picker displays colors in a sRGB Volume that pass the WCAG guidelines for the selected color and contrast ratio.
 
-- how many colors have an opposite color that pass?
-- do any colors have both black and white backgrounds?
-- can the volume reveal why certain color combinations are rarely seen or impossible to use, and why particular color schemes are so prevalent today?
-- what does the volume look like?
+## Motivation
 
-## Modes
+- How many colors have a valid opposite color?
+- Do any colors have both black and white backgrounds?
+- Can the volume reveal why certain color schemes are rarely seen or impossible to use, and why particular schemes are so prevalent?
+- What does the volume look like?
+
+## Usage
+
+### Modes
 
 - `Font`: pick your font color, and the solver displays background colors that pass.
 - `Background`: pick your background color, and the solver displays the font colors that pass.
@@ -17,7 +21,7 @@ I had a few questions that prompted this color picker:
 - `Darkmode`: pick a font color for two different background colors, and the solver displays the intersection of both volumes.
 - `None`: displays the color cube with no active search.
 
-## Vision Options
+### Vision Options
 
 - changes the output space to match different vison kernels
 - crop color output to match differnt kernels.
@@ -27,9 +31,8 @@ Kernels avaliable:
 - deuteranopia
 - protanopia
 - tritanopia
-- custom
 
-## Solver
+### Solver
 
 The Volumetric Solver uses a custom shader to pathtrace into the color cube. It first finds a search interval with a ray marching approach, refines that interval with binary search, and then quantizes the result to the nearest passing color.
 

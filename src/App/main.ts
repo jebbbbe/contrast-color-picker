@@ -9,7 +9,11 @@ import ColorSync from "./ColorSync"
 import { RaycastHelper } from "./RaycastHelper"
 import { AspectLayout } from "./utils/AspectLayout.js"
 import { getContrastRatio } from "./utils/contrast"
-import { logScenePixel, quantizeToPassingColor } from "./utils/logScenePixel"
+import {
+    logScenePixel,
+    quantizeToPassingColor,
+    saveSceneImage,
+} from "./utils/logScenePixel"
 import { SceneGui } from "./gui"
 import { levaTheme } from "../constants"
 import { StatsPanel } from "./utils/stat.js"
@@ -260,6 +264,16 @@ export class ThreeSceneApp {
     set animateLoop(value: boolean) {
         this.looping = value
         this.requestRender()
+    }
+
+    save(width = 2048, name = "scene"): Promise<void> {
+        return saveSceneImage(
+            this.renderer,
+            this.scene,
+            this.camera,
+            width,
+            name
+        )
     }
 
     readonly requestRender = (): void => {

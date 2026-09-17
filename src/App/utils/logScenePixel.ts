@@ -1,4 +1,9 @@
-import type { Camera, ColorRepresentation, Scene, WebGLRenderer } from "three"
+import {
+    WebGLRenderer,
+    type Camera,
+    type ColorRepresentation,
+    type Scene,
+} from "three"
 import type { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js"
 import { SearchBackgroundColor } from "../ColorSync"
 import {
@@ -61,6 +66,55 @@ export function logScenePixel(
 }
 
 export default logScenePixel
+
+function save(url: string, name: string): void {
+    const link = document.createElement("a")
+    link.download = name.endsWith(".png") ? name : `${name}.png`
+    link.href = url
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+}
+
+/** Render the scene at the requested width and download the result as a PNG. */
+export async function saveSceneImage(
+    renderer: WebGLRenderer,
+    scene: Scene,
+    camera: Camera,
+    width = 2048,
+    name = "scene"
+): Promise<void> {
+    if (width <= 0 || !Number.isFinite(width)) {
+        throw new Error("Image width must be a positive number")
+    }
+
+    const aspect = renderer.domElement.width / renderer.domElement.height
+    const imageWidth = Math.round(width)
+    const height = Math.max(1, Math.round(imageWidth / aspect))
+    const canvas = document.createElement("canvas")
+    canvas.width = imageWidth
+    canvas.height = height
+    const exportRenderer = new WebGLRenderer({ canvas, antialias: true })
+    exportRenderer.outputColorSpace = renderer.outputColorSpace
+    exportRenderer.toneMapping = renderer.toneMapping
+    exportRenderer.toneMappingExposure = renderer.toneMappingExposure
+    exportRenderer.setSize(imageWidth, height, false)
+
+    try {
+        exportRenderer.render(scene, camera)
+
+        const blob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, "image/png")
+        )
+        if (!blob) throw new Error("Could not encode scene image")
+
+        const url = URL.createObjectURL(blob)
+        save(url, name)
+        URL.revokeObjectURL(url)
+    } finally {
+        exportRenderer.dispose()
+    }
+}
 
 export function quantizeToPassingColor(
     hex: string,

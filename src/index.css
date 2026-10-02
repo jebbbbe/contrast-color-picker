@@ -37,7 +37,7 @@
     /*
 		also see src/constants.ts
 	*/
-    :root {
+    /* :root {
         color-scheme: dark;
         --page-background: var(--sceneColor-opposite);
         --page-text: var(--sceneColor);
@@ -45,7 +45,7 @@
         --border: var(--border-light);
         --fail: #ff8080;
         --slider-track: #1b645f;
-    }
+    } */
 
     .leva-holder .leva-c-ihqPFh {
         background-color: var(--page-background) !important;
@@ -136,8 +136,10 @@ footer {
 
 .app-holder {
     box-sizing: border-box;
-    width: 100%;
-    max-height: 500px;
+    position: fixed;
+    inset: 0 0 auto;
+    width: min(100%, 100dvh);
+    margin-inline: auto;
     aspect-ratio: 1 / 1;
     overflow: hidden;
 }
@@ -184,7 +186,6 @@ footer {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    border: 1px solid var(--border-light);
 }
 
 .gui-holder > .lil-gui {

@@ -77,6 +77,7 @@ export class ThreeSceneApp {
         // controls
         const controls = new OrbitControls(camera, renderer.domElement)
         controls.enableDamping = true
+        controls.autoRotate = true
         controls.autoRotateSpeed = 2.5
         controls.target.set(0, 0, 0)
 
@@ -159,6 +160,10 @@ export class ThreeSceneApp {
             renderer.domElement
         )
 
+		colorCube.markers.font.visible = false
+		colorCube.markers.background.visible = false
+		colorCube.markers.darkmode.visible = false
+
         // props
         this.container = container
         this.guiContainer = guiContainer
@@ -186,15 +191,15 @@ export class ThreeSceneApp {
         }
 
         // listeners
-        controls.addEventListener("change", this.requestRender)
-        controls.addEventListener("start", this.requestRender)
-        controls.addEventListener("end", this.requestRender)
+        // controls.addEventListener("change", this.requestRender)
+        // controls.addEventListener("start", this.requestRender)
+        // controls.addEventListener("end", this.requestRender)
         colorSync.addEventListener("change", this.requestRender)
         aspectLayout.addResizeListener(renderer, camera, this.handleResize)
-        renderer.domElement.addEventListener(
-            "pointerdown",
-            this.handleCanvasClick
-        )
+        // renderer.domElement.addEventListener(
+            // "pointerdown",
+            // this.handleCanvasClick
+        // )
 
         // inital animation
         if (this.onStartAnimation) {

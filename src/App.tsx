@@ -41,11 +41,13 @@ function App() {
 
     return (
         <main>
+			{/* 
             <Header
                 settingsOpen={settingsOpen}
                 onToggleSettings={() => setSettingsOpen((open) => !open)}
             />
-            <article className="content">
+			*/}
+			<article className="content"> 
                 <div className="container">
                     <div className="app-holder">
                         <div id="app" ref={threeSceneMountRef}>
@@ -57,13 +59,15 @@ function App() {
                             />
                         </div>
                     </div>
+					{/* 
                     <div className="leva-holder">
                         <LevaComponent bridge={app?.gui ?? levaStub} />
                     </div>
+					*/}
                 </div>
-                <FontSwatch swatch={swatch} />
+                {/* <FontSwatch swatch={swatch} /> */}
             </article>
-            <Footer />
+            {/* <Footer /> */}
         </main>
     )
 }

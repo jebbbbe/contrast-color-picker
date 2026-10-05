@@ -83,7 +83,7 @@ export const levaStub = appStub.gui
 let prefersDarkMode =
     typeof window !== "undefined" &&
     window.matchMedia("(prefers-color-scheme: dark)").matches
-prefersDarkMode = false
+prefersDarkMode = true
 const darkmode = {
     colors: {
         elevation1: "#110022",

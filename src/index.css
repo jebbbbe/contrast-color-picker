@@ -33,11 +33,21 @@
     --page-text: #000;
 }
 
+:root {
+    color-scheme: dark;
+    --page-background: var(--sceneColor-opposite);
+    --page-text: var(--sceneColor);
+    --highlight: var(--highlight-opposite);
+    --border: var(--border-light);
+    --fail: #ff8080;
+    --slider-track: #1b645f;
+} 
+
 @media (prefers-color-scheme: dark) {
     /*
 		also see src/constants.ts
 	*/
-    /* :root {
+    :root {
         color-scheme: dark;
         --page-background: var(--sceneColor-opposite);
         --page-text: var(--sceneColor);
@@ -45,7 +55,7 @@
         --border: var(--border-light);
         --fail: #ff8080;
         --slider-track: #1b645f;
-    } */
+    } 
 
     .leva-holder .leva-c-ihqPFh {
         background-color: var(--page-background) !important;
